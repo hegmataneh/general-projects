@@ -1,0 +1,76 @@
+#ifdef USES_printf
+	#define __INC_cstdio_
+#endif
+
+#ifdef USES_yaml_emitter_t
+	#define __INC_yaml_h
+#endif
+
+#ifdef USES_assert
+	#define __INC_assert_h
+#endif
+
+#ifdef USES_ptrdiff_t
+	#define __INC_stddef
+#endif
+
+#ifdef USES_yaml_string_t
+	#define __INC_yaml_private
+#endif
+
+#ifdef USES_MAX_FILE_SIZE
+	#define __INC_yaml_private
+#endif
+
+#ifdef USES_yaml_parser_fetch_more_tokens
+	#define __INC_yaml_private
+#endif
+
+#ifdef USES_yaml_private
+	#define __INC_yaml_private
+#endif
+
+#ifdef USES_yaml_config
+	#define __INC_yaml_config
+#endif
+
+#ifdef USES_string
+	#define __INC_string
+#endif
+
+#ifdef USES_FILE
+	#define __INC_cstdio_
+#endif
+
+#ifdef USES_exit
+	#define __INC_stdlib
+#endif
+
+#ifdef USES_yaml_parser_t
+	#define __INC_yaml_h
+#endif
+
+#ifdef USES_bool
+	#define __INC_stdbool
+#endif
+
+
+#ifdef USES_malloc
+	#define __INC_stdlib
+#endif
+
+#ifdef USES_pthread_t
+	#define __INC_pthread
+#endif
+
+#ifdef USES_sockaddr_in
+	#define __INC_netinet
+#endif
+
+#ifdef USES_select
+	#define __INC_select
+#endif
+
+#ifdef USES_memset
+	#define __INC_string
+#endif

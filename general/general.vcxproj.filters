@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.c" />
+    <ClCompile Include="src\yaml_api.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_dumper.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_emitter.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_loader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_parser.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_reader.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_scanner.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_writer.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cJSON.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cJSON_Utils.c">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="dep">
+      <UniqueIdentifier>{4871b50d-e8d7-4cbc-a50c-f89fe2685325}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="header">
+      <UniqueIdentifier>{2490ec6a-36b9-42b0-b6db-0795ab4ff7ee}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{d2a11e3d-0f0e-4250-a10d-75068e90aa80}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="dep\general.dep">
+      <Filter>dep</Filter>
+    </None>
+    <None Include="dep\general.inc">
+      <Filter>dep</Filter>
+    </None>
+    <None Include="dep\general.use">
+      <Filter>dep</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\yaml.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\yaml_private.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\yaml_config.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cJSON.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cJSON_Utils.h">
+      <Filter>header</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
