@@ -1,11 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="main.c" />
-    <ClCompile Include="src\yaml_api.c">
+    <ClCompile Include="src\g_funcs.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="main.c" />
     <ClCompile Include="src\yaml_dumper.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\yaml_api.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\yaml_emitter.c">
@@ -32,6 +35,9 @@
     <ClCompile Include="src\cJSON_Utils.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\json.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -45,13 +51,13 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="dep\general.dep">
+    <None Include="dep\general.use">
       <Filter>dep</Filter>
     </None>
     <None Include="dep\general.inc">
       <Filter>dep</Filter>
     </None>
-    <None Include="dep\general.use">
+    <None Include="dep\general.dep">
       <Filter>dep</Filter>
     </None>
   </ItemGroup>
@@ -69,6 +75,42 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\cJSON_Utils.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\IntellisenseAssist.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\json.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_brk.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_funcs.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_macros.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_consts.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_types.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_log.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_def.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="dep\general.h">
+      <Filter>dep</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_mlk.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\g_sys.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

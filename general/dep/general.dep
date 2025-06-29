@@ -1,3 +1,10 @@
-#include "general.use"
+#define __GENERAL
+#define __ENGINE
 
-#include "general.inc"
+#include "general.h"
+
+#if defined(__PROJECT_NAME__) && __PROJECT_NAME__ == general
+
+#include <IntellisenseAssist.h> // should be at the end of any include to correct Intellisense bug
+
+#endif

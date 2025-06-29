@@ -84,6 +84,8 @@
     <ClCompile Include="main.c" />
     <ClCompile Include="src\cJSON.c" />
     <ClCompile Include="src\cJSON_Utils.c" />
+    <ClCompile Include="src\g_funcs.c" />
+    <ClCompile Include="src\json.c" />
     <ClCompile Include="src\yaml_api.c" />
     <ClCompile Include="src\yaml_dumper.c" />
     <ClCompile Include="src\yaml_emitter.c" />
@@ -94,13 +96,46 @@
     <ClCompile Include="src\yaml_writer.c" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="dep\general.dep" />
-    <None Include="dep\general.inc" />
-    <None Include="dep\general.use" />
+    <None Include="dep\general.dep">
+      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </RemoteCopyFile>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </DeploymentContent>
+      <RemoteCopyToOutputDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </RemoteCopyToOutputDir>
+      <RemoteFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </RemoteFile>
+      <FileType>Document</FileType>
+    </None>
+    <None Include="dep\general.inc">
+      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </RemoteCopyFile>
+      <FileType>Document</FileType>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </DeploymentContent>
+    </None>
+    <None Include="dep\general.use">
+      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </RemoteCopyFile>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+      </DeploymentContent>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="dep\general.h" />
     <ClInclude Include="header\cJSON.h" />
     <ClInclude Include="header\cJSON_Utils.h" />
+    <ClInclude Include="header\g_brk.h" />
+    <ClInclude Include="header\g_consts.h" />
+    <ClInclude Include="header\g_def.h" />
+    <ClInclude Include="header\g_funcs.h" />
+    <ClInclude Include="header\g_log.h" />
+    <ClInclude Include="header\g_macros.h" />
+    <ClInclude Include="header\g_mlk.h" />
+    <ClInclude Include="header\g_sys.h" />
+    <ClInclude Include="header\g_types.h" />
+    <ClInclude Include="header\IntellisenseAssist.h" />
+    <ClInclude Include="header\json.h" />
     <ClInclude Include="header\yaml.h">
       <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </RemoteCopyFile>
@@ -125,6 +160,9 @@
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/dep;$(RemoteRootDir)/$(ProjectName)/header;%(ClCompile.AdditionalIncludeDirectories);$(RemoteHeadersDir);./header</AdditionalIncludeDirectories>
       <CompileAs>CompileAsC</CompileAs>
       <AdditionalOptions>-Wno-unused-function -D_POSIX_C_SOURCE=200809L %(AdditionalOptions)</AdditionalOptions>
+      <PreprocessorDefinitions>INTELISENSE_BUILD=$(IntelliSenseBuild);__PROJECT_NAME__=$(ProjectName)</PreprocessorDefinitions>
+      <ShowIncludes>
+      </ShowIncludes>
     </ClCompile>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

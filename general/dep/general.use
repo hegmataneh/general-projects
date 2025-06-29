@@ -1,3 +1,83 @@
+#include "../header/g_def.h"
+
+#ifdef USES_sprintf_s
+	#define __INC_stdio
+#endif
+
+#ifdef USES_time_t
+	#define __INC_time
+#endif
+
+#ifdef USES_wchar_t
+	#define __INC_stddef
+#endif
+
+
+#ifdef USES_fd_set
+	#define __INC_select
+#endif
+
+#ifdef USES_close
+	#define __INC_unistd
+#endif
+
+#ifdef USES_socket
+	#define __INC_sys_socket
+#endif
+
+
+#ifdef USES_pthread_exit
+	#define __INC_pthread
+#endif
+
+#ifdef USES_rand
+	#define __INC_stdlib
+#endif
+
+#ifdef USES_strerror
+	#define __INC_string
+#endif
+
+#ifdef USES_va_list
+	#define __INC_stdarg
+#endif
+
+
+#ifdef USES_ssize_t
+	#define __INC_sys_types
+#endif
+
+#ifdef USES_sockaddr_in
+	#define __INC_sys_socket
+#endif
+
+#ifdef USES_printf
+	#define __INC_stdio
+#endif
+
+
+#ifdef USES_errno
+	#define __INC_errno
+#endif
+
+
+#ifdef USES_free
+	#define __INC_stdlib
+#endif
+
+#ifdef USES_strlen
+	#define __INC_string
+#endif
+
+#ifdef USES_uint64_t
+	#define __INC_stdint
+#endif
+
+
+#ifdef USES_json
+	#define __INC_json
+#endif
+
 #ifdef USES_printf
 	#define __INC_cstdio_
 #endif
