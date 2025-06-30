@@ -30,4 +30,6 @@ enum
 };
 
 //-------------------------------------------------------------------------
-extern uchar _ErrLvl;
+//extern uchar _ErrLvl; // does not dependable in multi thread app
+
+#define DEFAULT_PACKET_SIZE 8192

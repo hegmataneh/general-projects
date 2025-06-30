@@ -1,7 +1,7 @@
 // libyaml 14040319
 
-#define USES_yaml_emitter_t
-#define USES_assert
+#define Uses_yaml_emitter_t
+#define Uses_assert
 
 #include <general.dep>
 

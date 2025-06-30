@@ -81,19 +81,8 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="main.c" />
-    <ClCompile Include="src\cJSON.c" />
-    <ClCompile Include="src\cJSON_Utils.c" />
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\json.c" />
-    <ClCompile Include="src\yaml_api.c" />
-    <ClCompile Include="src\yaml_dumper.c" />
-    <ClCompile Include="src\yaml_emitter.c" />
-    <ClCompile Include="src\yaml_loader.c" />
-    <ClCompile Include="src\yaml_parser.c" />
-    <ClCompile Include="src\yaml_reader.c" />
-    <ClCompile Include="src\yaml_scanner.c" />
-    <ClCompile Include="src\yaml_writer.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\general.dep">
@@ -123,8 +112,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
-    <ClInclude Include="header\cJSON.h" />
-    <ClInclude Include="header\cJSON_Utils.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_def.h" />
@@ -136,30 +123,12 @@
     <ClInclude Include="header\g_types.h" />
     <ClInclude Include="header\IntellisenseAssist.h" />
     <ClInclude Include="header\json.h" />
-    <ClInclude Include="header\yaml.h">
-      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyFile>
-      <RemoteCopyToOutputDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyToOutputDir>
-    </ClInclude>
-    <ClInclude Include="header\yaml_config.h">
-      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyFile>
-      <RemoteCopyToOutputDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyToOutputDir>
-    </ClInclude>
-    <ClInclude Include="header\yaml_private.h">
-      <RemoteCopyFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyFile>
-      <RemoteCopyToOutputDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </RemoteCopyToOutputDir>
-    </ClInclude>
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(RemoteRootDir)/$(ProjectName)/dep;$(RemoteRootDir)/$(ProjectName)/header;%(ClCompile.AdditionalIncludeDirectories);$(RemoteHeadersDir);./header</AdditionalIncludeDirectories>
       <CompileAs>CompileAsC</CompileAs>
-      <AdditionalOptions>-Wno-unused-function -D_POSIX_C_SOURCE=200809L %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-unused-function -D_POSIX_C_SOURCE=200809L  -D__COMPILING %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>INTELISENSE_BUILD=$(IntelliSenseBuild);__PROJECT_NAME__=$(ProjectName)</PreprocessorDefinitions>
       <ShowIncludes>
       </ShowIncludes>

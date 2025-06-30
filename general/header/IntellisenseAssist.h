@@ -1,7 +1,9 @@
 #pragma once
 
 
-#if defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0)
+#if ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)
+
+#error "please keep it here to prevent compiling this section at all"
 
 // WARNING . please consider that these value come from deepseek so original value must be controlled by programmer him self
 
@@ -304,16 +306,16 @@ extern FILE *stdin;
 extern FILE *stdout;
 extern FILE *stderr;
 int printf(const char *format, ...);
-int fprintf(FILE *stream, const char *format, ...);
+
 int sprintf(char *str, const char *format, ...);
 int snprintf(char *str, size_t size, const char *format, ...);
 int scanf(const char *format, ...);
 int fscanf(FILE *stream, const char *format, ...);
 int sscanf(const char *str, const char *format, ...);
-int fgetc(FILE *stream);
-char *fgets(char *s, int size, FILE *stream);
-int fputc(int c, FILE *stream);
-int fputs(const char *s, FILE *stream);
+
+
+
+
 int getc(FILE *stream);
 int getchar(void);
 char *gets(char *s);
@@ -321,20 +323,20 @@ int putc(int c, FILE *stream);
 int putchar(int c);
 int puts(const char *s);
 int ungetc(int c, FILE *stream);
-size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
-size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
-int fseek(FILE *stream, long offset, int whence);
-long ftell(FILE *stream);
+
+
+
+
 void rewind(FILE *stream);
-int fflush(FILE *stream);
-int feof(FILE *stream);
+
+
 int ferror(FILE *stream);
 void clearerr(FILE *stream);
 int remove(const char *filename);
 int rename(const char *old, const char *new);
-FILE *fopen(const char *path, const char *mode);
+
 FILE *freopen(const char *path, const char *mode, FILE *stream);
-int fclose(FILE *fp);
+
 int fileno(FILE *stream);
 
 /* stdlib.h */
@@ -539,10 +541,6 @@ size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 /* Memory management */
 void *aligned_alloc(size_t alignment, size_t size);
-void *calloc(size_t nmemb, size_t size);
-void free(void *ptr);
-void *malloc(size_t size);
-void *realloc(void *ptr, size_t size);
 
 /* String manipulation */
 void *memchr(const void *s, int c, size_t n);
@@ -1012,5 +1010,237 @@ ssize_t recvmsg(int sockfd, struct msghdr *msg, int flags);
 int getsockopt(int sockfd, int level, int optname, void *optval, socklen_t *optlen);
 int setsockopt(int sockfd, int level, int optname, const void *optval, socklen_t optlen);
 int shutdown(int sockfd, int how);
+
+char *newStr(const char *);
+
+LPCSTR internalErrorStr(status errValue);
+status internalErrorVal(LPCSTR errStr);
+
+
+const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number );
+const char * __snprintf( char * msg_holder , size_t size_of_msg_holder , const char * format , ... );
+void _close_socket( int * socket_id );
+const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
+
+
+#define NP 0  // not provided
+#define M_PI 3.1415926535897932384626433832795
+#define M_2_PI		6.283185307179586476925286766559
+#define PI_2		1.57079632679489662
+#define PI_180		0.01745329251994329
+#define M_3_PI_2	4.71238898038468985
+#define PHI			1.618
+#define PRECISION_OF_DOUBLE 1e-10
+#define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
+#define HI_NIBBLE( byte )					( ( ( uchar )( byte ) ) >> 4 )
+#define LO_NIBBLE( byte )					( ( ( uchar )( byte ) ) & 0x0f )
+#define MAKE_BYTE( hiNibble , loNibble )	( ( uchar )( ( ( hiNibble & 0x0f ) << 4 ) | ( loNibble & 0x0f ) ) )
+#define HI_BYTE(word)						(((ushort)(word))>>8)
+#define LO_BYTE(word)						((word)&0x00FF)
+#define MAKE_WORD(hiByte,loByte)			((WORD)(((hiByte)<<8)|(loByte)))
+#define HI_WORD(dw)							((WORD)((((DWORD_PTR)(dw)) >> 16) & 0xffff))
+#define LO_WORD(dw)							((WORD)(((DWORD_PTR)(dw)) & 0xffff))
+#define MAKE_DWORD(hiWord,loWord)			((DWORD)(((WORD)(((DWORD_PTR)(loWord)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(hiWord)) & 0xffff))) << 16))
+#define _EXPORT
+#define _IMPORT
+
+#define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
+#define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
+
+#define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
+#define STRCPY(s1,s2)\
+	do {\
+	strncpy_s(s1,s2,sizeof(s1)-1);\
+	s1[sizeof(s1)-1]=EOS;\
+	delBlanks_s(s1,sizeof(s1));\
+	} while(0)
+#define STRNCPY(s1,s2,n)\
+	do {\
+	strncpy_s(s1,s2,n-1);\
+	s1[n-1]=EOS;\
+	} while(0)
+#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+
+#define G_SCHAR_MIN  ((schar)0x80)				// -128
+#define G_SCHAR_MAX  ((schar)-1^G_SCHAR_MIN)	// 127
+#define G_UCHAR_MIN  ((uchar)0x00)				// 0
+#define G_UCHAR_MAX  ((uchar)-1^G_UCHAR_MIN)	// 255
+
+#define G_SSHORT_MIN ((sshort)0x8000)			// -32768
+#define G_SSHORT_MAX ((sshort)-1^G_SSHORT_MIN)	// 32767
+#define G_USHORT_MIN ((ushort)0x0000)			// 0
+#define G_USHORT_MAX ((ushort)-1^G_USHORT_MIN)	// 65535
+
+#define G_SLONG_MIN  ((slong)0x80000000L)		// -2,147,483,648
+#define G_SLONG_MAX  ((slong)-1^G_SLONG_MIN)	// 2,147,483,647
+#define G_ULONG_MIN  ((ulong)0x00000000L)		// 0
+#define G_ULONG_MAX  ((ulong)-1^G_ULONG_MIN)	// 4,294,967,295
+
+#define G_SLONGLONG_MIN  ((sint64)0x8000000000000000i64)	// -9,223,372,036,854,775,808
+#define G_SLONGLONG_MAX  ((sint64)-1^G_SLONGLONG_MIN)		// 9,223,372,036,854,775,807
+#define G_ULONGLONG_MIN  ((uint64)0x0000000000000000i64)	// 0
+#define G_ULONGLONG_MAX  ((uint64)-1^G_ULONGLONG_MIN)		// 18,446,744,073,709,551,615
+
+#define SGN(value) (((value)<0)?-1:((value)>0)?1:0)
+#define IP2L( x, y, z, t ) ( ( (x) << 24 ) + ( (y) << 16 ) + ( (z) << 8 ) + (t) )
+
+#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
+
+#define Tobool( condition )		( ( condition ) ? true : false )
+#define ToBOOL( condition )		( ( condition ) ? TRUE : FALSE )
+#define ToBoolean( condition )	( ( condition ) ? True : False )
+#define CONTAIN_FLAG( key , flag ) ( ( key ) & ( flag ) )
+#define INCLUDE_FLAG( key , flag ) ( ( key ) | ( flag ) )
+#define EXCLUDE_FLAG( key , flag ) ( ( key ) & ( ( flag ) ^ 0xffffffff ) ) // 32 bit
+#define EXCLUDE_FLAG64( key , flag ) ( ( key ) & ( ( flag ) ^ 0xffffffffffffffff ) )
+#define SET_INCLUDE_FLAG( key , flag ) ( ( key ) = INCLUDE_FLAG( key , flag ) )
+#define SET_EXCLUDE_FLAG( key , flag ) ( ( key ) = EXCLUDE_FLAG( key , flag ) )
+
+#define IS_ODD( i ) ( ( ( i ) & 1 ) ? TRUE : FALSE ) // fard
+#define IS_EVEN( i ) ( ( ( i ) & 1 ) ? FALSE : TRUE ) // zoj
+#define POW_OF_2( p ) ( 1 << p )
+
+#define ROUND_UP( i , x ) ( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
+
+#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
+
+#define _DETAIL_ERROR( user_friendly_msg ) do { perror(_MSG(user_friendly_msg)); perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) ); } while(0);
+
+#define VOID_RET ((void*)NULL)
+#define MAIN_BAD_RET (1/*Indicate an error*/)
+
+#define ERR_RET( user_friendly_msg , RET ) \
+	do {\
+	_DETAIL_ERROR( user_friendly_msg );\
+	return RET; } while(0);
+
+#define MALLOC malloc
+#define FREE free
+#define REALLOC realloc
+#define CALLOC calloc
+
+typedef int errno_t;
+
+
+typedef long long __int64;
+typedef unsigned long long __int64u;
+typedef signed long long __int64s;
+typedef const char * LPCSTR;
+
+
+typedef char * LPSTR;
+
+typedef LPCSTR LPCTSTR;
+typedef LPSTR LPTSTR;
+
+
+typedef __int64u ubigint;
+typedef __int64u uint64;
+typedef unsigned long    ulong;
+typedef unsigned int     uint;
+typedef unsigned short   ushort;
+typedef unsigned char    uchar;
+
+typedef __int64s sbigint;
+typedef __int64s sint64;
+typedef signed long	   slong;
+typedef signed int     sint;
+typedef signed short   sshort;
+typedef signed char    schar;
+
+typedef __int64 bigint;
+typedef __int64 int64;
+
+typedef __int64 QWORD, * LPQWORD;
+
+typedef long status;
+
+typedef char * string;
+
+typedef char * buffer;
+
+enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
+#define Boolean GeBoolean
+#define False eFalse
+#define True eTrue
+#define Null eNull
+
+
+const char EOS = '\0'; // 0
+const char LF = '\n'; // line feed 10
+const char CR = '\r'; // carriage return 13
+const char _newLineFeed[] = { CR , LF , EOS };
+const char _fileNameDelimiter[] = { '\\' , '/' , EOS };
+const char _SPFD = '\\'; // Standard path file delimiter
+const char _UTF8Sign[] = "\xEF\xBB\xBF";
+const char _UTF16LSign[] = "\xFF\xFE"; // little-endian . Unicode in Microsoft terminology
+const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft terminology
+const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
+const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
+
+void M_mkShowMsg(const char *fn,int ln,const char *msg,status error);
+void M_showMsg();
+
+#define M_MK_ERR_MSG(msg,echo)
+
+#define M_MSG {\
+	M_showMsg();\
+	M_logMsg(); }
+
+#define INIT_BREAKABLE_FXN() \
+status d_error; /*c does not have class and data member*/\
+uchar _ErrLvl; \
+char __custom_message[ 256 ] = "";
+
+#define BREAK_OK(lvl)
+
+#define MME_BREAK(err,lvl,msg,echo)
+
+#define MME_BREAK_IF(cond,err,lvl,msg,echo)
+
+#define MME_BREAK_STAT(err,lvl,msg,echo)
+
+#define BREAK(err,lvl)
+#define BREAK_IF(cond,err,lvl)
+#define BREAK_STAT(err,lvl)
+
+#define N_BREAK BREAK
+#define N_BREAK_IF BREAK_IF
+#define N_BREAK_STAT BREAK_STAT
+
+#define M_BREAK(err,lvl)
+#define M_BREAK_IF(cond,err,lvl)
+#define M_BREAK_STAT(err,lvl)
+
+#define MM_BREAK(err,lvl,msg)
+#define MM_BREAK_IF(cond,err,lvl,msg)
+#define MM_BREAK_STAT(err,lvl,msg)
+
+#define BEGIN_RET_CLOCK
+#define BEGIN_RET
+#define BEGR(lvl)
+
+#define V_END_RET
+#define END_RET
+#define B_END_RET
+
+#define M_V_END_RET
+#define M_END_RET
+#define M_B_END_RET
+
+#define V_RET
+#define RET
+#define B_RET
+
+#define M_V_RET
+#define M_RET
+#define M_B_RET
+
+#define ASSERT_NO_ERROR
+
+#define ASSERT_ERROR
+
+#define NEWSTR(var,str,lvl)
+
 
 #endif

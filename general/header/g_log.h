@@ -1,4 +1,4 @@
-#if defined USES_Log || !defined __COMPILING
+#if defined Uses_Log || !defined __COMPILING
 
 
 // init log file

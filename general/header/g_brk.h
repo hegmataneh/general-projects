@@ -1,8 +1,8 @@
-#if defined USES_M_SERIES_MACROS || !defined __COMPILING
+#if defined Uses_M_SERIES_MACROS || !defined __COMPILING
 
 // give declarations of functions used by these macros
-//void M_mkLogMsg(const char *fn,int ln,const char *msg,status error);
-//void M_logMsg();
+void M_mkLogMsg(const char *fn,int ln,const char *msg,status error);
+void M_logMsg();
 
 #ifndef __ENGINE  // applications must provide a way to show the error occured
 
@@ -28,6 +28,11 @@
 
 #endif  // __ENGINE
 
+#define INIT_BREAKABLE_FXN() \
+	status d_error; /*c does not have class and data member*/\
+	uchar _ErrLvl; \
+	char __custom_message[ 256 ] = "";
+
 #define BREAK_OK(lvl)\
 	do {\
 		d_error=(status)errOK;\
@@ -48,7 +53,7 @@
 #define MME_BREAK_IF(cond,err,lvl,msg,echo)\
 	do {\
 		MME_BREAK_IF_CALL_APPEND\
-		int _cond=int(cond);\
+		int _cond=(int)(cond);\
 		MME_BREAK_IF_CALL_CROP\
 		if (_cond)\
 			MME_BREAK(err,lvl,msg,echo);\
@@ -89,8 +94,9 @@
 #define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 
 // begin ret and series
-#define BEGIN_RET d_error=errOK; _ErrLvl=0; __ret: status ___localError(d_error); switch(_ErrLvl) {
-#define BEGR(lvl) d_error=errOK; _ErrLvl=lvl; __ret: status ___localError(d_error); switch(_ErrLvl) { case lvl:
+#define BEGIN_RET_CLOCK d_error=errOK;
+#define BEGIN_RET d_error=errOK; _ErrLvl=0; __ret: status ___localError=d_error; switch(_ErrLvl) {
+#define BEGR(lvl) d_error=errOK; _ErrLvl=lvl; __ret: status ___localError=d_error; switch(_ErrLvl) { case lvl:
 
 #define V_END_RET } d_error=___localError;
 #define END_RET V_END_RET return d_error;
@@ -119,23 +125,6 @@
 
 #define NEWSTR(var,str,lvl)\
 	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
-#define DEF_NEWSTR(var,str,lvl)\
-	char *var;\
-	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
-#define RET_NEWSTR(str,lvl) do {\
-	char *tmpRetStr;\
-	M_BREAK_IF(!(tmpRetStr=newStr(str)),errMemoryLow,lvl);\
-	return tmpRetStr; } while(0)
 
-#define NEWWSTR(var,str,lvl)\
-	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
-#define DEF_NEWWSTR(var,str,lvl)\
-	wchar_t *var;\
-	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
-#define RET_NEWWSTR(str,lvl) do {\
-	wchar_t *tmpRetStr;\
-	M_BREAK_IF(!(tmpRetStr=newStr(str)),errMemoryLow,lvl);\
-	return tmpRetStr; } while(0)
-
-#endif  // USES_M_SERIES_MACROS
+#endif  // Uses_M_SERIES_MACROS
 

@@ -1,8 +1,8 @@
 // libyaml 14040319
 
-#define USES_yaml_emitter_t
-#define USES_assert
-#define USES_yaml_parser_fetch_more_tokens
+#define Uses_yaml_emitter_t
+#define Uses_assert
+#define Uses_yaml_parser_fetch_more_tokens
 
 #include <general.dep>
 

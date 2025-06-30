@@ -1,9 +1,9 @@
 // libyaml 14040319
 
-#define USES_yaml_emitter_t
-#define USES_assert
-#define USES_ptrdiff_t
-#define USES_yaml_string_t
+#define Uses_yaml_emitter_t
+#define Uses_assert
+#define Uses_ptrdiff_t
+#define Uses_yaml_string_t
 
 #include <general.dep>
 

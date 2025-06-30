@@ -1,4 +1,4 @@
-#define USES_printf
+#define Uses_printf
 #include <general.dep>
 
 int main()

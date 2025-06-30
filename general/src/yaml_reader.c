@@ -1,8 +1,8 @@
 // libyaml 14040319
 
-#define USES_yaml_emitter_t
-#define USES_assert
-#define USES_MAX_FILE_SIZE
+#define Uses_yaml_emitter_t
+#define Uses_assert
+#define Uses_MAX_FILE_SIZE
 
 #include <general.dep>
 

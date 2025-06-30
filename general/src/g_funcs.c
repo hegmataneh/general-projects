@@ -10,39 +10,23 @@
 		for number of errors anymore
 */
 
-#define USES_time_t
-#define USES_wchar_t
-#define USES_sprintf_s
+#define Uses_strlen
+#define Uses_malloc
+#define Uses_close
+#define Uses_va_list
+#define Uses_time_t
+#define Uses_wchar_t
 #define Uses_sprintf_s
+#define Uses_sprintf_s
+#define Uses_strcpy_s
 
 #include <general.dep>
 
-uchar _ErrLvl;
+//uchar _ErrLvl;
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[10000]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error"};
 
-GLOBAL_ERROR(errCacheNoSave);
-GLOBAL_ERROR(errCacheNoLoad);
-GLOBAL_ERROR(errCacheNotValid);
-
-GLOBAL_ERROR(errArrayFull);
-GLOBAL_ERROR(errArrayMaxNumber);
-GLOBAL_ERROR(errArrayMemoryFail);
-GLOBAL_ERROR(errArrayOutOfRange);
-
-GLOBAL_ERROR(errCLCTMemLow);
-GLOBAL_ERROR(errCLCTNumberTooBig);
-
-GLOBAL_ERROR(errIXFail);
-GLOBAL_ERROR(errIXGreaterFound);
-GLOBAL_ERROR(errIXNotOpen);
-
-
-LOCAL_ERROR(errCacheInvalidSpec);
-LOCAL_ERROR(errCacheInvalidAdd);
-
-LOCAL_ERROR(errInvalidAlignment);
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
@@ -97,6 +81,14 @@ void M_logMsg()
 	#endif
 }
 
+void M_mkShowMsg( const char * fn , int ln , const char * msg , status error )
+{
+}
+
+void M_showMsg()
+{
+}
+
 _EXPORT status internalErrorVal(LPCSTR errStr)
 {
 	if (-_err < (int)COUNTOF(errStrs)) errStrs[-_err]=errStr;
@@ -126,51 +118,64 @@ _EXPORT LPCSTR internalErrorStr(status errValue)
 	return "Error value out of range";
 }
 
-//char *newStr( LPCSTR str )
-//{
-//	if(!str)str="";
-//	if(!str[0])return "";
-//	size_t sz=strlen(str)+1;
-//	char *temp=NEWBUF(char,sz);
-//	if (temp) strcpy_s(temp,sz,str);
-//	return temp;
-//}
-//
-//// cleans dest first if can create a new string from src
-//status newStr(LPSTR &dest,LPCSTR src)
-//{
-//	status d_error;
-//	char *temp;
-//
-//	BREAK_IF(!src,errInvalidString,0);
-//	NEWSTR(temp,src,0);
-//	if (dest[0]) FREE(dest);
-//	dest=temp;
-//
-//	RET
-//}
-//
-//#ifndef UNDER_CE
-////wchar_t *newStr( LPCWSTR str )
-////{
-////	if(!str)str=L"";
-////	if(!str[0])return L"";
-////	size_t sz=wcslen(str)+1;
-////	wchar_t *temp=NEWBUF(wchar_t,sz);
-////	if (temp) wcscpy_s(temp,sz,str);
-////	return temp;
-////}
-//
-////status newStr(LPWSTR &dest,LPCWSTR src)
-////{
-////	status d_error;
-////	wchar_t *temp;
-////
-////	BREAK_IF(!src,errInvalidString,0);
-////	NEWWSTR(temp,src,0);
-////	if (dest[0]) FREE(dest);
-////	dest=temp;
-////
-////	RET
-////}
-//#endif
+char *newStr( LPCSTR str )
+{
+	if(!str)str="";
+	if(!str[0])return "";
+	size_t sz=strlen(str)+1;
+	char *temp=NEWBUF(char,sz);
+	if (temp) strcpy(temp,str);
+	return temp;
+}
+
+const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number )
+{
+	snprintf( msg_holder , size_of_msg_holder , "%s: ln(%d)\n" , msg , line_number );
+	return msg_holder;
+}
+
+const char * __snprintf( char * msg_holder , size_t size_of_msg_holder , const char * format , ... )
+{
+	va_list args;
+
+	va_start( args , format );
+	vsnprintf( msg_holder , size_of_msg_holder , format , args );
+	va_end( args );
+
+	return msg_holder;
+}
+
+void _close_socket( int * socket_id )
+{
+	close( *socket_id );
+	*socket_id = -1;
+}
+
+const char * read_file( const char * path , char * pInBuffer /*= NULL*/ )
+{
+	FILE * file = fopen( path , "r" );
+	if ( file == NULL )
+	{
+		fprintf( stderr , "Expected file \"%s\" not found" , path );
+		return NULL;
+	}
+	fseek( file , 0 , SEEK_END );
+	long len = ftell( file );
+	fseek( file , 0 , SEEK_SET );
+	char * buffer = pInBuffer ? pInBuffer : malloc( (size_t)(len + 1) );
+
+	if ( buffer == NULL )
+	{
+		fprintf( stderr , "Unable to allocate memory for file" );
+		fclose( file );
+		return NULL;
+	}
+
+	fread( buffer , 1 , (size_t)len , file );
+	buffer[ len ] = EOS;
+
+	fclose( file );
+	file = NULL;
+
+	return ( const char * )buffer;
+}

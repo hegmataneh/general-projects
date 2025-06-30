@@ -66,11 +66,11 @@
 //#define ERROR_DEF(err) status err=internalErrorVal((LPCSTR)#err)
 //#define ERROR_USE(err) extern status err
 
-#define LOCAL_ERROR(err) //static ERROR_DEF(err)
-#define GLOBAL_ERROR(err) //_EXPORT ERROR_DEF(err)
+//#define LOCAL_ERROR(err) //static ERROR_DEF(err)
+//#define GLOBAL_ERROR(err) //_EXPORT ERROR_DEF(err)
 
 //-------------------------------------------------------------------------
-#if defined USES_STR_funcs || !defined __COMPILING
+#if defined Uses_STR_funcs || !defined __COMPILING
 #define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 #define STRCPY(s1,s2)\
 	do {\
@@ -166,3 +166,19 @@
 
 #define ROUND_UP( i , x ) ( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
+
+#if defined Uses_Remote_vs_prj || !defined __COMPILING
+
+#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
+
+#define _DETAIL_ERROR( user_friendly_msg ) do { perror(_MSG(user_friendly_msg)); perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) ); } while(0);
+
+#define VOID_RET ((void*)NULL)
+#define MAIN_BAD_RET (1/*Indicate an error*/)
+
+#define ERR_RET( user_friendly_msg , RET ) \
+	do {\
+	_DETAIL_ERROR( user_friendly_msg );\
+	return RET; } while(0);
+
+#endif

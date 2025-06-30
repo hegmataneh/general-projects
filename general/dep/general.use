@@ -1,156 +1,184 @@
+
 #include "../header/g_def.h"
 
-#ifdef USES_sprintf_s
+#define Uses_size_t
+#define Uses_M_SERIES_MACROS
+#define Uses_INIT_BREAKABLE_FXN
+
+#ifdef Uses_NEWSTR
+	#define Uses_M_SERIES_MACROS
+	#define __INC_brk
+#endif
+
+#ifdef Uses_INIT_BREAKABLE_FXN
+	#define __INC_brk
+#endif
+
+#ifdef Uses_strcpy_s
+	//#define __STDC_WANT_LIB_EXT1__ 1
+	//#define __STDC_LIB_EXT1__ 1
+	#define __INC_string
+#endif
+
+#ifdef Uses_size_t
+	#define __INC_stddef
+#endif
+
+#ifdef Uses_sprintf_s
 	#define __INC_stdio
 #endif
 
-#ifdef USES_time_t
+#ifdef Uses_time_t
 	#define __INC_time
 #endif
 
-#ifdef USES_wchar_t
+#ifdef Uses_wchar_t
 	#define __INC_stddef
 #endif
 
 
-#ifdef USES_fd_set
+#ifdef Uses_fd_set
 	#define __INC_select
 #endif
 
-#ifdef USES_close
+#ifdef Uses_close
 	#define __INC_unistd
 #endif
 
-#ifdef USES_socket
+#ifdef Uses_socket
 	#define __INC_sys_socket
 #endif
 
 
-#ifdef USES_pthread_exit
+#ifdef Uses_pthread_exit
 	#define __INC_pthread
 #endif
 
-#ifdef USES_rand
+#ifdef Uses_rand
 	#define __INC_stdlib
 #endif
 
-#ifdef USES_strerror
+#ifdef Uses_strerror
 	#define __INC_string
 #endif
 
-#ifdef USES_va_list
+#ifdef Uses_va_list
 	#define __INC_stdarg
 #endif
 
 
-#ifdef USES_ssize_t
+#ifdef Uses_ssize_t
 	#define __INC_sys_types
 #endif
 
-#ifdef USES_sockaddr_in
+#ifdef Uses_sockaddr_in
 	#define __INC_sys_socket
 #endif
 
-#ifdef USES_printf
+#ifdef Uses_printf
 	#define __INC_stdio
 #endif
 
 
-#ifdef USES_errno
+#ifdef Uses_errno
 	#define __INC_errno
 #endif
 
 
-#ifdef USES_free
+#ifdef Uses_free
 	#define __INC_stdlib
 #endif
 
-#ifdef USES_strlen
+#ifdef Uses_strlen
 	#define __INC_string
 #endif
 
-#ifdef USES_uint64_t
+#ifdef Uses_uint64_t
 	#define __INC_stdint
 #endif
 
 
-#ifdef USES_json
+#ifdef Uses_json
 	#define __INC_json
 #endif
 
-#ifdef USES_printf
+#ifdef Uses_printf
 	#define __INC_cstdio_
 #endif
 
-#ifdef USES_yaml_emitter_t
+#ifdef Uses_yaml_emitter_t
 	#define __INC_yaml_h
 #endif
 
-#ifdef USES_assert
+#ifdef Uses_assert
 	#define __INC_assert_h
 #endif
 
-#ifdef USES_ptrdiff_t
+#ifdef Uses_ptrdiff_t
 	#define __INC_stddef
 #endif
 
-#ifdef USES_yaml_string_t
+#ifdef Uses_yaml_string_t
 	#define __INC_yaml_private
 #endif
 
-#ifdef USES_MAX_FILE_SIZE
+#ifdef Uses_MAX_FILE_SIZE
 	#define __INC_yaml_private
 #endif
 
-#ifdef USES_yaml_parser_fetch_more_tokens
+#ifdef Uses_yaml_parser_fetch_more_tokens
 	#define __INC_yaml_private
 #endif
 
-#ifdef USES_yaml_private
+#ifdef Uses_yaml_private
 	#define __INC_yaml_private
 #endif
 
-#ifdef USES_yaml_config
+#ifdef Uses_yaml_config
 	#define __INC_yaml_config
 #endif
 
-#ifdef USES_string
+#ifdef Uses_string
 	#define __INC_string
 #endif
 
-#ifdef USES_FILE
+#ifdef Uses_FILE
 	#define __INC_cstdio_
 #endif
 
-#ifdef USES_exit
+#ifdef Uses_exit
 	#define __INC_stdlib
 #endif
 
-#ifdef USES_yaml_parser_t
+#ifdef Uses_yaml_parser_t
 	#define __INC_yaml_h
 #endif
 
-#ifdef USES_bool
+#ifdef Uses_bool
 	#define __INC_stdbool
 #endif
 
 
-#ifdef USES_malloc
+#ifdef Uses_malloc
 	#define __INC_stdlib
 #endif
 
-#ifdef USES_pthread_t
+#ifdef Uses_pthread_t
 	#define __INC_pthread
 #endif
 
-#ifdef USES_sockaddr_in
+#ifdef Uses_sockaddr_in
 	#define __INC_netinet
 #endif
 
-#ifdef USES_select
+#ifdef Uses_select
 	#define __INC_select
 #endif
 
-#ifdef USES_memset
+#ifdef Uses_memset
 	#define __INC_string
+#endif
+
+#ifdef Uses_Remote_vs_prj
+	#define __INC_macros
 #endif

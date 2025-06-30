@@ -1,9 +1,9 @@
-#define USES_printf
-#define USES_errno
-#define USES_free
-#define USES_strlen
-#define USES_uint64_t
-#define USES_json
+#define Uses_printf
+#define Uses_errno
+#define Uses_free
+#define Uses_strlen
+#define Uses_uint64_t
+#define Uses_json
 
 #include <general.dep>
 

@@ -1,10 +1,10 @@
 // libyaml 14040319
 
-#define USES_yaml_emitter_t
-#define USES_assert
-#define USES_yaml_private
-#define USES_yaml_config
-#define USES_string
+#define Uses_yaml_emitter_t
+#define Uses_assert
+#define Uses_yaml_private
+#define Uses_yaml_config
+#define Uses_string
 
 #include <general.dep>
 
