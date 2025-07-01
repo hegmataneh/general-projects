@@ -1243,4 +1243,125 @@ char __custom_message[ 256 ] = "";
 #define NEWSTR(var,str,lvl)
 
 
+#define typed(name) name##_t
+
+typedef const char *typed(json_string);
+typedef bool typed(json_boolean);
+
+typedef union json_number_value_u typed(json_number_value);
+typedef signed long typed(json_number_long);
+typedef double typed(json_number_double);
+typedef struct json_number_s typed(json_number);
+typedef union json_element_value_u typed(json_element_value);
+typedef struct json_element_s typed(json_element);
+typedef struct json_entry_s typed(json_entry);
+typedef struct json_object_s typed(json_object);
+typedef struct json_array_s typed(json_array);
+
+#define result(name) name##_result_t
+#define result_ok(name) name##_result_ok
+#define result_err(name) name##_result_err
+#define result_is_ok(name) name##_result_is_ok
+#define result_is_err(name) name##_result_is_err
+#define result_unwrap(name) name##_result_unwrap
+#define result_unwrap_err(name) name##_result_unwrap_err
+#define result_map_err(outer_name, inner_name, value)
+
+#define result_try(outer_name, inner_name, lvalue, rvalue)
+
+#define declare_result_type(name)                                              \
+  typedef struct name##_result_s {                                             \
+    typed(json_boolean) is_ok;                                                 \
+    union {                                                                    \
+      typed(name) value;                                                       \
+      typed(json_error) err;                                                   \
+    } inner;                                                                   \
+  } result(name);                                                              \
+  result(name) result_ok(name)(typed(name));                                   \
+  result(name) result_err(name)(typed(json_error));                            \
+  typed(json_boolean) result_is_ok(name)(result(name) *);                      \
+  typed(json_boolean) result_is_err(name)(result(name) *);                     \
+  typed(name) result_unwrap(name)(result(name) *);                             \
+  typed(json_error) result_unwrap_err(name)(result(name) *);
+
+typedef enum json_element_type_e {
+  JSON_ELEMENT_TYPE_STRING = 0,
+  JSON_ELEMENT_TYPE_NUMBER,
+  JSON_ELEMENT_TYPE_OBJECT,
+  JSON_ELEMENT_TYPE_ARRAY,
+  JSON_ELEMENT_TYPE_BOOLEAN,
+  JSON_ELEMENT_TYPE_NULL
+} typed(json_element_type);
+
+typedef enum json_number_type_e {
+  JSON_NUMBER_TYPE_LONG = 0,
+  JSON_NUMBER_TYPE_DOUBLE,
+} typed(json_number_type);
+
+union json_number_value_u {
+  typed(json_number_long) as_long;
+  typed(json_number_double) as_double;
+};
+
+struct json_number_s {
+  typed(json_number_type) type;
+  typed(json_number_value) value;
+};
+
+union json_element_value_u {
+  typed(json_string) as_string;
+  typed(json_number) as_number;
+  typed(json_object) * as_object;
+  typed(json_array) * as_array;
+  typed(json_boolean) as_boolean;
+};
+
+struct json_element_s {
+  typed(json_element_type) type;
+  typed(json_element_value) value;
+};
+
+struct json_entry_s {
+  typed(json_string) key;
+  typed(json_element) element;
+};
+
+struct json_object_s {
+  typed(size) count;
+  typed(json_entry) * *entries;
+};
+
+struct json_array_s {
+  typed(size) count;
+  typed(json_element) * elements;
+};
+
+typedef enum json_error_e {
+  JSON_ERROR_EMPTY = 0,
+  JSON_ERROR_INVALID_TYPE,
+  JSON_ERROR_INVALID_KEY,
+  JSON_ERROR_INVALID_VALUE
+} typed(json_error);
+
+declare_result_type(json_element_type)
+declare_result_type(json_element_value)
+declare_result_type(json_element)
+declare_result_type(json_entry)
+declare_result_type(json_string)
+declare_result_type(size)
+
+result(json_element) json_parse(typed(json_string) json_str);
+
+result(json_element)
+    json_object_find(typed(json_object) * object, typed(json_string) key);
+
+void json_print(typed(json_element) * element, int indent);
+
+void json_free(typed(json_element) * element);
+
+typed(json_string) json_error_to_string(typed(json_error) error);
+
+int catch_error( result( json_element ) * element , const char * what );
+
+
 #endif

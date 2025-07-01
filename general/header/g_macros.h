@@ -181,4 +181,8 @@
 	_DETAIL_ERROR( user_friendly_msg );\
 	return RET; } while(0);
 
+
+#define MIN(a, b) ((a) <= (b) ? (a) : (b))
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 #endif
