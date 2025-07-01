@@ -54,9 +54,23 @@
 //#endif
 
 //-------------------------------------------------------------------------
+#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
+#define MEMSET_ZERO(p,type,n) memset( p , 0 , sizeof( type ) * n )
+
+//-------------------------------------------------------------------------
+#if defined(__GNUC__)
+
 #define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
 #define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
 //#define DAC_AR(x) do { if(x) { DEL_AR(x); x = NULL; } } while(0)
+
+#define NEW(type) ( ( type * )MALLOC( sizeof( type ) ) )
+
+#endif
+
+//-------------------------------------------------------------------------
+#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+//#define DELWSTR(str) do { if(str[0]!=WEOS) { FREE(str); str=_WT(""); } } while(0)
 
 //#define ____TO_STRING(s) #s
 //#define ___TO_STRING(s) (____TO_STRING(s))
@@ -83,8 +97,7 @@
 	strncpy_s(s1,s2,n-1);\
 	s1[n-1]=EOS;\
 	} while(0)
-#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
-//#define DELWSTR(str) do { if(str[0]!=WEOS) { FREE(str); str=_WT(""); } } while(0)
+
 #endif
 
 //-------------------------------------------------------------------------
@@ -140,9 +153,6 @@
 #else
 	#define UNIQUE_IDENTIFIER __LINE__
 #endif
-
-//-------------------------------------------------------------------------
-#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
 
 //-------------------------------------------------------------------------
 #define Tobool( condition )		( ( condition ) ? true : false )

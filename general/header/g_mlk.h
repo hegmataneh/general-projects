@@ -1,7 +1,7 @@
 //-------------------
-#define MALLOC malloc
+#define MALLOC( size ) malloc( size )
 #define FREE( p ) free( ( void * )p )
-#define REALLOC realloc
+#define REALLOC( ptr , size ) realloc( ptr , size )
 #define CALLOC calloc
 
 //-------------------

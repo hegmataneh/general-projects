@@ -1044,8 +1044,7 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 #define _EXPORT
 #define _IMPORT
 
-#define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
-#define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
+
 
 #define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 #define STRCPY(s1,s2)\
@@ -1059,7 +1058,7 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 	strncpy_s(s1,s2,n-1);\
 	s1[n-1]=EOS;\
 	} while(0)
-#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+
 
 #define G_SCHAR_MIN  ((schar)0x80)				// -128
 #define G_SCHAR_MAX  ((schar)-1^G_SCHAR_MIN)	// 127
@@ -1083,8 +1082,6 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 
 #define SGN(value) (((value)<0)?-1:((value)>0)?1:0)
 #define IP2L( x, y, z, t ) ( ( (x) << 24 ) + ( (y) << 16 ) + ( (z) << 8 ) + (t) )
-
-#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
 
 #define Tobool( condition )		( ( condition ) ? true : false )
 #define ToBOOL( condition )		( ( condition ) ? TRUE : FALSE )
@@ -1114,10 +1111,6 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 	_DETAIL_ERROR( user_friendly_msg );\
 	return RET; } while(0);
 
-#define MALLOC malloc
-#define FREE free
-#define REALLOC realloc
-#define CALLOC calloc
 
 typedef int errno_t;
 
@@ -1192,56 +1185,41 @@ status d_error; /*c does not have class and data member*/\
 uchar _ErrLvl; \
 char __custom_message[ 256 ] = "";
 
-#define BREAK_OK(lvl)
-
-#define MME_BREAK(err,lvl,msg,echo)
-
-#define MME_BREAK_IF(cond,err,lvl,msg,echo)
-
-#define MME_BREAK_STAT(err,lvl,msg,echo)
-
-#define BREAK(err,lvl)
-#define BREAK_IF(cond,err,lvl)
-#define BREAK_STAT(err,lvl)
-
-#define N_BREAK BREAK
-#define N_BREAK_IF BREAK_IF
-#define N_BREAK_STAT BREAK_STAT
-
-#define M_BREAK(err,lvl)
-#define M_BREAK_IF(cond,err,lvl)
-#define M_BREAK_STAT(err,lvl)
-
-#define MM_BREAK(err,lvl,msg)
-#define MM_BREAK_IF(cond,err,lvl,msg)
-#define MM_BREAK_STAT(err,lvl,msg)
-
-#define BEGIN_RET_CLOCK
-#define BEGIN_RET
-#define BEGR(lvl)
-
-#define V_END_RET
-#define END_RET
-#define B_END_RET
-
-#define M_V_END_RET
-#define M_END_RET
-#define M_B_END_RET
-
-#define V_RET
-#define RET
-#define B_RET
-
-#define M_V_RET
-#define M_RET
-#define M_B_RET
+#define BREAK_OK(lvl)                           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MME_BREAK(err,lvl,msg,echo)             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MME_BREAK_IF(cond,err,lvl,msg,echo)     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MME_BREAK_STAT(err,lvl,msg,echo)        /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BREAK(err,lvl)                          /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BREAK_IF(cond,err,lvl)                  /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BREAK_STAT(err,lvl)                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define N_BREAK BREAK                           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define N_BREAK_IF BREAK_IF                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define N_BREAK_STAT BREAK_STAT                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_BREAK(err,lvl)                        /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_BREAK_IF(cond,err,lvl)                /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_BREAK_STAT(err,lvl)                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MM_BREAK(err,lvl,msg)                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MM_BREAK_IF(cond,err,lvl,msg)           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define MM_BREAK_STAT(err,lvl,msg)              /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BEGIN_RET_CLOCK                         /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BEGIN_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BEGR(lvl)                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define V_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define END_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define B_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_V_END_RET                             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_B_END_RET                             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define V_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define RET                                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define B_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_V_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define M_B_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
 
 #define ASSERT_NO_ERROR
 
 #define ASSERT_ERROR
-
-#define NEWSTR(var,str,lvl)
-
 
 #define typed(name) name##_t
 
@@ -1363,5 +1341,24 @@ typed(json_string) json_error_to_string(typed(json_error) error);
 
 int catch_error( result( json_element ) * element , const char * what );
 
+int errSyntax;
+int errCanceled;  // indeed this indicates a normal abort and is not an d_error condition
+int errInvalidString;
+int errMemoryLow;
+int errGeneral;
+int errOK;
+int errSystem;
+
+#define NEWSTR(var,str,lvl)
+#define MALLOC( size ) malloc( size )
+#define FREE( p ) free( ( void * )p )
+#define REALLOC( ptr , size ) realloc( ptr , size )
+#define CALLOC calloc
+#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
+#define MEMSET_ZERO(p,type,n) memset( p , 0 , sizeof( type ) * n )
+#define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
+#define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
+#define NEW(type) ( ( type * )MALLOC( sizeof( type ) ) )
+#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 
 #endif
