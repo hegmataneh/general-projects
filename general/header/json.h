@@ -7,9 +7,11 @@
 */
 
 #ifndef __cplusplus
+#ifndef _STDBOOL_H
 typedef unsigned int bool;
 #define true (1)
 #define false (0)
+#endif
 #endif
 
 #define typed(name) name##_t

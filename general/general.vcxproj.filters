@@ -29,6 +29,12 @@
     <None Include="dep\general.dep">
       <Filter>dep</Filter>
     </None>
+    <None Include="dep\system.inc">
+      <Filter>dep</Filter>
+    </None>
+    <None Include="dep\system.use">
+      <Filter>dep</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\IntellisenseAssist.h">

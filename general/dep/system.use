@@ -1,0 +1,142 @@
+#ifdef Uses_bool
+	#define __INC_stdbool
+#endif
+
+#ifdef Uses_ncurses
+	#define __INC_ncurses
+#endif
+
+#ifdef Uses_strcpy_s
+	//#define __STDC_WANT_LIB_EXT1__ 1
+	//#define __STDC_LIB_EXT1__ 1
+	#define __INC_string
+#endif
+
+#ifdef Uses_size_t
+	#define __INC_stddef
+#endif
+
+#ifdef Uses_sprintf_s
+	#define __INC_stdio
+#endif
+
+#ifdef Uses_time_t
+	#define __INC_time
+#endif
+
+#ifdef Uses_wchar_t
+	#define __INC_stddef
+#endif
+
+#ifdef Uses_fileno
+	#define _POSIX_C_SOURCE 200809L
+	#define __INC_stdio
+#endif
+
+#ifdef Uses_fd_set
+	#define __INC_select
+#endif
+
+#ifdef Uses_close
+	#define __INC_unistd
+#endif
+
+#ifdef Uses_socket
+	#define __INC_sys_socket
+#endif
+
+
+#ifdef Uses_pthread_exit
+	#define __INC_pthread
+#endif
+
+#ifdef Uses_rand
+	#define __INC_stdlib
+#endif
+
+#ifdef Uses_strerror
+	#define __INC_string
+#endif
+
+#ifdef Uses_va_list
+	#define __INC_stdarg
+#endif
+
+
+#ifdef Uses_ssize_t
+	#define __INC_sys_types
+#endif
+
+#ifdef Uses_sockaddr_in
+	#define __INC_sys_socket
+#endif
+
+#ifdef Uses_printf
+	#define __INC_stdio
+#endif
+
+
+#ifdef Uses_errno
+	#define __INC_errno
+#endif
+
+
+#ifdef Uses_free
+	#define __INC_stdlib
+#endif
+
+#ifdef Uses_strlen
+	#define __INC_string
+#endif
+
+#ifdef Uses_uint64_t
+	#define __INC_stdint
+#endif
+
+#ifdef Uses_printf
+	#define __INC_cstdio_
+#endif
+
+#ifdef Uses_assert
+	#define __INC_assert_h
+#endif
+
+#ifdef Uses_ptrdiff_t
+	#define __INC_stddef
+#endif
+
+#ifdef Uses_string
+	#define __INC_string
+#endif
+
+#ifdef Uses_FILE
+	#define __INC_cstdio_
+#endif
+
+#ifdef Uses_exit
+	#define __INC_stdlib
+#endif
+
+#ifdef Uses_malloc
+	#define __INC_stdlib
+#endif
+
+#ifdef Uses_pthread_t
+	#define __INC_pthread
+#endif
+
+#ifdef Uses_sockaddr_in
+	#define __INC_netinet
+#endif
+
+#ifdef Uses_select
+	#define __INC_select
+#endif
+
+#ifdef Uses_memset
+	#define __INC_string
+#endif
+
+#ifdef __INC_stdio
+	#define __INC_unistd
+#endif

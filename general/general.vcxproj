@@ -59,7 +59,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <UseDebugLibraries>true</UseDebugLibraries>
-    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseCompiler>
     </UseCompiler>
   </PropertyGroup>
@@ -109,6 +109,8 @@
       <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       </DeploymentContent>
     </None>
+    <None Include="dep\system.inc" />
+    <None Include="dep\system.use" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
