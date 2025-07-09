@@ -140,3 +140,10 @@
 
 #endif  // not in visual studio 2005, end of secure functions declaration and implementation
 
+#define PTHREAD_CREATE_OK (0)
+#define PTHREAD_JOIN_OK (0)
+#define SENDTO_MIN_OK (0)
+#define REALLOC_ERR (NULL)
+#define FXN_SOCKET_ERR (-1)
+#define NEWBUF_ERR (NULL)
+#define NEW_ERR (NULL)

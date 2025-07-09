@@ -1,32 +1,23 @@
 #if defined Uses_M_SERIES_MACROS || !defined __COMPILING
 
-// give declarations of functions used by these macros
-void M_mkLogMsg(const char *fn,int ln,const char *msg,status error);
-void M_logMsg();
 
-#ifndef __ENGINE  // applications must provide a way to show the error occured
+//#ifndef __ENGINE  // applications must provide a way to show the error occured
+//
+//	_IMPORT void M_mkShowMsg(const char *fn,int ln,const char *msg,status error);
+//	_IMPORT void M_showMsg();
+//
+//#endif
 
-	_IMPORT void M_mkShowMsg(const char *fn,int ln,const char *msg,status error);
-	_IMPORT void M_showMsg();
+#define M_MK_ERR_MSG(msg,echo) do {\
+	__snprintf( __custom_message , sizeof( __custom_message ) , "%s(%d)-%s" , __FILE__ , __LINE__ , msg ); } while ( 0 )
 
+	
+#ifdef __ENGINE // app must provide def for M_MSG
+	#define M_MSG {\
+		M_showMsg(); }
 #endif
 
-#if !defined __ENGINE
 
-	#define M_MK_ERR_MSG(msg,echo) do {\
-		if(echo)M_mkShowMsg(__FILE__,__LINE__,msg,d_error);\
-		M_mkLogMsg(__FILE__,__LINE__,msg,d_error); } while(0)
-
-	#define M_MSG {\
-		M_showMsg();\
-		M_logMsg(); }
-
-#else  // __ENGINE
-
-	#define M_MK_ERR_MSG(msg,echo) M_mkLogMsg(__FILE__,__LINE__,msg,d_error)
-	#define M_MSG M_logMsg();
-
-#endif  // __ENGINE
 
 #define INIT_BREAKABLE_FXN() \
 	status d_error; /*c does not have class and data member*/\

@@ -1105,9 +1105,9 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 
 #define ROUND_UP( i , x ) ( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
-#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
+//#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
 
-#define _DETAIL_ERROR( user_friendly_msg ) do { perror(_MSG(user_friendly_msg)); perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) ); } while(0);
+//#define _DETAIL_ERROR( user_friendly_msg ) do { perror(_MSG(user_friendly_msg)); perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) ); } while(0);
 
 #define _ECHO(s,...)
 
@@ -1179,51 +1179,62 @@ const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft term
 const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
 const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 
-void M_mkShowMsg(const char *fn,int ln,const char *msg,status error);
+
 void M_showMsg();
+void M_showMsg( const char * msg );
 
-#define M_MK_ERR_MSG(msg,echo)
+#define M_MK_ERR_MSG(msg,echo) do {\
+	__snprintf( "msg" , sz , "%s(%d)-%s" , "FILE" , "LINE" , _msg ); } while ( 0 )
 
-#define M_MSG {\
-	M_showMsg();\
-	M_logMsg(); }
+#define M_MSG if(d_error!=errOK) { M_showMsg("msg"); }
 
 #define INIT_BREAKABLE_FXN() \
-status d_error; /*c does not have class and data member*/\
-uchar _ErrLvl; \
-char __custom_message[ 256 ] = "";
+	status d_error;
+	uchar _ErrLvl; \
+	char __custom_message[ 256 ] = "";
 
-#define BREAK_OK(lvl)                           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MME_BREAK(err,lvl,msg,echo)             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MME_BREAK_IF(cond,err,lvl,msg,echo)     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MME_BREAK_STAT(err,lvl,msg,echo)        /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BREAK(err,lvl)                          /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BREAK_IF(cond,err,lvl)                  /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BREAK_STAT(err,lvl)                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define N_BREAK BREAK                           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define N_BREAK_IF BREAK_IF                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define N_BREAK_STAT BREAK_STAT                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_BREAK(err,lvl)                        /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_BREAK_IF(cond,err,lvl)                /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_BREAK_STAT(err,lvl)                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MM_BREAK(err,lvl,msg)                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MM_BREAK_IF(cond,err,lvl,msg)           /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define MM_BREAK_STAT(err,lvl,msg)              /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BEGIN_RET_CLOCK                         /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BEGIN_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define BEGR(lvl)                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define V_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define END_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define B_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_V_END_RET                             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_END_RET                               /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_B_END_RET                             /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define V_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define RET                                     /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define B_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_V_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_RET                                   /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
-#define M_B_RET                                 /*add INIT_BREAKABLE_FXN() at the begining of fxn*/
+#define BREAK_OK(lvl)\
+		d_error="errOK";\
+		_ErrLvl=lvl;\
+		goto __ret;
+
+#define MME_BREAK(err,lvl,msg,echo)\
+		d_error="err";\
+		printf( "msg" , "%s" , "FILE" , "LINE" , "msg" );\
+		_ErrLvl=lvl;\
+		goto __ret;
+
+#define MME_BREAK_IF(cond,err,lvl,msg,echo)\
+		int _cond=(int)("cond");\
+		if (_cond)\
+			MME_BREAK("err","lvl","msg","echo");
+
+#define MME_BREAK_STAT(err,lvl,msg,echo)\
+		d_error="err";\
+		if(d_error!=errOK)\
+			printf( "msg" , "%s" , "FILE" , "LINE" , "msg" );\
+			_ErrLvl=lvl;\
+			goto __ret;
+
+#define BREAK(err,lvl)					MME_BREAK(err,lvl,NULL,False)									
+#define BREAK_IF(cond,err,lvl)			MME_BREAK_IF(cond,err,lvl,NULL,False)							
+#define BREAK_STAT(err,lvl)				MME_BREAK_STAT(err,lvl,NULL,False)								
+#define M_BREAK(err,lvl)				MME_BREAK(err,lvl,NULL,True)									
+#define M_BREAK_IF(cond,err,lvl)		MME_BREAK_IF(cond,err,lvl,NULL,True)							
+#define M_BREAK_STAT(err,lvl)			MME_BREAK_STAT(err,lvl,NULL,True)								
+#define MM_BREAK(err,lvl,msg)			MME_BREAK(err,lvl,msg,True)										
+#define MM_BREAK_IF(cond,err,lvl,msg)	MME_BREAK_IF(cond,err,lvl,msg,True)								
+#define MM_BREAK_STAT(err,lvl,msg)		MME_BREAK_STAT(err,lvl,msg,True)								
+#define BEGIN_RET		d_error=errOK; _ErrLvl=0; __ret: status ___localError=d_error; switch(_ErrLvl) {
+#define V_END_RET		} d_error=___localError;														
+#define END_RET			V_END_RET return d_error;														
+#define M_V_END_RET		V_END_RET M_MSG																	
+#define M_END_RET		M_V_END_RET return d_error;														
+#define V_RET			d_error=errOK; __ret: ;															
+#define RET				V_RET return d_error;															
+#define M_V_RET			V_RET M_MSG																		
+#define M_RET			M_V_RET return d_error;															
+
 
 #define ASSERT_NO_ERROR
 
@@ -4317,5 +4328,12 @@ extern GCC_NORETURN NCURSES_EXPORT(void) exit_curses (int);
 #endif
 
 
+#define PTHREAD_CREATE_OK (0)
+#define PTHREAD_JOIN_OK (0)
+#define SENDTO_MIN_OK (0)
+#define REALLOC_ERR (NULL)
+#define FXN_SOCKET_ERR (-1)
+#define NEWBUF_ERR (NULL)
+#define NEW_ERR (NULL)
 
-#endif
+#endif // ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)

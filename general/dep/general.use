@@ -1,4 +1,10 @@
+#ifdef __ENGINE
+	#define Uses_M_showMsg
+#endif
 
+#ifndef Uses_M_showMsg
+	#error "your app must provide way to show msg for error . you must #define Uses_M_showMsg in your app use file and provide g_brk.h -> M_showMsg();"
+#endif
 
 #include "../header/g_def.h"
 

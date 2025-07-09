@@ -19,10 +19,11 @@
 #define Uses_sprintf_s
 #define Uses_sprintf_s
 #define Uses_strcpy_s
+#define Uses_errno
+#define Uses_size_t
 
 #include <general.dep>
 
-//uchar _ErrLvl;
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[10000]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error"};
@@ -49,45 +50,6 @@ const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
 const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 
 
-//#ifdef LOG_PENDING_ERROR
-//static GcString _M_logMsg;
-//static Boolean _M_logMsgPending;
-//#endif
-
-void M_mkLogMsg(const char *fn,int ln,const char *msg,status error)
-{
-	#ifdef LOG_PENDING_ERROR
-	if (msg)
-	{
-		// kheyli zeshteh keh compiler natuneh chenin conversion-i ro beh tore automatic anjam bedeh.
-		_M_logMsg=(LPCSTR)GcPrintfString("%s (%d): %s, %s\n",LPCSTR(getfn(fn)),ln,internalErrorStr(error),msg);
-	}
-	else
-	{
-		_M_logMsg=(LPCSTR)GcPrintfString("%s (%d): %s\n",LPCSTR(getfn(fn)),ln,internalErrorStr(error));
-	}
-	_M_logMsgPending=True;
-	#endif
-}
-
-void M_logMsg()
-{
-	#ifdef LOG_PENDING_ERROR
-	if (_M_logMsgPending)
-		{
-		Log(L_ERR,_M_logMsg);
-		_M_logMsgPending=False;
-		}
-	#endif
-}
-
-void M_mkShowMsg( const char * fn , int ln , const char * msg , status error )
-{
-}
-
-void M_showMsg()
-{
-}
 
 _EXPORT status internalErrorVal(LPCSTR errStr)
 {
@@ -128,9 +90,15 @@ char *newStr( LPCSTR str )
 	return temp;
 }
 
-const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number )
+//const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number )
+//{
+//	snprintf( msg_holder , size_of_msg_holder , "%s: ln(%d)\n" , msg , line_number );
+//	return msg_holder;
+//}
+
+const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_holder , const char * cst_msg )
 {
-	snprintf( msg_holder , size_of_msg_holder , "%s: ln(%d)\n" , msg , line_number );
+	snprintf( msg_holder , size_of_msg_holder , "%s (%d):%s" , cst_msg , errno , strerror(errno) );
 	return msg_holder;
 }
 
