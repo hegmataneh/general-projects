@@ -4,11 +4,6 @@
 #define REALLOC( ptr , size ) realloc( ptr , size )
 #define CALLOC calloc
 
-//-------------------
-#define MME_BREAK_IF_CALL_APPEND
-#define MME_BREAK_IF_CALL_CROP
-#define MME_BREAK_STAT_CALL_APPEND
-#define MME_BREAK_STAT_CALL_CROP
 //-----------------------
 
 #if defined __GNUC__

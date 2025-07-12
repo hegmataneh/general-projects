@@ -196,10 +196,10 @@
 #define VOID_RET ((void*)NULL)
 #define MAIN_BAD_RET (1/*Indicate an error*/)
 
-#define ERR_RET( user_friendly_msg , RET ) \
-	do {\
-	_DETAIL_ERROR( user_friendly_msg );\
-	return RET; } while(0);
+//#define ERR_RET( user_friendly_msg , RET ) 
+//	do {
+//	_DETAIL_ERROR( user_friendly_msg );
+//	return RET; } while(0);
 
 
 #define MIN(a, b) ((a) <= (b) ? (a) : (b))

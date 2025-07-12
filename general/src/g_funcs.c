@@ -98,7 +98,14 @@ char *newStr( LPCSTR str )
 
 const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_holder , const char * cst_msg )
 {
-	snprintf( msg_holder , size_of_msg_holder , "%s (%d):%s" , cst_msg , errno , strerror(errno) );
+	if ( errno != 0 )
+	{
+		snprintf( msg_holder , size_of_msg_holder , "%s (%d):%s" , cst_msg , errno , strerror(errno) );
+	}
+	else
+	{
+		snprintf( msg_holder , size_of_msg_holder , "%s" , cst_msg );
+	}
 	return msg_holder;
 }
 
