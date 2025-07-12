@@ -140,3 +140,7 @@
 #ifdef __INC_stdio
 	#define __INC_unistd
 #endif
+
+#ifdef Uses_setlocale
+	#define __INC_locale
+#endif

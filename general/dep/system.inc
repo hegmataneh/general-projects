@@ -74,3 +74,7 @@
 #ifdef __INC_ncurses
 	#include <ncurses.h>
 #endif
+
+#ifdef __INC_locale
+	#include <locale.h>
+#endif

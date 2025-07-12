@@ -8,6 +8,7 @@
 #include <general.dep>
 
 #pragma GCC diagnostic ignored "-Wsign-conversion"
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
 
 /**
  * @brief Determines whether a character `ch` is whitespace

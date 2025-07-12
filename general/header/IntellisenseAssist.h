@@ -4336,4 +4336,43 @@ extern GCC_NORETURN NCURSES_EXPORT(void) exit_curses (int);
 #define NEWBUF_ERR (NULL)
 #define NEW_ERR (NULL)
 
+// <locale.h>
+typedef struct lconv {
+    char *decimal_point;
+    char *thousands_sep;
+    char *grouping;
+    char *mon_decimal_point;
+    char *mon_thousands_sep;
+    char *mon_grouping;
+    char *positive_sign;
+    char *negative_sign;
+    char *currency_symbol;
+    char frac_digits;
+    char p_cs_precedes;
+    char n_cs_precedes;
+    char p_sep_by_space;
+    char n_sep_by_space;
+    char p_sign_posn;
+    char n_sign_posn;
+    char *int_curr_symbol;
+    char int_frac_digits;
+    char int_p_cs_precedes;
+    char int_n_cs_precedes;
+    char int_p_sep_by_space;
+    char int_n_sep_by_space;
+    char int_p_sign_posn;
+    char int_n_sign_posn;
+} lconv;
+char *setlocale(int category, const char *locale);
+struct lconv *localeconv(void);
+#define LC_ALL 0
+#define LC_COLLATE 1
+#define LC_CTYPE 2
+#define LC_MONETARY 3
+#define LC_NUMERIC 4
+#define LC_TIME 5
+#define LC_MESSAGES 6
+
+const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , const char * unit_name /*= "pps"*/);
+
 #endif // ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)

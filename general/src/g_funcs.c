@@ -146,11 +146,49 @@ const char * read_file( const char * path , char * pInBuffer /*= NULL*/ )
 		return NULL;
 	}
 
+	#pragma GCC diagnostic ignored "-Wunused-result"
 	fread( buffer , 1 , (size_t)len , file );
+	#pragma GCC diagnostic pop
 	buffer[ len ] = EOS;
 
 	fclose( file );
 	file = NULL;
 
 	return ( const char * )buffer;
+}
+
+const char * trim_trailing_zeros(char *s) {
+    char *dot = strchr(s, '.');
+    if (!dot) return s;
+
+    char *end = s + strlen(s) - 1;
+    while (end > dot && *end == '0') {
+        *end = '\0';
+        end--;
+    }
+
+    if (*end == '.') {
+        *end = '\0';
+    }
+	return s;
+}
+
+const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float , const char * unit_name /*= "pps"*/ )
+{
+	const char * units[] = { "", "K", "M", "G", "T", "P" };
+	double value = ( double )pps;
+	int unit = 0;
+
+	while ( value >= 1000.0 && unit < 5 )
+	{
+		value /= 1000.0;
+		unit++;
+	}
+	char buf2[64];
+	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float );
+	snprintf( buf , buflen , buf2 , value );
+	snprintf( buf2 , sizeof(buf2) , "%s %s%s" , trim_trailing_zeros(buf) , units[unit] , unit_name);
+	strncpy( buf , buf2 , buflen );
+
+	return buf;
 }
