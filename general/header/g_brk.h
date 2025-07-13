@@ -24,12 +24,12 @@
 	uchar _ErrLvl = 0; \
 	char __custom_message[ 256 ] = "";
 
-//#define BREAK_OK(lvl)
-//	do {
-//		d_error=(status)errOK;
-//		_ErrLvl=lvl;
-//		goto __ret;
-//	} while(0)
+#define BREAK_OK(lvl)\
+	do {\
+		d_error=(status)errOK;\
+		_ErrLvl=lvl;\
+		goto __ret;\
+	} while(0)
 
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen

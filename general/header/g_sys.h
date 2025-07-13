@@ -147,3 +147,4 @@
 #define FXN_SOCKET_ERR (-1)
 #define NEWBUF_ERR (NULL)
 #define NEW_ERR (NULL)
+#define FXN_BIND_ERR (-1)
