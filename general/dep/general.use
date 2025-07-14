@@ -12,6 +12,7 @@
 #define Uses_M_SERIES_MACROS
 #define Uses_INIT_BREAKABLE_FXN
 
+
 #ifdef Uses_thrd_sleep
 	#define __INC_threads
 #endif
@@ -59,4 +60,12 @@
 
 #ifdef Uses_Remote_vs_prj
 	#define __INC_macros
+#endif
+
+#ifdef Uses_packet_queue
+	#define __INC_packet_queue
+#endif
+
+#ifdef Uses_pthread_mutex_t
+	#define __INC_pthread
 #endif

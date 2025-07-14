@@ -4376,4 +4376,23 @@ struct lconv *localeconv(void);
 
 const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , const char * unit_name /*= "pps"*/);
 
+typedef struct
+{
+	char data[ QUEUE_CAPACITY ][ PACKET_SIZE ];
+	size_t lengths[ QUEUE_CAPACITY ];
+	int head;
+	int tail;
+	int count;
+
+	pthread_mutex_t lock;
+	pthread_cond_t not_empty;
+	pthread_cond_t not_full;
+} PacketQueue;
+
+void queue_destroy( PacketQueue * q );
+void queue_push( PacketQueue * q , const char * buf , size_t len );
+int queue_pop( PacketQueue * q , char * out_buf , size_t * out_len );
+int queue_peek_available( PacketQueue * q );
+int queue_try_pop( PacketQueue * q , char * out_buf , size_t * out_len );
+
 #endif // ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)

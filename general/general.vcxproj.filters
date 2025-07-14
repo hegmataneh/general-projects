@@ -7,6 +7,9 @@
     <ClCompile Include="src\json.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\packet_queue.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -58,12 +61,6 @@
     <ClInclude Include="header\g_types.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\g_log.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\g_def.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="dep\general.h">
       <Filter>dep</Filter>
     </ClInclude>
@@ -71,6 +68,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\g_sys.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\packet_queue.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -43,6 +43,7 @@
 
 #ifdef Uses_socket
 	#define __INC_sys_socket
+	#define __INC_netinet
 #endif
 
 
@@ -143,4 +144,8 @@
 
 #ifdef Uses_setlocale
 	#define __INC_locale
+#endif
+
+#ifdef Uses_memcpy
+	#define __INC_string
 #endif

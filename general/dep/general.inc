@@ -33,3 +33,7 @@
 #ifdef __INC_json
 	#include <json.h>
 #endif
+
+#ifdef __INC_packet_queue
+	#include <packet_queue.h>
+#endif

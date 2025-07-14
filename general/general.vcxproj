@@ -87,6 +87,7 @@
   <ItemGroup>
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\json.c" />
+    <ClCompile Include="src\packet_queue.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\general.dep">
@@ -120,15 +121,14 @@
     <ClInclude Include="dep\general.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
-    <ClInclude Include="header\g_def.h" />
     <ClInclude Include="header\g_funcs.h" />
-    <ClInclude Include="header\g_log.h" />
     <ClInclude Include="header\g_macros.h" />
     <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\g_sys.h" />
     <ClInclude Include="header\g_types.h" />
     <ClInclude Include="header\IntellisenseAssist.h" />
     <ClInclude Include="header\json.h" />
+    <ClInclude Include="header\packet_queue.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
