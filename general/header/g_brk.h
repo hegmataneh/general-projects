@@ -9,7 +9,7 @@
 //#endif
 
 #define M_MK_ERR_MSG(msg,echo) do {\
-	make_msg_appnd_sys_err( __custom_message , sizeof( __custom_message ) , __snprintf( __custom_message , sizeof( __custom_message ) , "(%d)-%s" , __LINE__ , msg ) ); } while ( 0 )
+	make_msg_appnd_sys_err( __custom_message , sizeof( __custom_message ) , __snprintf( __custom_message , sizeof( __custom_message ) , "(ln%d)-%s" , __LINE__ , msg ) ); } while ( 0 )
 
 	
 #ifdef __ENGINE // app must provide def for M_MSG

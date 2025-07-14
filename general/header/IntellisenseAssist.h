@@ -1110,6 +1110,7 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 //#define _DETAIL_ERROR( user_friendly_msg ) do { perror(_MSG(user_friendly_msg)); perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) ); } while(0);
 
 #define _ECHO(s,...)
+#define _VERBOSE_ECHO(msg,...)
 
 #define VOID_RET ((void*)NULL)
 #define MAIN_BAD_RET (1/*Indicate an error*/)

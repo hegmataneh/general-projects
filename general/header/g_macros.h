@@ -191,7 +191,12 @@
 
 #define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
 
-#define _ECHO(s,...) do { perror(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0);
+#define SET_STDERR(s) do { perror(s); } while(0)
+
+#define _ECHO(s,...) do { SET_STDERR(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0)
+
+#define _VERBOSE_ECHO(msg,...) do {\
+	SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
 #define VOID_RET ((void*)NULL)
 #define MAIN_BAD_RET (1/*Indicate an error*/)
