@@ -1,9 +1,9 @@
 #define Uses_memcpy
 #define Uses_pthread_mutex_t
-#define Uses_packet_queue
+#define Uses_PacketQueue
 #include <general.dep>
 
-void queue_init( PacketQueue * q )
+void queue_init( struct PacketQueue * q )
 {
 	q->head = 0;
 	q->tail = 0;
@@ -13,14 +13,14 @@ void queue_init( PacketQueue * q )
 	pthread_cond_init( &q->not_full , NULL );
 }
 
-void queue_destroy( PacketQueue * q )
+void queue_destroy( struct PacketQueue * q )
 {
 	pthread_mutex_destroy( &q->lock );
 	pthread_cond_destroy( &q->not_empty );
 	pthread_cond_destroy( &q->not_full );
 }
 
-void queue_push( PacketQueue * q , const char * buf , size_t len )
+void queue_push( struct PacketQueue * q , const char * buf , size_t len )
 {
 	pthread_mutex_lock( &q->lock );
 
@@ -38,7 +38,7 @@ void queue_push( PacketQueue * q , const char * buf , size_t len )
 	pthread_mutex_unlock( &q->lock );
 }
 
-int queue_pop( PacketQueue * q , char * out_buf , size_t * out_len )
+int queue_pop( struct PacketQueue * q , char * out_buf , size_t * out_len )
 {
 	pthread_mutex_lock( &q->lock );
 
@@ -60,7 +60,7 @@ int queue_pop( PacketQueue * q , char * out_buf , size_t * out_len )
 	return 0;
 }
 
-int queue_peek_available( PacketQueue * q )
+int queue_peek_available( struct PacketQueue * q )
 {
 	pthread_mutex_lock( &q->lock );
 	int available = ( q->count > 0 );
@@ -68,7 +68,7 @@ int queue_peek_available( PacketQueue * q )
 	return available;
 }
 
-int queue_try_pop( PacketQueue * q , char * out_buf , size_t * out_len )
+int queue_try_pop( struct PacketQueue * q , char * out_buf , size_t * out_len )
 {
 	pthread_mutex_lock( &q->lock );
 

@@ -34,6 +34,6 @@
 	#include <json.h>
 #endif
 
-#ifdef __INC_packet_queue
+#ifdef __INC_PacketQueue
 	#include <packet_queue.h>
 #endif

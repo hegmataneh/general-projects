@@ -4376,7 +4376,7 @@ struct lconv *localeconv(void);
 
 const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , const char * unit_name /*= "pps"*/);
 
-typedef struct
+struct PacketQueue
 {
 	char data[ QUEUE_CAPACITY ][ PACKET_SIZE ];
 	size_t lengths[ QUEUE_CAPACITY ];
@@ -4387,7 +4387,7 @@ typedef struct
 	pthread_mutex_t lock;
 	pthread_cond_t not_empty;
 	pthread_cond_t not_full;
-} PacketQueue;
+};
 
 void queue_destroy( PacketQueue * q );
 void queue_push( PacketQueue * q , const char * buf , size_t len );

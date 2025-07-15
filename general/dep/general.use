@@ -62,8 +62,8 @@
 	#define __INC_macros
 #endif
 
-#ifdef Uses_packet_queue
-	#define __INC_packet_queue
+#ifdef Uses_PacketQueue
+	#define __INC_PacketQueue
 #endif
 
 #ifdef Uses_pthread_mutex_t
