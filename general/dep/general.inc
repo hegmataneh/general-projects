@@ -14,10 +14,6 @@
 
 #include "../header/g_funcs.h"
 
-#if defined __INC_LOG_H || !defined __COMPILING
-	#include "../header/g_log.h"
-#endif
-
 #ifdef __INC_yaml_h
 	#include <yaml.h>
 #endif
