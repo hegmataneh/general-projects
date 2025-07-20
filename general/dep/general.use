@@ -6,6 +6,10 @@
 	#error "your app must provide way to show msg for error . you must #define Uses_M_showMsg in your app use file and provide g_brk.h -> M_showMsg();"
 #endif
 
+#ifdef Uses_stricmp
+	#define Uses_strcasecmp
+#endif
+
 #define Uses_size_t
 #define Uses_M_SERIES_MACROS
 #define Uses_INIT_BREAKABLE_FXN

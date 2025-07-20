@@ -1,3 +1,5 @@
+//#pragma once
+
 #if defined Uses_M_SERIES_MACROS || !defined __COMPILING
 
 

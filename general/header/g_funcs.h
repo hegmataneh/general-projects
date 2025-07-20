@@ -1,3 +1,4 @@
+//#pragma once
 
 //-------------------------------------------------------------------------
 char *newStr(const char *); // donot use it directly use NEWSTR instead

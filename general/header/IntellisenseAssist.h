@@ -1,4 +1,4 @@
-#pragma once
+//#pragma once
 
 
 #if ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)
@@ -6,6 +6,42 @@
 #error "please keep it here to prevent compiling this section at all"
 
 // WARNING . please consider that these value come from deepseek so original value must be controlled by programmer him self
+
+typedef long time_t;
+typedef long suseconds_t;
+struct timespec
+{
+	time_t tv_sec; long tv_nsec;
+};
+struct timeval
+{
+	time_t tv_sec; suseconds_t tv_usec;
+};
+struct tm
+{
+	int tm_sec; int tm_min; int tm_hour; int tm_mday; int tm_mon; int tm_year; int tm_wday; int tm_yday; int tm_isdst; long tm_gmtoff; const char * tm_zone;
+};
+clock_t clock( void );
+time_t time( time_t * );
+double difftime( time_t , time_t );
+time_t mktime( struct tm * );
+size_t strftime( char * restrict , size_t , const char * restrict , const struct tm * restrict );
+struct tm * gmtime( const time_t * );
+struct tm * localtime( const time_t * );
+char * asctime( const struct tm * );
+char * ctime( const time_t * );
+int nanosleep( const struct timespec * , struct timespec * );
+int clock_getres( clockid_t , struct timespec * );
+int clock_gettime( clockid_t , struct timespec * );
+int clock_settime( clockid_t , const struct timespec * );
+int clock_nanosleep( clockid_t , int , const struct timespec * , struct timespec * );
+int timer_create( clockid_t , struct sigevent * restrict , timer_t * restrict );
+int timer_delete( timer_t );
+int timer_settime( timer_t , int , const struct itimerspec * restrict , struct itimerspec * restrict );
+int timer_gettime( timer_t , struct itimerspec * );
+int timer_getoverrun( timer_t );
+struct tm * getdate( const char * );
+time_t timegm( struct tm * );
 
 typedef signed char int8_t;
 typedef unsigned char uint8_t;
@@ -1161,7 +1197,12 @@ typedef char * string;
 
 typedef char * buffer;
 
-enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
+#error 11
+
+enum GeBoolean
+{
+	eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff
+};
 #define Boolean GeBoolean
 #define False eFalse
 #define True eTrue

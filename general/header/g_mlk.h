@@ -1,3 +1,5 @@
+//#pragma once
+
 //-------------------
 #define MALLOC( size ) malloc( size )
 #define FREE( p ) free( ( void * )p )

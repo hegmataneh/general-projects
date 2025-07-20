@@ -78,3 +78,8 @@
 #ifdef __INC_locale
 	#include <locale.h>
 #endif
+
+#ifdef __INC_strings
+	#include <strings.h>
+#endif
+

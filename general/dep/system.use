@@ -1,3 +1,8 @@
+#ifdef Uses_strcasecmp
+	#define _POSIX_C_SOURCE 200809L
+	#define __INC_strings
+#endif
+
 #ifdef Uses_bool
 	#define __INC_stdbool
 #endif

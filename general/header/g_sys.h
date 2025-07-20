@@ -1,3 +1,5 @@
+//#pragma once
+
 // hamidi, 850418: this file defines something system include files may lack.
 // it's a part of system.h, not general.h.
 //#ifdef UNDER_CE

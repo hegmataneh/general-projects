@@ -1,3 +1,5 @@
+//#pragma once
+
 //-------------------------------------------------------------------------
 #define NP 0  // not provided
 
@@ -71,6 +73,14 @@
 //-------------------------------------------------------------------------
 #define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 //#define DELWSTR(str) do { if(str[0]!=WEOS) { FREE(str); str=_WT(""); } } while(0)
+
+#if defined Uses_strcasecmp || !defined __COMPILING
+
+#define stricmp _stricmp
+#define _stricmp strcasecmp
+
+#endif
+
 
 //#define ____TO_STRING(s) #s
 //#define ___TO_STRING(s) (____TO_STRING(s))

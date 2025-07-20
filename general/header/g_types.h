@@ -1,3 +1,5 @@
+//#pragma once
+
 /*
 83/6/29, hamidi
 	  - adding string and buffer types
@@ -77,7 +79,6 @@ typedef char * string;
 // for when a char * is treated as a buffer, usually non-null terminated
 // variables of this type may be null
 typedef char * buffer;
-
 
 //-------------------------------------------------------------------------
 enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
