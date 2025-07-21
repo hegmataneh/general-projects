@@ -9,9 +9,7 @@
 #include "../header/g_consts.h"
 #include "../header/g_mlk.h"
 #include "../header/g_brk.h"
-
 #include "../header/g_sys.h" 
-
 #include "../header/g_funcs.h"
 
 #ifdef __INC_yaml_h

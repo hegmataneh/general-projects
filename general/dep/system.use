@@ -51,7 +51,6 @@
 	#define __INC_netinet
 #endif
 
-
 #ifdef Uses_pthread_exit
 	#define __INC_pthread
 #endif
@@ -68,7 +67,6 @@
 	#define __INC_stdarg
 #endif
 
-
 #ifdef Uses_ssize_t
 	#define __INC_sys_types
 #endif
@@ -81,11 +79,9 @@
 	#define __INC_stdio
 #endif
 
-
 #ifdef Uses_errno
 	#define __INC_errno
 #endif
-
 
 #ifdef Uses_free
 	#define __INC_stdlib
@@ -153,4 +149,8 @@
 
 #ifdef Uses_memcpy
 	#define __INC_string
+#endif
+
+#ifdef Uses_timespec
+	#define __INC_time
 #endif

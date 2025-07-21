@@ -192,3 +192,18 @@ const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_o
 
 	return buf;
 }
+
+void format_clock_time( const struct timespec * ts , char * buffer , size_t buf_size )
+{
+	struct tm tm_info;
+	localtime_r( &ts->tv_sec , &tm_info );  // Convert to local time
+
+	// Format only the clock time part
+	strftime( buffer , buf_size , "%H:%M:%S" , &tm_info );
+}
+
+void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result )
+{
+	result->tv_sec = ( ( ( now->tv_sec + min_val ) / interval ) + 1 ) * interval;
+	result->tv_nsec = 0;
+}

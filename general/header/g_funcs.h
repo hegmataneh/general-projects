@@ -16,5 +16,9 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 
 const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_holder , const char * cst_msg );
 
-
 const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , const char * unit_name /*= "pps"*/);
+
+void format_clock_time( const struct timespec * ts , char * buffer , size_t buf_size );
+
+void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
+

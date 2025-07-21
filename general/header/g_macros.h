@@ -205,6 +205,10 @@
 
 #define _ECHO(s,...) do { SET_STDERR(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0)
 
+#if defined DIRECT_ECHO_BUF || !defined __COMPILING
+	#define _DIRECT_ECHO(s,...) do { __snprintf(DIRECT_ECHO_BUF , sizeof(DIRECT_ECHO_BUF),s,##__VA_ARGS__); } while(0)
+#endif
+
 #define _VERBOSE_ECHO(msg,...) do {\
 	SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
