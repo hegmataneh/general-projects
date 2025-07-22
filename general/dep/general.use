@@ -1,3 +1,4 @@
+#define Uses_stricmp
 #define Uses_timespec
 #define Uses_size_t
 #define Uses_M_SERIES_MACROS
