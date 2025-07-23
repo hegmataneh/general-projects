@@ -34,4 +34,4 @@ enum
 //-------------------------------------------------------------------------
 //extern uchar _ErrLvl; // does not dependable in multi thread app
 
-#define DEFAULT_PACKET_SIZE 8192
+#define MAX_PACKET_SIZE 2048

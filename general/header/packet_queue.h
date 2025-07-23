@@ -2,8 +2,8 @@
 
 #if defined Uses_PacketQueue || !defined __COMPILING
 
-#define QUEUE_CAPACITY 1000000
-#define PACKET_SIZE 4096
+#define QUEUE_CAPACITY 10000
+#define PACKET_SIZE MAX_PACKET_SIZE
 
 struct PacketQueue
 {
