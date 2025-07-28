@@ -31,3 +31,7 @@
 #ifdef __INC_PacketQueue
 	#include <packet_queue.h>
 #endif
+
+#ifdef __INC_circbuf
+	#include <circbuf.h>
+#endif

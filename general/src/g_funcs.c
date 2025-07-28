@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_basename
 #define Uses_strlen
 #define Uses_malloc
 #define Uses_close
@@ -187,7 +188,7 @@ const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_o
 	char buf2[64];
 	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float );
 	snprintf( buf , buflen , buf2 , value );
-	snprintf( buf2 , sizeof(buf2) , "%s %s%s" , trim_trailing_zeros(buf) , units[unit] , unit_name);
+	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s" , trim_trailing_zeros(buf) , ( strlen(units[unit]) > 0 || strlen(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
 	strncpy( buf , buf2 , buflen );
 
 	return buf;
@@ -206,4 +207,125 @@ void round_up_to_next_interval( struct timespec * now , int min_val , int interv
 {
 	result->tv_sec = ( ( ( now->tv_sec + min_val ) / interval ) + 1 ) * interval;
 	result->tv_nsec = 0;
+}
+
+#define MAX_PATH 4096
+
+// Check if file exists
+static int file_exists( const char * path )
+{
+	return access( path , F_OK ) == 0;
+}
+
+// Get current date string in YYYYMMDD_HHMMSS format
+static void get_datetime_str( char * buffer , size_t size )
+{
+	time_t now = time( NULL );
+	struct tm * t = localtime( &now );
+	strftime( buffer , size , "%Y%m%d_%H%M%S" , t );
+}
+
+FILE * create_unique_file( const char * path , const char * filename /*=NULL(app+date)*/ )
+{
+	char final_path[ MAX_PATH ] = { 0 };
+	char name_part[ 256 ] = { 0 };
+	char datetime[ 64 ] = { 0 };
+
+	// Determine base filename
+	if ( !filename )
+	{
+		// Use executable name + date if filename is null
+		char exe_path[ MAX_PATH ];
+		ssize_t len = readlink( "/proc/self/exe" , exe_path , sizeof( exe_path ) - 1 );
+		if ( len == -1 )
+		{
+			perror( "readlink" );
+			return NULL;
+		}
+		exe_path[ len ] = '\0';
+		snprintf( name_part , sizeof( name_part ) , "%s" , basename( exe_path ) );
+		get_datetime_str( datetime , sizeof( datetime ) );
+		snprintf( name_part + strlen( name_part ) , sizeof( name_part ) - strlen( name_part ) , "_%s.txt" , datetime );
+	}
+	else
+	{
+		snprintf( name_part , sizeof( name_part ) , "%s" , filename );
+	}
+
+	// Normalize path: check if trailing slash is needed
+	if ( path && strlen( path ) > 0 )
+	{
+		size_t path_len = strlen( path );
+		if ( path[ path_len - 1 ] == '/' || path[ path_len - 1 ] == '\\' )
+		{
+			snprintf( final_path , sizeof( final_path ) , "%s%s" , path , name_part );
+		}
+		else
+		{
+			snprintf( final_path , sizeof( final_path ) , "%s/%s" , path , name_part );
+		}
+	}
+	else
+	{
+		snprintf( final_path , sizeof( final_path ) , "%s" , name_part );
+	}
+
+	// If file exists, add postfix number
+	int counter = 1;
+	while ( file_exists( final_path ) )
+	{
+		if ( path && strlen( path ) > 0 )
+		{
+			size_t path_len = strlen( path );
+			if ( path[ path_len - 1 ] == '/' || path[ path_len - 1 ] == '\\' )
+			{
+				snprintf( final_path , sizeof( final_path ) , "%s%s_%d" , path , name_part , counter++ );
+			}
+			else
+			{
+				snprintf( final_path , sizeof( final_path ) , "%s/%s_%d" , path , name_part , counter++ );
+			}
+		}
+		else
+		{
+			snprintf( final_path , sizeof( final_path ) , "%s_%d" , name_part , counter++ );
+		}
+	}
+
+	FILE * file = fopen( final_path , "w" );
+	if ( !file )
+	{
+		perror( "fopen" );
+		return NULL;
+	}
+
+	return file;
+}
+
+void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size )
+{
+	if ( !buffer || buf_size == 0 ) return;
+
+	time_t elapsed = ( start > end ) ? ( start - end ) : ( end - start );
+
+	int days = ( int )( elapsed / LLONG( 86400 ) );
+	int hours = ( int )( ( elapsed % LLONG( 86400 ) ) / LLONG( 3600 ) );
+	int minutes = ( int )( ( elapsed % LLONG( 3600 ) ) / LLONG( 60 ) );
+	int seconds = ( int )( elapsed % LLONG( 60 ) );
+
+	int offset = 0;
+
+	if ( days > 0 )
+		offset += snprintf( buffer + offset , buf_size - (size_t)offset , "%dd " , days );
+	if ( hours > 0 )
+		offset += snprintf( buffer + offset , buf_size - (size_t)offset , "%dh " , hours );
+	if ( minutes > 0 )
+		offset += snprintf( buffer + offset , buf_size - (size_t)offset , "%dm " , minutes );
+	if ( seconds > 0 || offset == 0 ) // always include at least seconds
+		offset += snprintf( buffer + offset , buf_size - (size_t)offset , "%ds" , seconds );
+
+	// Remove trailing space if any
+	size_t len = strlen( buffer );
+	if ( len > 0 && buffer[ len - 1 ] == ' ' )
+		buffer[ len - 1 ] = '\0';
 }

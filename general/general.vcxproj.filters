@@ -10,6 +10,9 @@
     <ClCompile Include="src\packet_queue.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\circbuf.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -71,6 +74,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\packet_queue.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\circbuf.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,6 +3,7 @@
 #define Uses_size_t
 #define Uses_M_SERIES_MACROS
 #define Uses_INIT_BREAKABLE_FXN
+#define Uses_FILE
 
 #ifdef __ENGINE
 	#define Uses_M_showMsg
@@ -71,4 +72,9 @@
 
 #ifdef Uses_pthread_mutex_t
 	#define __INC_pthread
+#endif
+
+#ifdef Uses_circbuf
+	#define Uses_uint32_t
+	#define __INC_circbuf
 #endif

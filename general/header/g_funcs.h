@@ -22,3 +22,6 @@ void format_clock_time( const struct timespec * ts , char * buffer , size_t buf_
 
 void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
 
+FILE* create_unique_file(const char* path, const char* filename /*=NULL(app+date)*/ );
+
+void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size );

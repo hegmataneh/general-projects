@@ -92,3 +92,5 @@ enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
 //typedef time_t timestamp;
 //#endif
 
+#define LLONG( ll ) ll##L
+#define LLONGLONG( ll ) ll##LL

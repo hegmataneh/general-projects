@@ -1,3 +1,17 @@
+
+
+#ifdef Uses_basename
+	#define __INC_libgen
+#endif
+
+#ifdef Uses_calloc
+	#define __INC_stdlib
+#endif
+
+#ifdef Uses_uint32_t
+	#define __INC_stdint
+#endif
+
 #ifdef Uses_strcasecmp
 	#define _POSIX_C_SOURCE 200809L
 	#define __INC_strings

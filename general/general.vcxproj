@@ -85,6 +85,7 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="src\circbuf.c" />
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\packet_queue.c" />
@@ -119,6 +120,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
+    <ClInclude Include="header\circbuf.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_funcs.h" />

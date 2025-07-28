@@ -82,3 +82,8 @@
 #ifdef __INC_strings
 	#include <strings.h>
 #endif
+
+#ifdef __INC_libgen
+	#include <libgen.h>
+#endif
+
