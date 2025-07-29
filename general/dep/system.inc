@@ -87,3 +87,10 @@
 	#include <libgen.h>
 #endif
 
+#ifdef __INC_sys_time
+	#include <sys/time.h>
+#endif
+
+#ifdef __INC_fcntl
+	#include <fcntl.h>
+#endif

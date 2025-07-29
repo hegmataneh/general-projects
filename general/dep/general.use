@@ -4,6 +4,7 @@
 #define Uses_M_SERIES_MACROS
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_FILE
+#define Uses_timeval
 
 #ifdef __ENGINE
 	#define Uses_M_showMsg

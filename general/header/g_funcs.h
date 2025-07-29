@@ -25,3 +25,5 @@ void round_up_to_next_interval( struct timespec * now , int min_val , int interv
 FILE* create_unique_file(const char* path, const char* filename /*=NULL(app+date)*/ );
 
 void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size );
+
+void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size );

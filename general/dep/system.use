@@ -1,4 +1,7 @@
 
+#ifdef Uses_fcntl
+	#define __INC_fcntl
+#endif
 
 #ifdef Uses_basename
 	#define __INC_libgen
@@ -167,4 +170,12 @@
 
 #ifdef Uses_timespec
 	#define __INC_time
+#endif
+
+#ifdef Uses_timespec
+	#define __INC_time
+#endif
+
+#ifdef Uses_timeval
+	#define __INC_sys_time
 #endif

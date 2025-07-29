@@ -329,3 +329,42 @@ void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf
 	if ( len > 0 && buffer[ len - 1 ] == ' ' )
 		buffer[ len - 1 ] = '\0';
 }
+
+void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size )
+{
+	if ( !buffer || buf_size == 0 ) return;
+
+	// Calculate elapsed time
+	time_t sec = end.tv_sec - start.tv_sec;
+	suseconds_t usec = end.tv_usec - start.tv_usec;
+
+	if ( usec < 0 )
+	{
+		sec -= 1;
+		usec += 1000000;
+	}
+
+	// Break down time
+	int millis = (int)(usec / (suseconds_t)(1000));
+	int days = (int)(sec / LLONG(86400));
+	int hours = (int)( sec % LLONG(86400) / LLONG(3600));
+	int minutes = (int)( sec % LLONG(3600) / LLONG(60));
+	int seconds = (int)(sec % LLONG(60));
+
+	int written = 0;
+
+	if ( days > 0 )
+		written += snprintf( buffer + written , buf_size - (size_t)written , "%02d" , days );
+
+	if ( hours > 0 || written > 0 )
+		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , hours );
+
+	if ( minutes > 0 || written > 0 )
+		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , minutes );
+
+	if ( seconds > 0 || written > 0 )
+		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , seconds );
+
+	// Always include milliseconds
+	snprintf( buffer + written , buf_size - (size_t)written , "%s%03d" , ( written ? ":" : "" ) , millis );
+}
