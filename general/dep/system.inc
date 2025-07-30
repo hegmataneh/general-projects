@@ -94,3 +94,7 @@
 #ifdef __INC_fcntl
 	#include <fcntl.h>
 #endif
+
+#ifdef __INC_netinet_tcp
+	#include <netinet/tcp.h>
+#endif

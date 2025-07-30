@@ -79,3 +79,7 @@
 	#define Uses_uint32_t
 	#define __INC_circbuf
 #endif
+
+#ifdef Uses_IPPROTO_TCP
+	#define __INC_netinet_tcp
+#endif
