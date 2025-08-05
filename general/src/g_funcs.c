@@ -330,7 +330,7 @@ void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf
 		buffer[ len - 1 ] = '\0';
 }
 
-void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size )
+void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size , int type /*=0*/ )
 {
 	if ( !buffer || buf_size == 0 ) return;
 
@@ -344,27 +344,37 @@ void format_elapsed_time_with_millis( struct timeval start , struct timeval end 
 		usec += 1000000;
 	}
 
-	// Break down time
-	int millis = (int)(usec / (suseconds_t)(1000));
-	int days = (int)(sec / LLONG(86400));
-	int hours = (int)( sec % LLONG(86400) / LLONG(3600));
-	int minutes = (int)( sec % LLONG(3600) / LLONG(60));
-	int seconds = (int)(sec % LLONG(60));
+	if ( type == 0 )
+	{
+		// Break down time
+		int millis = (int)(usec / (suseconds_t)(1000));
+		int days = (int)(sec / LLONG(86400));
+		int hours = (int)( sec % LLONG(86400) / LLONG(3600));
+		int minutes = (int)( sec % LLONG(3600) / LLONG(60));
+		int seconds = (int)(sec % LLONG(60));
 
-	int written = 0;
+		int written = 0;
 
-	if ( days > 0 )
-		written += snprintf( buffer + written , buf_size - (size_t)written , "%02d" , days );
+		if ( days > 0 )
+			written += snprintf( buffer + written , buf_size - (size_t)written , "%02d" , days );
 
-	if ( hours > 0 || written > 0 )
-		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , hours );
+		if ( hours > 0 || written > 0 )
+			written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , hours );
 
-	if ( minutes > 0 || written > 0 )
-		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , minutes );
+		if ( minutes > 0 || written > 0 )
+			written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , minutes );
 
-	if ( seconds > 0 || written > 0 )
-		written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , seconds );
+		if ( seconds > 0 || written > 0 )
+			written += snprintf( buffer + written , buf_size - (size_t)written , "%s%02d" , ( written ? ":" : "" ) , seconds );
 
-	// Always include milliseconds
-	snprintf( buffer + written , buf_size - (size_t)written , "%s%03d" , ( written ? ":" : "" ) , millis );
+		// Always include milliseconds
+		snprintf( buffer + written , buf_size - (size_t)written , "%s%03d" , ( written ? ":" : "" ) , millis );
+	}
+	else if ( type == 1 )
+	{
+		int millis = (int)(usec / 1000);
+
+		// Format as SS:MMM (2-digit seconds, 3-digit millis)
+		snprintf( buffer , buf_size , "%ld.%03d" , sec , millis );
+	}
 }
