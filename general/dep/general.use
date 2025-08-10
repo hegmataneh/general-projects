@@ -83,3 +83,11 @@
 #ifdef Uses_IPPROTO_TCP
 	#define __INC_netinet_tcp
 #endif
+
+#ifdef Uses_Thread_watchDog_needs
+	#define __INC_struct
+#endif
+
+#ifdef Uses_TWD
+	#define Uses_Thread_watchDog_needs
+#endif

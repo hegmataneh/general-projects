@@ -131,6 +131,7 @@
     <ClInclude Include="header\IntellisenseAssist.h" />
     <ClInclude Include="header\json.h" />
     <ClInclude Include="header\packet_queue.h" />
+    <ClInclude Include="header\struct.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

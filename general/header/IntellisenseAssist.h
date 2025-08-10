@@ -4436,4 +4436,6 @@ int queue_pop( PacketQueue * q , char * out_buf , size_t * out_len );
 int queue_peek_available( PacketQueue * q );
 int queue_try_pop( PacketQueue * q , char * out_buf , size_t * out_len );
 
+#define _THREAD_FXN /*identified as thread callback fxn*/
+
 #endif // ( defined(INTELISENSE_BUILD) && (INTELISENSE_BUILD + 0) ) || defined(__FORCE_INTELLISENSE_ASSIST)

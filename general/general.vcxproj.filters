@@ -79,5 +79,8 @@
     <ClInclude Include="header\circbuf.h">
       <Filter>header</Filter>
     </ClInclude>
+    <ClInclude Include="header\struct.h">
+      <Filter>header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

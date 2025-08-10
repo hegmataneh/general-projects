@@ -94,3 +94,6 @@ enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
 
 #define LLONG( ll ) ll##L
 #define LLONGLONG( ll ) ll##LL
+
+
+typedef void *(*callback_t)(void *);
