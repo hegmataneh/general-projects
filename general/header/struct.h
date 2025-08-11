@@ -3,10 +3,11 @@
 
 typedef struct Thread_watchDog_needs
 {
-	int threadId;
+	pthread_t threadId;
 	time_t lastAccs;
 	int counter;
 	callback_t cal;
+	void * callback_arg;
 } TWD;
 
 

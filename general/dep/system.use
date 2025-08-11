@@ -1,3 +1,22 @@
+#ifdef Uses_strncpy
+	#define __INC_string
+#endif
+
+#ifdef Uses_stricmp
+	#define Uses_strcasecmp
+#endif
+
+#ifdef Uses_thrd_sleep
+	#define __INC_threads
+#endif
+
+#ifdef Uses_pthread_mutex_t
+	#define __INC_pthread
+#endif
+
+#ifdef Uses_read
+	#define __INC_unistd
+#endif
 
 #ifdef Uses_fcntl
 	#define __INC_fcntl
@@ -178,4 +197,12 @@
 
 #ifdef Uses_timeval
 	#define __INC_sys_time
+#endif
+
+#ifdef Uses_WINDOW
+	#define Uses_ncurses
+#endif
+
+#ifdef Uses_sleep
+	#define __INC_unistd
 #endif

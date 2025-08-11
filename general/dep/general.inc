@@ -7,7 +7,6 @@
 #include "../header/g_types.h"
 #include "../header/g_macros.h"
 #include "../header/g_consts.h"
-#include "../header/struct.h"
 #include "../header/g_mlk.h"
 #include "../header/g_brk.h"
 #include "../header/g_sys.h" 
@@ -35,4 +34,8 @@
 
 #ifdef __INC_circbuf
 	#include <circbuf.h>
+#endif
+
+#ifdef __INC_struct
+	#include <struct.h>
 #endif
