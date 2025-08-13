@@ -43,7 +43,7 @@
 #define MAKE_DWORD(hiWord,loWord)			((DWORD)(((WORD)(((DWORD_PTR)(loWord)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(hiWord)) & 0xffff))) << 16))
 
 //-------------------------------------------------------------------------
-//#if defined __GNUC__ || defined UNDER_CE  || defined __SYMBIAN32__
+//#if defined __GNUC__
 	/* in general, when static libraries are being made,
 	 * aya mishavad chize moshtaraki ra beyne platform-ha peyda kard. dar symbian, vaghti static
 	 * library darad sakhteh mishavad __LIB__ define shodeh ast.
@@ -54,25 +54,6 @@
 //	#define _EXPORT __declspec(dllexport)
 //	#define _IMPORT __declspec(dllimport)
 //#endif
-
-//-------------------------------------------------------------------------
-#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
-#define MEMSET_ZERO(p,type,n) memset( p , 0 , sizeof( type ) * n )
-
-//-------------------------------------------------------------------------
-#if defined(__GNUC__)
-
-#define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
-#define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
-//#define DAC_AR(x) do { if(x) { DEL_AR(x); x = NULL; } } while(0)
-
-#define NEW(type) ( ( type * )MALLOC( sizeof( type ) ) )
-
-#endif
-
-//-------------------------------------------------------------------------
-#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
-//#define DELWSTR(str) do { if(str[0]!=WEOS) { FREE(str); str=_WT(""); } } while(0)
 
 #if defined Uses_strcasecmp || !defined __COMPILING
 
@@ -95,6 +76,7 @@
 
 //-------------------------------------------------------------------------
 #if defined Uses_STR_funcs || !defined __COMPILING
+
 #define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 #define STRCPY(s1,s2)\
 	do {\
@@ -108,7 +90,43 @@
 	s1[n-1]=EOS;\
 	} while(0)
 
+#define STR_SAME( a , b ) ( strcmp( a , b ) == 0 )
+#define STR_DIFF( a , b ) ( strcmp( a , b ) != 0 )
+
+#define iSTR_SAME( a , b ) ( stricmp( a , b ) == 0 )
+#define iSTR_DIFF( a , b ) ( stricmp( a , b ) != 0 )
+
 #endif
+
+#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+
+//-------------------------------------------------------------------------
+
+#define MALLOC( size ) malloc( size )
+#define MALLOC_AR( p , count ) ( ( __typeof__( *p ) * )malloc( ( size_t )count * sizeof( *p ) ) )
+#define REALLOC( ptr , size ) realloc( ptr , size )
+#define CALLOC calloc
+//#define NEWBUF( type , n ) ( type * )MALLOC( sizeof( type ) * ( n ) )
+//#define NEW( type ) ( ( type * )MALLOC( sizeof( type ) ) )
+
+#define MEMSET_ZERO_T( p , type , n ) memset( p , 0 , sizeof( type ) * ( size_t )n )
+#define MEMSET_ZERO( p , n ) memset( (p) , 0 , ( size_t )n * sizeof( *(p) ) )
+
+#define MEMCPY_S( a , b , size ) memcpy( a , b , size )
+#define MEMCPY( a , b ) memcpy( a , b , sizeof( *a ) )
+#define MEMCPY_AR( a , b , count ) memcpy( a , b , sizeof( *a ) * ( size_t )count )
+
+#define MEMCMP_T( a , b , type ) memcmp( a , b , sizeof type )
+#define MEMCMP( a , b ) memcmp( a , b , sizeof *a )
+
+#define DEL( p ) FREE( p )
+#define DEL_AR( p ) FREE( p )
+#define FREE( p ) free( ( void * )p )
+#define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
+#define DAC( x ) do { if( x ) { DEL( x ); x = NULL; } } while( 0 )
+
+
+
 
 //-------------------------------------------------------------------------
 #define G_SCHAR_MIN  ((schar)0x80)				// -128

@@ -27,3 +27,59 @@ FILE* create_unique_file(const char* path, const char* filename /*=NULL(app+date
 void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size );
 
 void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
+
+//----String functions------------------------------------------------------
+IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ); // Written By Mohsen
+IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz /*= -1*/ ); // Written By Mohsen
+
+//IN_GENERAL void * removeChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
+//IN_GENERAL void * removeiChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
+//IN_GENERAL void * removeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
+//IN_GENERAL void * removeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
+
+//IN_GENERAL void * serializeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
+//IN_GENERAL void * serializeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
+
+IN_GENERAL int fstrcmp( LPCSTR str1 , LPCSTR str2 ); // Farsi Cmp . Written By Mohsen
+IN_GENERAL LPCSTR stristr( LPCSTR sSrc , LPCSTR sDest ); // case insensitive cmp . Written By Mohsen
+IN_GENERAL LPCSTR rstrstr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . Written By Mohsen
+IN_GENERAL LPCSTR rstristr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . case insensitive cmp . Written By Mohsen
+
+// strstrs(s)
+IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int * const pISubStr , int count , LPCSTR * const strs ); // Written By Mohsen
+IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int count , LPCSTR * const strs ); // Written By Mohsen
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int * const pISubStr , int count , ... ); // Written By Mohsen
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int count , ... ); // Written By Mohsen
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int count , ... ); // Written By Mohsen
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int count , ... ); // Written By Mohsen
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr /*= NULL*/ ); // Written By Mohsen
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr /*= NULL*/ ); // Written By Mohsen
+
+// ---- chr --------------------------------------------------------------------------------
+//IN_GENERAL LPCSTR strchr( LPCSTR str , char c ); // Exist
+// n , i , r
+IN_GENERAL LPCSTR strnchr( LPCSTR str , char c , int n ); // n(th) chr . Written By Mohsen
+IN_GENERAL LPCSTR strichr( LPCSTR str , char c ); // case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrchr( LPCSTR str , char c ); // Exist
+// ni , ri , nr
+//IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n ); // n(th) chr . case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrichr( LPCSTR str , char c ); // reverse search . case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrnchr( LPCSTR str , char c , int n ); // Written By Mohsen
+// nir
+IN_GENERAL LPCSTR strrinchr( LPCSTR str , char c , int n ); // Written By Mohsen
+
+// ---- chrs --------------------------------------------------------------------------------
+IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+// n , i , r
+//IN_GENERAL LPCSTR strnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // n(th) chr . Written By Mohsen
+//IN_GENERAL LPCSTR strichrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+// ni , ri , nr
+//IN_GENERAL LPCSTR strinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // n(th) chr . case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrichrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // reverse search . case insensitive cmp . Written By Mohsen
+//IN_GENERAL LPCSTR strrnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+// nir
+//IN_GENERAL LPCSTR strrinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+
+IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
+//IN_GENERAL LPCSTR stritail( LPCSTR str , LPCSTR head );

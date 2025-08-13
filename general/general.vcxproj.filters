@@ -67,9 +67,6 @@
     <ClInclude Include="dep\general.h">
       <Filter>dep</Filter>
     </ClInclude>
-    <ClInclude Include="header\g_mlk.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="header\g_sys.h">
       <Filter>header</Filter>
     </ClInclude>

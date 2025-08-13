@@ -55,6 +55,8 @@ typedef signed int     sint;
 typedef signed short   sshort;
 typedef signed char    schar;
 
+typedef char CHAR;
+
 typedef __int64 bigint;
 typedef __int64 int64;
 
@@ -96,4 +98,7 @@ enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
 #define LLONGLONG( ll ) ll##LL
 
 
+// callback definitions -------------------------------------
 typedef void *(*callback_t)(void *);
+
+

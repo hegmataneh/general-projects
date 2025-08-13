@@ -22,6 +22,7 @@
 #define Uses_strcpy_s
 #define Uses_errno
 #define Uses_size_t
+#define Uses_strcasestr
 
 #include <general.dep>
 
@@ -86,7 +87,7 @@ char *newStr( LPCSTR str )
 	if(!str)str="";
 	if(!str[0])return "";
 	size_t sz=strlen(str)+1;
-	char *temp=NEWBUF(char,sz);
+	char *temp=MALLOC_AR(temp,sz);
 	if (temp) strcpy(temp,str);
 	return temp;
 }
@@ -377,4 +378,494 @@ void format_elapsed_time_with_millis( struct timeval start , struct timeval end 
 		// Format as SS:MMM (2-digit seconds, 3-digit millis)
 		snprintf( buffer , buf_size , "%ld.%03d" , sec , millis );
 	}
+}
+
+
+//----- stristr ------------------------------------------------------
+
+IN_GENERAL LPCSTR stristr( LPCSTR sStr , LPCSTR sSubstr ) // Written By Mohsen
+{
+	return ( LPCSTR )strcasestr( sStr , sSubstr );
+}
+
+IN_GENERAL LPCSTR rstrstr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
+{
+	LPCSTR lpLastSubStr = NULL;
+	while ( ( sStr = strstr( sStr , sSubStr ) ) )
+	{
+		lpLastSubStr = sStr;
+		sStr++;
+	}
+	return lpLastSubStr;
+}
+
+IN_GENERAL LPCSTR rstristr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
+{
+	LPCSTR lpLastSubStr = NULL;
+	while ( ( sStr = stristr( sStr , sSubStr ) ) )
+	{
+		lpLastSubStr = sStr;
+		sStr++;
+	}
+	return lpLastSubStr;
+}
+
+
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+
+IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int * const pISubStr , int countstrs , LPCSTR * const sSubstrs ) // Written By Mohsen
+{
+	LPCSTR pOutStr = NULL , pTempOutStr;
+	for ( int nstrs = 0 ; nstrs < countstrs ; nstrs++ )
+	{
+		if ( ( pTempOutStr = ( LPCSTR )strstr( ( LPSTR )sSrc , sSubstrs[ nstrs ] ) ) )
+		{
+			if ( !pOutStr || pTempOutStr < pOutStr )
+			{
+				pOutStr = pTempOutStr;
+				if ( pISubStr ) *pISubStr = nstrs;
+			}
+			//return pOutStr;
+		}
+	}
+	return pOutStr;
+}
+
+IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int countstrs , LPCSTR * const sSubstrs ) // Written By Mohsen
+{
+	LPCSTR pOutStr = NULL , pTempOutStr;
+	for ( int nstrs = 0 ; nstrs < countstrs ; nstrs++ )
+	{
+		if ( ( pTempOutStr = ( LPCSTR )stristr( ( LPSTR )sSrc , sSubstrs[ nstrs ] ) ) )
+		{
+			if ( !pOutStr || pTempOutStr < pOutStr )
+			{
+				pOutStr = pTempOutStr;
+				if ( pISubStr ) *pISubStr = nstrs;
+			}
+			//return pOutStr;
+		}
+	}
+	return pOutStr;
+}
+
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int * const pISubStr , int count , ... ) // Written By Mohsen
+//{
+//	GcMshCollection< LPCSTR > sSubstrs;
+//	copyVarArg_assign( sSubstrs , &count );
+//	return strstrs( sSrc , pISubStr , count , sSubstrs.getArray() );
+//}
+//
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int count , ... ) // Written By Mohsen
+//{
+//	GcMshCollection< LPCSTR > sSubstrs;
+//	copyVarArg_assign( sSubstrs , &count );
+//	return stristrs( sSrc , pISubStr , count , sSubstrs.getArray() );
+//}
+//
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int count , ... ) // Written By Mohsen
+//{
+//	int iSubStr;
+//	GcMshCollection< LPCSTR > sSubstrs;
+//	copyVarArg_assign( sSubstrs , &count );
+//	return strstrs( sSrc , &iSubStr , count , sSubstrs.getArray() );
+//}
+//
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int count , ... ) // Written By Mohsen
+//{
+//	int iSubStr;
+//	GcMshCollection< LPCSTR > sSubstrs;
+//	copyVarArg_assign( sSubstrs , &count );
+//	return stristrs( sSrc , &iSubStr , count , sSubstrs.getArray() );
+//}
+//
+//IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr ) // Written By Mohsen
+//{
+//	GcDoubleString ds( doubleStrBuf );
+//	GcMshCollection< GcString > sSubstrs;
+//	ds.get( sSubstrs );
+//	GcMshCollection< LPCSTR > pstrs;
+//	appendCollection_assign( pstrs , sSubstrs );
+//	return strstrs( sSrc , pISubStr , pstrs.getCount() , pstrs.getArray() );
+//}
+//
+//IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr ) // Written By Mohsen
+//{
+//	GcDoubleString ds( doubleStrBuf );
+//	GcMshCollection< GcString > sSubstrs;
+//	ds.get( sSubstrs );
+//	GcMshCollection< LPCSTR > pstrs;
+//	appendCollection_assign( pstrs , sSubstrs );
+//	return stristrs( sSrc , pISubStr , pstrs.getCount() , pstrs.getArray() );
+//}
+
+IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ) // Written By Mohsen
+{
+	size_t t1 = strlen( from );
+	ASSERT( t1 == strlen( to ) );
+	char * lpC;
+	while ( ( lpC = strpbrk( ( LPSTR )str , from ) ) )
+	{
+		*lpC = to[ ( char * )memchr( from , *lpC , t1 ) - from ];
+	}
+}
+
+IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz ) // Written By Mohsen
+{
+	if ( sz == -1 ) sz = strlen( str );
+	char * lpHead;
+	while ( ( lpHead = ( char * )memchr( str , fromChar , sz ) ) )
+	{
+		*lpHead = toChar;
+	}
+}
+
+
+//IN_GENERAL void * removeChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )str;
+//	char * lpLastChr = basestr;
+//	while ( ( lpLastChr = ( char * )memchr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
+//	{
+//		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
+//		sz--;
+//	}
+//	if ( pSz ) *pSz = sz;
+//	return sz ? basestr : NULL;
+//}
+
+//IN_GENERAL void * removeiChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )str;
+//	char * lpLastChr = basestr;
+//	while ( ( lpLastChr = ( char * )memichr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
+//	{
+//		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
+//		sz--;
+//	}
+//	if ( pSz ) *pSz = sz;
+//	return sz ? basestr : NULL;
+//}
+//
+//IN_GENERAL void * removeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )sMem;
+//	char * lpLastChr = basestr;
+//	while ( ( lpLastChr = ( char * )memchrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
+//	{
+//		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
+//		memSz--;
+//	}
+//	if ( pSz ) *pSz = memSz;
+//	return memSz ? basestr : NULL;
+//}
+//
+//IN_GENERAL void * removeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )sMem;
+//	char * lpLastChr = basestr;
+//	while ( ( lpLastChr = ( char * )memichrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
+//	{
+//		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
+//		memSz--;
+//	}
+//	if ( pSz ) *pSz = memSz;
+//	return memSz ? basestr : NULL;
+//}
+
+//IN_GENERAL void * serializeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )sMem;
+//	char * lpLastMem = basestr;
+//	char * lpChr = basestr;
+//	while ( ( lpChr = ( char * )memchrs( lpLastMem , memSz , chrs , chrsCount ) ) )
+//	{
+//		if ( lpChr == lpLastMem )
+//		{
+//			lpLastMem++;
+//			memSz--;
+//			continue;
+//		}
+//		memmove( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
+//		memSz = lpLastMem + memSz - lpChr - 1;
+//		lpLastMem++;
+//	}
+//	memSz = lpLastMem - basestr;
+//	if ( pSz ) *pSz = memSz;
+//	return memSz ? sMem : NULL;
+//}
+//
+//IN_GENERAL void * serializeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//{
+//	ASSERT( pSz );
+//	char * basestr = ( char * )sMem;
+//	char * lpLastMem = basestr;
+//	char * lpChr = basestr;
+//	while ( ( lpChr = ( char * )memichrs( lpLastMem , memSz , chrs , chrsCount ) ) )
+//	{
+//		if ( lpChr == lpLastMem )
+//		{
+//			lpLastMem++;
+//			memSz--;
+//			continue;
+//		}
+//		memmove( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
+//		memSz = lpLastMem + memSz - lpChr - 1;
+//		lpLastMem++;
+//	}
+//	memSz = lpLastMem - basestr;
+//	if ( pSz ) *pSz = memSz;
+//	return memSz ? sMem : NULL;
+//}
+
+
+// ---- chr --------------------------------------------------------------------------------
+
+IN_GENERAL LPCSTR strichr( LPCSTR str , char c )
+{
+	char car[] = { c , EOS };
+	return stristr( str , car );
+}
+
+IN_GENERAL LPCSTR strnchr( LPCSTR str , char c , int n )
+{
+	do
+	{
+		str = strchr( str , c );
+	} while ( str && n-- > 0 && str++ );
+	return str;
+}
+
+IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
+{
+	do
+	{
+		str = strichr( str , c );
+	} while ( str && n-- > 0 && str++ );
+	return str;
+}
+
+//
+
+IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
+{
+	char car[] = { c , EOS };
+	return rstristr( str , car );
+}
+
+//IN_GENERAL LPCSTR strrnchr( LPCSTR inStr , char c , int n )
+//{
+//	LPSTR str = ( LPSTR )inStr;
+//	LPSTR srcs = str;
+//	CHAR eos = EOS;
+//	LPSTR ceos = NULL;
+//	do
+//	{
+//		if ( ( str = strrchr( srcs , c ) ) && n >= 0 )
+//		{
+//			if ( eos != EOS )
+//			{
+//				::swap( ceos[ 0 ] , eos );
+//				ASSERT( eos == EOS );
+//			}
+//			::swap( str[ 0 ] , eos );
+//			ceos = str;
+//		}
+//	} while ( str && n-- > 0 );
+//	if ( eos != EOS )
+//	{
+//		::swap( ceos[ 0 ] , eos );
+//		ASSERT( eos == EOS );
+//	}
+//	return str;
+//}
+
+//IN_GENERAL LPCSTR strrinchr( LPCSTR inStr , char c , int n )
+//{
+//	LPSTR str = ( LPSTR )inStr;
+//	LPSTR srcs = str;
+//	CHAR eos = EOS;
+//	LPSTR ceos = NULL;
+//	do
+//	{
+//		if ( ( str = ( LPSTR )strrichr( srcs , c ) ) && n >= 0 )
+//		{
+//			if ( eos != EOS )
+//			{
+//				::swap( ceos[ 0 ] , eos );
+//				ASSERT( eos == EOS );
+//			}
+//			::swap( str[ 0 ] , eos );
+//			ceos = str;
+//		}
+//	} while ( str && n-- > 0 );
+//	if ( eos != EOS )
+//	{
+//		::swap( ceos[ 0 ] , eos );
+//		ASSERT( eos == EOS );
+//	}
+//	return str;
+//}
+
+// ~~~~~ chr --------------------------------------------------------------------------------
+// ---- chrs --------------------------------------------------------------------------------
+
+//IN_GENERAL LPCSTR strichrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // case insensitive cmp . Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strichr( str , chrs[ 0 ] ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr < pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+//IN_GENERAL LPCSTR strnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI ) // n(th) chr . Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strnchr( str , chrs[ 0 ] , n ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr < pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+//IN_GENERAL LPCSTR strinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI ) // n(th) chr . case insensitive cmp . Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strinchr( str , chrs[ 0 ] , n ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr < pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+
+//
+
+//IN_GENERAL LPCSTR strrichrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // reverse search . case insensitive cmp . Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strrichr( str , chrs[ 0 ] ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr > pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+//IN_GENERAL LPCSTR strrnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI ) // Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strrnchr( str , chrs[ 0 ] , n ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr > pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+//IN_GENERAL LPCSTR strrinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI ) // Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strrinchr( str , chrs[ 0 ] , n ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr > pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+
+//
+
+//IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // same as strpbrk . Written By Mohsen
+//{
+//	LPCSTR lpRet = strpbrk( str , chrs );
+//	if ( pCI && lpRet )
+//	{
+//		*pCI = strchr( chrs , lpRet[ 0 ] ) - chrs;
+//	}
+//	return lpRet;
+//}
+
+//IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // Written By Mohsen
+//{
+//	LPCSTR pOutStr = NULL , pTempOutStr;
+//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+//	{
+//		if ( ( pTempOutStr = ( LPCSTR )strrchr( str , chrs[ 0 ] ) ) )
+//		{
+//			if ( !pOutStr || pTempOutStr > pOutStr )
+//			{
+//				pOutStr = pTempOutStr;
+//			}
+//		}
+//	}
+//	if ( pCI && pOutStr )
+//	{
+//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+//	}
+//	return pOutStr;
+//}
+
+LPCSTR strihead( LPCSTR str , LPCSTR head )
+{
+	return stristr( str , head ) == str ? str : NULL;
 }

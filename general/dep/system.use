@@ -1,3 +1,8 @@
+#ifdef Uses_strcasestr
+	#define _GNU_SOURCE
+	#define __INC_string
+#endif
+
 #ifdef Uses_strncpy
 	#define __INC_string
 #endif

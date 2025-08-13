@@ -7,6 +7,7 @@
 
 // WARNING . please consider that these value come from deepseek so original value must be controlled by programmer him self
 
+
 typedef long time_t;
 typedef long suseconds_t;
 struct timespec
@@ -1409,19 +1410,6 @@ int errMemoryLow;
 int errGeneral;
 int errOK;
 int errSystem;
-
-#define NEWSTR(var,str,lvl)
-#define MALLOC( size ) malloc( size )
-#define FREE( p ) free( ( void * )p )
-#define REALLOC( ptr , size ) realloc( ptr , size )
-#define CALLOC calloc
-#define NEWBUF(type,n) (type *)MALLOC(sizeof(type)*(n))
-#define MEMSET_ZERO(p,type,n) memset( p , 0 , sizeof( type ) * n )
-#define DAC_PTR(x) do { if(x) { FREE(x); x = NULL; } } while(0)
-#define DAC(x) do { if(x) { DEL(x); x = NULL; } } while(0)
-#define NEW(type) ( ( type * )MALLOC( sizeof( type ) ) )
-#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
-
 
 typedef unsigned long int pthread_t;
 typedef union { char __size[56]; long int __align; } pthread_attr_t;

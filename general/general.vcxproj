@@ -125,7 +125,6 @@
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_funcs.h" />
     <ClInclude Include="header\g_macros.h" />
-    <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\g_sys.h" />
     <ClInclude Include="header\g_types.h" />
     <ClInclude Include="header\IntellisenseAssist.h" />
