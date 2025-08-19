@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 /*
 * Lamport's Bakery Algorithm is a mutual exclusion algorithm designed to ensure that only one
@@ -17,3 +17,7 @@ void ba_destroy( Ba_al * pLB );
 void ba_lock( Ba_al * pLB , int i );
 void ba_unlock( Ba_al * pLB , int i );
 
+/*
+* note.
+* 14040527 سر پروژه protocol bridge در قسمت آنلاک گیر کرد
+*/

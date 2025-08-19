@@ -21,13 +21,16 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE=-6,
-	errSyntax,
-	errCanceled,  // indeed this indicates a normal abort and is not an d_error condition
-	errInvalidString,
-	errMemoryLow,
-	errGeneral,
-	errOK,
+	NEXT_GENERAL_ERROR_VALUE = -9,
+	errPeerClosed = -8,
+	errTimeout = -7,
+	errArg = -6,
+	errSyntax = -5,
+	errCanceled = -4,  // indeed this indicates a normal abort and is not an d_error condition
+	errInvalidString = -3,
+	errMemoryLow = -2,
+	errGeneral = -1,
+	errOK = 0,
 	errSystem = 1, // this error is not public error value
 };
 

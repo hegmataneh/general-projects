@@ -25,6 +25,9 @@
     <ClCompile Include="src\cirbuf_packet_sync.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\vcbuf_popblk.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -101,6 +104,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\cirbuf_metric.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\vcbuf_popblk.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

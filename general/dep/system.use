@@ -1,3 +1,12 @@
+
+#ifdef Uses_isprint
+	#define __INC_ctype
+#endif
+
+#ifdef Uses_ETIMEDOUT
+	#define __INC_errno
+#endif
+
 #ifdef Uses_udphdr
 	#define __INC_netinet_udp
 	#define __INC_netinet_ip

@@ -54,3 +54,8 @@
 #ifdef __INC_id_dict
 	#include <id_dict.h>
 #endif
+
+#ifdef __INC_vcbuf_popblk
+	#include <vcbuf_popblk.h>
+#endif
+

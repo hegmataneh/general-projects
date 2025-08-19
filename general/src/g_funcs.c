@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_isprint
 #define Uses_INT_MAX
 #define Uses_send
 #define Uses_basename
@@ -30,7 +31,7 @@
 
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error"};
+static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out","peer closed"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -877,11 +878,17 @@ status sendall( int socketfd , buffer buf , size_t * len ) // as beej book says
 	size_t total = 0; // how many bytes we've snt
 	size_t byteleft = *len; // how many we have left to send
 	size_t n;
+	ssize_t send_ret;
 
 	while ( total < *len )
 	{
-		n = ( size_t )send( socketfd , buf + total , byteleft , 0 );
-		if ( n == -1 ) { break; }
+		send_ret = send( socketfd , buf + total , byteleft , MSG_NOSIGNAL );
+		if ( send_ret == EPIPE )
+		{
+			return errPeerClosed;
+		}
+		if ( send_ret == -1 ) { break; }
+		n = ( size_t )send_ret;
 		total += n;
 		byteleft -= n;
 	}
@@ -932,5 +939,36 @@ void buff_fill_seq( buffer buf , size_t size )
 		buf[ i ] = ( char )( '0' + num );   // store as character '1'..'9'
 		num++;
 		if ( num > 9 ) num = 1; // wrap back to 1
+	}
+}
+
+void dump_buffer( const buffer buff , size_t size )
+{
+	const unsigned char * buf = ( const unsigned char * )buff;
+	size_t i;
+
+	for ( i = 0; i < size; i += 16 )
+	{
+		printf( "%08zx  " , i );
+
+		// Print hex part
+		for ( size_t j = 0; j < 16; j++ )
+		{
+			if ( i + j < size )
+				printf( "%02x " , buf[ i + j ] );
+			else
+				printf( "   " );
+		}
+
+		printf( " " );
+
+		// Print ASCII part
+		for ( size_t j = 0; j < 16 && i + j < size; j++ )
+		{
+			unsigned char c = buf[ i + j ];
+			printf( "%c" , isprint( c ) ? c : '.' );
+		}
+
+		printf( "\n" );
 	}
 }

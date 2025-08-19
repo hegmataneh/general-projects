@@ -139,3 +139,13 @@
 #ifdef Uses_MALLOC_AR
 	#define Uses_memset
 #endif
+
+#ifdef Uses_vcbuf
+	#define Uses_vcbuf_popblk
+#endif
+
+#ifdef Uses_vcbuf_popblk
+	#define Uses_pthread_mutex_t
+	#define __INC_vcbuf_popblk
+#endif
+

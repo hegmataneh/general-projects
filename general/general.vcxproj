@@ -93,6 +93,7 @@
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
     <ClCompile Include="src\cirbuf_packet_sync.c" />
+    <ClCompile Include="src\vcbuf_popblk.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\general.dep">
@@ -139,6 +140,7 @@
     <ClInclude Include="header\LamportBakeryAlgorithm.h" />
     <ClInclude Include="header\cirbuf_packet_sync.h" />
     <ClInclude Include="header\struct.h" />
+    <ClInclude Include="header\vcbuf_popblk.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

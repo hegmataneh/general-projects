@@ -120,3 +120,8 @@
 #ifdef __INC_signal
 	#include <signal.h>
 #endif
+
+#ifdef __INC_ctype
+	#include <ctype.h>
+#endif
+
