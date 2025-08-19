@@ -1,30 +1,30 @@
 #define Uses_memset
 #define Uses_calloc
-#define Uses_circbuf
+#define Uses_cbuf_metric
 #include <general.dep>
 
-int circbuf_init( struct circbuf_t * buf , size_t capacity )
+status cbuf_m_init( cbuf_metr * buf , size_t capacity )
 {
-	if ( !buf || capacity == 0 ) return -1;
+	if ( !buf || capacity == 0 ) return errGeneral;
 	buf->samples = ( uint64_t * )calloc( capacity , sizeof( uint64_t ) );
-	if ( !buf->samples ) return -1;
+	if ( !buf->samples ) return errGeneral;
 	buf->capacity = capacity;
 	buf->head = 0;
 	buf->filled = 0;
-	return 0;
+	return errOK;
 }
 
-void circbuf_free( struct circbuf_t * buf )
+void cbuf_m_free( cbuf_metr * buf )
 {
 	if ( !buf ) return;
-	free( buf->samples );
+	DAC( buf->samples );
 	buf->samples = NULL;
 	buf->capacity = 0;
 	buf->head = 0;
 	buf->filled = 0;
 }
 
-void circbuf_reset( struct circbuf_t * buf )
+void cbuf_m_reset( cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples ) return;
 	memset( buf->samples , 0 , buf->capacity * sizeof( uint64_t ) );
@@ -32,7 +32,7 @@ void circbuf_reset( struct circbuf_t * buf )
 	buf->filled = 0;
 }
 
-void circbuf_advance( struct circbuf_t * buf , uint64_t count )
+void cbuf_m_advance( cbuf_metr * buf , uint64_t count )
 {
 	if ( !buf || !buf->samples ) return;
 	buf->samples[ buf->head ] = count;
@@ -43,7 +43,7 @@ void circbuf_advance( struct circbuf_t * buf , uint64_t count )
 	}
 }
 
-uint64_t circbuf_sum_last( const struct circbuf_t * buf , size_t last_n )
+uint64_t cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n )
 {
 	if ( !buf || !buf->samples || buf->filled == 0 ) return 0;
 
@@ -59,15 +59,15 @@ uint64_t circbuf_sum_last( const struct circbuf_t * buf , size_t last_n )
 	return sum;
 }
 
-int circbuf_peek_latest( const struct circbuf_t * buf , uint64_t * out_val )
+status cbuf_m_peek_latest( const cbuf_metr * buf , uint64_t * out_val )
 {
-	if ( !buf || !buf->samples || buf->filled == 0 || !out_val ) return -1;
+	if ( !buf || !buf->samples || buf->filled == 0 || !out_val ) return errGeneral;
 	size_t latest_idx = ( buf->head + buf->capacity - 1 ) % buf->capacity;
 	*out_val = buf->samples[ latest_idx ];
-	return 0;
+	return errOK;
 }
 
-float circbuf_mean_last( const struct circbuf_t * buf , size_t last_n )
+float cbuf_m_mean_last( const cbuf_metr * buf , size_t last_n )
 {
 	if ( !buf || !buf->samples || buf->filled == 0 ) return 0.0f;
 
@@ -85,7 +85,7 @@ float circbuf_mean_last( const struct circbuf_t * buf , size_t last_n )
 	return ( float )sum / ( float )n;
 }
 
-uint64_t circbuf_sum_all( const struct circbuf_t * buf )
+uint64_t cbuf_m_sum_all( const cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples || buf->filled == 0 ) return 0;
 
@@ -98,10 +98,11 @@ uint64_t circbuf_sum_all( const struct circbuf_t * buf )
 	return sum;
 }
 
-float circbuf_mean_all( const struct circbuf_t * buf )
+float cbuf_m_mean_all( const cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples || buf->filled == 0 ) return 0.0f;
 
-	uint64_t sum = circbuf_sum_all( buf );
+	uint64_t sum = cbuf_m_sum_all( buf );
 	return ( float )sum / ( float )buf->filled;
 }
+

@@ -14,11 +14,6 @@
 	#error "your app must provide way to show msg for error . you must #define Uses_M_showMsg in your app use file and provide g_brk.h -> M_showMsg();"
 #endif
 
-
-#ifdef Uses_circbuf_t
-	#define Uses_circbuf
-#endif
-
 #ifdef Uses_NEWSTR
 	#define Uses_M_SERIES_MACROS
 	#define __INC_brk
@@ -64,13 +59,17 @@
 	#define __INC_macros
 #endif
 
-#ifdef Uses_PacketQueue
-	#define __INC_PacketQueue
+#ifdef Uses_cirbuf_packet_sync
+	#define __INC_cirbuf_packet_sync
 #endif
 
-#ifdef Uses_circbuf
+#ifdef Uses_cbuf_metr
+	#define Uses_cbuf_metric
+#endif
+
+#ifdef Uses_cbuf_metric
 	#define Uses_uint32_t
-	#define __INC_circbuf
+	#define __INC_cirbuf_metric
 #endif
 
 #ifdef Uses_IPPROTO_TCP
@@ -79,6 +78,7 @@
 
 #ifdef Uses_Thread_watchDog_needs
 	#define Uses_pthread_t
+	#define Uses_struct
 	#define __INC_struct
 #endif
 
@@ -88,4 +88,54 @@
 
 #ifdef Uses_struct
 	#define __INC_struct
+#endif
+
+#ifdef Uses_Ba_al
+	#define Uses_BakeryAl
+#endif
+
+#ifdef Uses_BakeryAl
+	#define __INC_LamportBakeryAlgorithm
+#endif
+
+#ifdef Uses_pcap
+	#define Uses_BASIC_TYPE_Vx
+#endif
+
+#ifdef Uses_cirbuf_lockfree
+	#define Uses_l_pkg
+	#define __INC_cirbuf_lockfree
+#endif
+
+#ifdef Uses_l_pkg
+	#define Uses_lock_pkg
+	#define __INC_struct
+#endif
+
+#ifdef Uses_lock_pkg
+	#define Uses_struct
+#endif
+
+#ifdef Uses_dict
+	#define __INC_dict
+#endif
+
+#ifdef Uses_id_dict
+	#define __INC_id_dict
+#endif
+
+#ifdef Uses_dict_t
+	#define Uses_dict
+#endif
+
+#ifdef Uses_cbuf_lf
+	#define Uses_cirbuf_lockfree
+#endif
+
+#ifdef Uses_id_dict_t
+	#define Uses_id_dict
+#endif
+
+#ifdef Uses_MALLOC_AR
+	#define Uses_memset
 #endif

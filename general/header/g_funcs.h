@@ -1,44 +1,52 @@
 //#pragma once
 
-//-------------------------------------------------------------------------
-char *newStr(const char *); // donot use it directly use NEWSTR instead
+//----T2T functions------------------------------------------------------
+status string_to_int( LPCSTR str , int * out );
 
 
-//-------------------------------------------------------------------------
-LPCSTR internalErrorStr(status errValue);
-status internalErrorVal(LPCSTR errStr);
+//----formats wrapper functions------------------------------------------------------
+LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/);
 
 
-//const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number );
-const char * __snprintf( char * msg_holder , size_t size_of_msg_holder , const char * format , ... );
-void _close_socket( int * socket_id );
-const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
-
-const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_holder , const char * cst_msg );
-
-const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , const char * unit_name /*= "pps"*/);
-
-void format_clock_time( const struct timespec * ts , char * buffer , size_t buf_size );
-
+//----time functions------------------------------------------------------
+void format_clock_time( const struct timespec * ts , LPSTR buffer , size_t buf_size );
 void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
+void format_elapsed_time( time_t start , time_t end , LPSTR buffer , size_t buf_size );
+void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
 
-FILE* create_unique_file(const char* path, const char* filename /*=NULL(app+date)*/ );
 
-void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size );
+//----file functions------------------------------------------------------
+FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
+LPCSTR read_file( LPCSTR path , buffer pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
 
-void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
+
+//----socket functions------------------------------------------------------
+void _close_socket( int * socket_id );
+status sendall( int socketfd , buffer buf , size_t * len );
+
+
+//----error functions------------------------------------------------------
+LPCSTR internalErrorStr( status errValue );
+status internalErrorVal( LPCSTR errStr );
+LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
+
 
 //----String functions------------------------------------------------------
+LPSTR newStr(LPCSTR); // donot use it directly use NEWSTR instead
+
+//LPCSTR __msg( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR msg , int line_number );
+LPCSTR __snprintf( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR format , ... );
+
 IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ); // Written By Mohsen
 IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz /*= -1*/ ); // Written By Mohsen
 
-//IN_GENERAL void * removeChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
-//IN_GENERAL void * removeiChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
-//IN_GENERAL void * removeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
-//IN_GENERAL void * removeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
+//IN_GENERAL void_p removeChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
+//IN_GENERAL void_p removeiChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ); // Written By Mohsen
+//IN_GENERAL void_p removeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
+//IN_GENERAL void_p removeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ); // Written By Mohsen . 1390/06/03
 
-//IN_GENERAL void * serializeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
-//IN_GENERAL void * serializeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
+//IN_GENERAL void_p serializeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
+//IN_GENERAL void_p serializeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ); // 1390/06/03
 
 IN_GENERAL int fstrcmp( LPCSTR str1 , LPCSTR str2 ); // Farsi Cmp . Written By Mohsen
 IN_GENERAL LPCSTR stristr( LPCSTR sSrc , LPCSTR sDest ); // case insensitive cmp . Written By Mohsen
@@ -83,3 +91,6 @@ IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/
 
 IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 //IN_GENERAL LPCSTR stritail( LPCSTR str , LPCSTR head );
+
+//----buffer functions------------------------------------------------------
+void buff_fill_seq( buffer buf , size_t size );

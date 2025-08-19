@@ -1,3 +1,29 @@
+#ifdef Uses_udphdr
+	#define __INC_netinet_udp
+	#define __INC_netinet_ip
+	#define __INC_netinet
+#endif
+
+#ifdef Uses_signal
+	#define __INC_signal
+#endif
+
+#ifdef Uses_pcap
+	#define _GNU_SOURCE
+	#define __INC_sys_types
+	#define __INC_pcap
+#endif
+
+
+#ifdef Uses_INT_MAX
+	#define __INC_limits
+#endif
+
+#ifdef Uses_send
+	#define __INC_sys_socket
+	#define __INC_netinet
+#endif
+
 #ifdef Uses_strcasestr
 	#define _GNU_SOURCE
 	#define __INC_string
@@ -210,4 +236,12 @@
 
 #ifdef Uses_sleep
 	#define __INC_unistd
+#endif
+
+#ifdef Uses_pthread_mutex_init
+	#define __INC_pthread
+#endif
+
+#ifdef Uses_strcmp
+	#define __INC_string
 #endif

@@ -1,9 +1,9 @@
 #define Uses_memcpy
 #define Uses_pthread_mutex_t
-#define Uses_PacketQueue
+#define Uses_cirbuf_packet_sync
 #include <general.dep>
 
-void queue_init( struct PacketQueue * q )
+void cbuf_ps_init( cbuf_packet * q )
 {
 	q->head = 0;
 	q->tail = 0;
@@ -13,14 +13,14 @@ void queue_init( struct PacketQueue * q )
 	pthread_cond_init( &q->not_full , NULL );
 }
 
-void queue_destroy( struct PacketQueue * q )
+void cbuf_ps_destroy( cbuf_packet * q )
 {
 	pthread_mutex_destroy( &q->lock );
 	pthread_cond_destroy( &q->not_empty );
 	pthread_cond_destroy( &q->not_full );
 }
 
-void queue_push( struct PacketQueue * q , const char * buf , size_t len )
+void cbuf_ps_push( cbuf_packet * q , const buffer buf , size_t len )
 {
 	pthread_mutex_lock( &q->lock );
 
@@ -38,7 +38,7 @@ void queue_push( struct PacketQueue * q , const char * buf , size_t len )
 	pthread_mutex_unlock( &q->lock );
 }
 
-int queue_pop( struct PacketQueue * q , char * out_buf , size_t * out_len )
+void cbuf_ps_pop( cbuf_packet * q , buffer out_buf , size_t * out_len )
 {
 	pthread_mutex_lock( &q->lock );
 
@@ -56,11 +56,9 @@ int queue_pop( struct PacketQueue * q , char * out_buf , size_t * out_len )
 
 	pthread_cond_signal( &q->not_full );
 	pthread_mutex_unlock( &q->lock );
-
-	return 0;
 }
 
-int queue_peek_available( struct PacketQueue * q )
+int cbuf_ps_peek_available( cbuf_packet * q )
 {
 	pthread_mutex_lock( &q->lock );
 	int available = ( q->count > 0 );
@@ -68,7 +66,7 @@ int queue_peek_available( struct PacketQueue * q )
 	return available;
 }
 
-int queue_try_pop( struct PacketQueue * q , char * out_buf , size_t * out_len )
+int cbuf_ps_try_pop( cbuf_packet * q , buffer out_buf , size_t * out_len )
 {
 	pthread_mutex_lock( &q->lock );
 

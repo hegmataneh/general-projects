@@ -344,7 +344,7 @@ result( json_entry ) json_parse_entry( typed( json_string ) * str_ptr )
 	result( json_element_type ) type_result = json_guess_element_type( *str_ptr );
 	if ( result_is_err( json_element_type )( &type_result ) )
 	{
-		free( ( void * )key.as_string );
+		free( ( void_p )key.as_string );
 		return result_map_err( json_entry , json_element_type , &type_result );
 	}
 	typed( json_element_type ) type =
@@ -354,7 +354,7 @@ result( json_entry ) json_parse_entry( typed( json_string ) * str_ptr )
 		json_parse_element_value( str_ptr , type );
 	if ( result_is_err( json_element_value )( &value_result ) )
 	{
-		free( ( void * )key.as_string );
+		free( ( void_p )key.as_string );
 		return result_map_err( json_entry , json_element_value , &value_result );
 	}
 	typed( json_element_value ) value =
@@ -1055,7 +1055,7 @@ void json_free( typed( json_element ) * element )
 
 void json_free_string( typed( json_string ) string )
 {
-	free( ( void * )string );
+	free( ( void_p )string );
 }
 
 void json_free_object( typed( json_object ) * object )
@@ -1075,7 +1075,7 @@ void json_free_object( typed( json_object ) * object )
 
 		if ( entry != NULL )
 		{
-			free( ( void * )entry->key );
+			free( ( void_p )entry->key );
 			json_free( &entry->element );
 			free( entry );
 		}
@@ -1213,12 +1213,12 @@ json_unescape_string( typed( json_string ) str , typed( size ) len )
 	return result_ok( json_string )( ( typed( json_string ) )output );
 }
 
-int catch_error( result( json_element ) * element , const char * what )
+int catch_error( result( json_element ) * element , const char * what , int throw_at_stderr )
 {
 	if ( result_is_err( json_element )( element ) )
 	{
 		typed( json_error ) error = result_unwrap_err( json_element )( element );
-		fprintf( stderr , "Error getting element \"%s\": %s\n" , what , json_error_to_string( error ) );
+		if ( throw_at_stderr ) fprintf( stderr , "Error getting element \"%s\": %s\n" , what , json_error_to_string( error ) );
 		return -1;
 	}
 	return 0;

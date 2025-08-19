@@ -1,41 +1,41 @@
-#if defined Uses_circbuf || !defined __COMPILING
+#if defined Uses_cbuf_metric || !defined __COMPILING
 
 // non thread safe
 
-struct circbuf_t
+typedef struct cirbuf_metric_t
 {
 	uint64_t * samples;   // per-slot counts
 	size_t capacity;     // number of time slots
 	size_t head;         // current position (circular index)
 	size_t filled;       // number of valid samples stored
-};
+} cbuf_metr;
 
 // Initialize the buffer with `capacity` samples (e.g., per second)
-int circbuf_init( struct circbuf_t * buf , size_t capacity );
+status cbuf_m_init( cbuf_metr * buf , size_t capacity );
 
 // Free the internal memory
-void circbuf_free( struct circbuf_t * buf );
+void cbuf_m_free( cbuf_metr * buf );
 
 // Reset buffer to zero samples
-void circbuf_reset( struct circbuf_t * buf );
+void cbuf_m_reset( cbuf_metr * buf );
 
 // Advance one slot (like one second passed), optionally set count
-void circbuf_advance( struct circbuf_t * buf , uint64_t count );
+void cbuf_m_advance( cbuf_metr * buf , uint64_t count );
 
 // Get last N samples (returns sum of last N if available)
-uint64_t circbuf_sum_last( const struct circbuf_t * buf , size_t last_n );
+uint64_t cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n );
 
 // Peek most recent sample
-int circbuf_peek_latest( const struct circbuf_t * buf , uint64_t * out_val );
+status cbuf_m_peek_latest( const cbuf_metr * buf , uint64_t * out_val );
 
 // Compute mean of last N samples (returns float)
-float circbuf_mean_last( const struct circbuf_t * buf , size_t last_n );
+float cbuf_m_mean_last( const cbuf_metr * buf , size_t last_n );
 
 // Compute sum of all stored samples
-uint64_t circbuf_sum_all( const struct circbuf_t * buf );
+uint64_t cbuf_m_sum_all( const cbuf_metr * buf );
 
 // Compute mean of all stored samples
-float circbuf_mean_all( const struct circbuf_t * buf );
+float cbuf_m_mean_all( const cbuf_metr * buf );
 
 #endif
 

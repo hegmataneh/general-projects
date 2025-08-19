@@ -85,10 +85,14 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
-    <ClCompile Include="src\circbuf.c" />
+    <ClCompile Include="src\cirbuf_lockfree.c" />
+    <ClCompile Include="src\cirbuf_metric.c" />
+    <ClCompile Include="src\dict.c" />
     <ClCompile Include="src\g_funcs.c" />
+    <ClCompile Include="src\id_dict.c" />
     <ClCompile Include="src\json.c" />
-    <ClCompile Include="src\packet_queue.c" />
+    <ClCompile Include="src\LamportBakeryAlgorithm.c" />
+    <ClCompile Include="src\cirbuf_packet_sync.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\general.dep">
@@ -120,16 +124,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
-    <ClInclude Include="header\circbuf.h" />
+    <ClInclude Include="header\cirbuf_lockfree.h" />
+    <ClInclude Include="header\cirbuf_metric.h" />
+    <ClInclude Include="header\dict.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_funcs.h" />
     <ClInclude Include="header\g_macros.h" />
     <ClInclude Include="header\g_sys.h" />
     <ClInclude Include="header\g_types.h" />
+    <ClInclude Include="header\id_dict.h" />
     <ClInclude Include="header\IntellisenseAssist.h" />
     <ClInclude Include="header\json.h" />
-    <ClInclude Include="header\packet_queue.h" />
+    <ClInclude Include="header\LamportBakeryAlgorithm.h" />
+    <ClInclude Include="header\cirbuf_packet_sync.h" />
     <ClInclude Include="header\struct.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

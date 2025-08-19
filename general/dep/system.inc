@@ -95,6 +95,28 @@
 	#include <fcntl.h>
 #endif
 
+
+#ifdef __INC_netinet_ip
+	#include <netinet/ip.h>
+#endif
+
+#ifdef __INC_netinet_udp
+	#include <netinet/udp.h>
+#endif
+
 #ifdef __INC_netinet_tcp
 	#include <netinet/tcp.h>
+#endif
+
+#ifdef __INC_limits
+	#include <limits.h>
+#endif
+
+
+#ifdef __INC_pcap
+	#include <pcap.h>
+#endif
+
+#ifdef __INC_signal
+	#include <signal.h>
 #endif

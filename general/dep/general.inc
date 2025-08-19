@@ -11,6 +11,10 @@
 #include "../header/g_sys.h" 
 #include "../header/g_funcs.h"
 
+#ifdef __INC_struct
+	#include <struct.h>
+#endif
+
 #ifdef __INC_yaml_h
 	#include <yaml.h>
 #endif
@@ -27,14 +31,26 @@
 	#include <json.h>
 #endif
 
-#ifdef __INC_PacketQueue
-	#include <packet_queue.h>
+#ifdef __INC_cirbuf_packet_sync
+	#include <cirbuf_packet_sync.h>
 #endif
 
-#ifdef __INC_circbuf
-	#include <circbuf.h>
+#ifdef __INC_cirbuf_metric
+	#include <cirbuf_metric.h>
 #endif
 
-#ifdef __INC_struct
-	#include <struct.h>
+#ifdef __INC_LamportBakeryAlgorithm
+	#include <LamportBakeryAlgorithm.h>
+#endif
+
+#ifdef __INC_cirbuf_lockfree
+	#include <cirbuf_lockfree.h>
+#endif
+
+#ifdef __INC_dict
+	#include <dict.h>
+#endif
+
+#ifdef __INC_id_dict
+	#include <id_dict.h>
 #endif

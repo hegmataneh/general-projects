@@ -15,10 +15,10 @@
 //	#define WS_EX_LTRREADING        0x00000000L
 //
 //	// hamidi, 850315: _filelength in CE is not available and file handle in CE is void *
-//	long _filelength(void *);
+//	long _filelength(void_p);
 //
 //	#if defined Uses__mkdir || !defined __COMPILING
-//		int _mkdir(const char *dirname);
+//		int _mkdir(LPCSTR dirname);
 //	#endif
 //
 //	#if defined Uses__mbstrlen || !defined __COMPILING
@@ -41,10 +41,10 @@
 	//#define _stricmp strcasecmp
 
 	//long _filelength( int fd );  // niazi nist check konim bebinim agar Uses__filelength ta'rif shodeh bud prototype-e in function ro lehaz koneh. chon vojude in prototype beh chize digei vabasteh nist va beh hamin jahat beh jaee ham bar nemikhoreh va dependency-i ijad nemikoneh. tebghe standard, gozaashtane chenin ifdef-hayi dar mavaredi az in dast optional-eh.
-	//int _mkdir(const char *path);
-	//char *_strlwr( char *src );
-	//char *_strupr( char *src );
-	//char *_strrev( char *src );
+	//int _mkdir(LPCSTR path);
+	//LPSTR _strlwr( LPSTR src );
+	//LPSTR _strupr( LPSTR src );
+	//LPSTR _strrev( LPSTR src );
 
 	//#define sscanf_s sscanf
 	//#define _atoi64 atoll
@@ -52,7 +52,13 @@
 
 	#ifdef __GNUC__  // dar symbian prototype-esh ro jayi peyda kardam.
 		//wchar_t *_wcsrev( wchar_t *src );
+		
+		#ifdef _DEBUG
+		#define ASSERT(x) assert(x)
+		#else
 		#define ASSERT(x)
+		#endif
+
 	#endif
 
 #endif  // end of providing what ANSI C++ lacks
@@ -70,8 +76,8 @@
 	//#endif // _tcscpy_s
 
 	//#if defined Uses_strcpy_s || !defined __COMPILING
-	//	errno_t strcpy_s(char *dest,size_t sz,const char *src);
-	//	inline errno_t strcpy_s(char dest[],const char *src)
+	//	errno_t strcpy_s(LPSTR dest,size_t sz,LPCSTR src);
+	//	inline errno_t strcpy_s(char dest[],LPCSTR src)
 	//		{ return strcpy_s(dest,sizeof(dest),src); }
 	//#endif
 
@@ -82,25 +88,25 @@
 	//#endif
 
 	//#if defined Uses_strncpy_s || !defined __COMPILING
-	//	errno_t strncpy_s(char *dest,size_t sz,const char *src,size_t count);
-	//	inline errno_t strncpy_s(char dest[],const char *src,size_t count)
+	//	errno_t strncpy_s(LPSTR dest,size_t sz,LPCSTR src,size_t count);
+	//	inline errno_t strncpy_s(char dest[],LPCSTR src,size_t count)
 	//		{ return strncpy_s(dest,sizeof(dest),src,count); }
 	//#endif
 
 	//#if defined Uses_strcat_s || !defined __COMPILING
-	//	errno_t strcat_s(char *dest,size_t sz,const char *src);
-	//	inline errno_t strcat_s(char dest[],const char *src)
+	//	errno_t strcat_s(LPSTR dest,size_t sz,LPCSTR src);
+	//	inline errno_t strcat_s(char dest[],LPCSTR src)
 	//		{ return strcat_s(dest,sizeof(dest),src); }
 	//#endif
 
 	//#if defined Uses__strlwr_s || !defined __COMPILING
-	//	errno_t _strlwr_s(char *str,size_t sz);
+	//	errno_t _strlwr_s(LPSTR str,size_t sz);
 	//	inline errno_t _strlwr_s(char str[])
 	//		{ return _strlwr_s(str,sizeof(str)); }
 	//#endif
 
 	//#if defined Uses__strupr_s || !defined __COMPILING
-	//	errno_t _strupr_s(char *str,size_t sz);
+	//	errno_t _strupr_s(LPSTR str,size_t sz);
 	//	inline errno_t _strupr_s(char str[])
 	//		{ return _strupr_s(str,sizeof(str)); }
 	//#endif
@@ -114,17 +120,17 @@
 		 */
 		#define sprintf_s sprintf
 		// hamidi, 850922: lazem shod
-		//int sprintf(char *buffer,size_t sizeOfBuffer,const char *format,...);
+		//int sprintf(LPSTR buffer,size_t sizeOfBuffer,LPCSTR format,...);
 	#endif
 
 	//#if defined Uses_vsprintf_s || !defined __COMPILING
-	//	int vsprintf_s(char *buf,size_t sz,const char *fmt,va_list argptr);
-	//	inline int vsprintf_s(char buf[],const char *fmt,va_list argptr)
+	//	int vsprintf_s(LPSTR buf,size_t sz,LPCSTR fmt,va_list argptr);
+	//	inline int vsprintf_s(char buf[],LPCSTR fmt,va_list argptr)
 	//		{ return vsprintf_s(buf,sizeof(buf),fmt,argptr); }
 	//#endif
 
 	//#if defined Uses_fopen_s || !defined __COMPILING
-	//	inline errno_t fopen_s(FILE **pFile,const char *filename,const char *mode)
+	//	inline errno_t fopen_s(FILE **pFile,LPCSTR filename,LPCSTR mode)
 	//		{ return (*pFile=fopen(filename,mode))==NULL; }
 	//#endif
 
@@ -133,7 +139,7 @@
 	//#endif
 
 	//#if defined Uses_strtok_s || !defined __COMPILING
-	//	char *strtok_s(char *strToken,const char *strDelimit,char **context);
+	//	LPSTR strtok_s(LPSTR strToken,LPCSTR strDelimit,char **context);
 	//#endif
 
 	//#if defined Uses__itoa_s || !defined __COMPILING

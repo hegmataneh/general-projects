@@ -10,6 +10,8 @@
 		for number of errors anymore
 */
 
+#define Uses_INT_MAX
+#define Uses_send
 #define Uses_basename
 #define Uses_strlen
 #define Uses_malloc
@@ -28,7 +30,7 @@
 
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[10000]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error"};
+static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -82,23 +84,23 @@ _EXPORT LPCSTR internalErrorStr(status errValue)
 	return "Error value out of range";
 }
 
-char *newStr( LPCSTR str )
+LPSTR newStr( LPCSTR str )
 {
 	if(!str)str="";
 	if(!str[0])return "";
 	size_t sz=strlen(str)+1;
-	char *temp=MALLOC_AR(temp,sz);
+	LPSTR temp=MALLOC_AR(temp,sz);
 	if (temp) strcpy(temp,str);
 	return temp;
 }
 
-//const char * __msg( char * msg_holder , size_t size_of_msg_holder , const char * msg , int line_number )
+//LPCSTR __msg( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR msg , int line_number )
 //{
 //	snprintf( msg_holder , size_of_msg_holder , "%s: ln(%d)\n" , msg , line_number );
 //	return msg_holder;
 //}
 
-const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_holder , const char * cst_msg )
+LPCSTR make_msg_appnd_sys_err( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg )
 {
 	if ( errno != 0 )
 	{
@@ -111,7 +113,7 @@ const char * make_msg_appnd_sys_err( char * msg_holder , size_t size_of_msg_hold
 	return msg_holder;
 }
 
-const char * __snprintf( char * msg_holder , size_t size_of_msg_holder , const char * format , ... )
+LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format , ... )
 {
 	va_list args;
 
@@ -128,7 +130,7 @@ void _close_socket( int * socket_id )
 	*socket_id = -1;
 }
 
-const char * read_file( const char * path , char * pInBuffer /*= NULL*/ )
+LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 {
 	FILE * file = fopen( path , "r" );
 	if ( file == NULL )
@@ -139,7 +141,7 @@ const char * read_file( const char * path , char * pInBuffer /*= NULL*/ )
 	fseek( file , 0 , SEEK_END );
 	long len = ftell( file );
 	fseek( file , 0 , SEEK_SET );
-	char * buffer = pInBuffer ? pInBuffer : malloc( (size_t)(len + 1) );
+	LPSTR  buffer = pInBuffer ? pInBuffer : malloc( (size_t)(len + 1) );
 
 	if ( buffer == NULL )
 	{
@@ -156,14 +158,14 @@ const char * read_file( const char * path , char * pInBuffer /*= NULL*/ )
 	fclose( file );
 	file = NULL;
 
-	return ( const char * )buffer;
+	return ( LPCSTR )buffer;
 }
 
-const char * trim_trailing_zeros(char *s) {
-    char *dot = strchr(s, '.');
+LPCSTR trim_trailing_zeros(LPSTR s) {
+    LPSTR dot = strchr(s, '.');
     if (!dot) return s;
 
-    char *end = s + strlen(s) - 1;
+    LPSTR end = s + strlen(s) - 1;
     while (end > dot && *end == '0') {
         *end = '\0';
         end--;
@@ -175,9 +177,9 @@ const char * trim_trailing_zeros(char *s) {
 	return s;
 }
 
-const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_of_float , const char * unit_name /*= "pps"*/ )
+LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_float , LPCSTR unit_name /*= "pps"*/ )
 {
-	const char * units[] = { "", "K", "M", "G", "T", "P" };
+	LPCSTR units[] = { "", "K", "M", "G", "T", "P" };
 	double value = ( double )pps;
 	int unit = 0;
 
@@ -195,7 +197,7 @@ const char * format_pps( char * buf , size_t buflen , ubigint pps , int number_o
 	return buf;
 }
 
-void format_clock_time( const struct timespec * ts , char * buffer , size_t buf_size )
+void format_clock_time( const struct timespec * ts , LPSTR  buffer , size_t buf_size )
 {
 	struct tm tm_info;
 	localtime_r( &ts->tv_sec , &tm_info );  // Convert to local time
@@ -213,20 +215,20 @@ void round_up_to_next_interval( struct timespec * now , int min_val , int interv
 #define MAX_PATH 4096
 
 // Check if file exists
-static int file_exists( const char * path )
+static int file_exists( LPCSTR path )
 {
 	return access( path , F_OK ) == 0;
 }
 
 // Get current date string in YYYYMMDD_HHMMSS format
-static void get_datetime_str( char * buffer , size_t size )
+static void get_datetime_str( LPSTR  buffer , size_t size )
 {
 	time_t now = time( NULL );
 	struct tm * t = localtime( &now );
 	strftime( buffer , size , "%Y%m%d_%H%M%S" , t );
 }
 
-FILE * create_unique_file( const char * path , const char * filename /*=NULL(app+date)*/ )
+FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 {
 	char final_path[ MAX_PATH ] = { 0 };
 	char name_part[ 256 ] = { 0 };
@@ -303,7 +305,7 @@ FILE * create_unique_file( const char * path , const char * filename /*=NULL(app
 	return file;
 }
 
-void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf_size )
+void format_elapsed_time( time_t start , time_t end , LPSTR  buffer , size_t buf_size )
 {
 	if ( !buffer || buf_size == 0 ) return;
 
@@ -331,7 +333,7 @@ void format_elapsed_time( time_t start , time_t end , char * buffer , size_t buf
 		buffer[ len - 1 ] = '\0';
 }
 
-void format_elapsed_time_with_millis( struct timeval start , struct timeval end , char * buffer , size_t buf_size , int type /*=0*/ )
+void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR  buffer , size_t buf_size , int type /*=0*/ )
 {
 	if ( !buffer || buf_size == 0 ) return;
 
@@ -503,30 +505,30 @@ IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ) // Written By
 {
 	size_t t1 = strlen( from );
 	ASSERT( t1 == strlen( to ) );
-	char * lpC;
+	LPSTR  lpC;
 	while ( ( lpC = strpbrk( ( LPSTR )str , from ) ) )
 	{
-		*lpC = to[ ( char * )memchr( from , *lpC , t1 ) - from ];
+		*lpC = to[ ( LPSTR  )memchr( from , *lpC , t1 ) - from ];
 	}
 }
 
 IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz ) // Written By Mohsen
 {
 	if ( sz == -1 ) sz = strlen( str );
-	char * lpHead;
-	while ( ( lpHead = ( char * )memchr( str , fromChar , sz ) ) )
+	LPSTR  lpHead;
+	while ( ( lpHead = ( LPSTR  )memchr( str , fromChar , sz ) ) )
 	{
 		*lpHead = toChar;
 	}
 }
 
 
-//IN_GENERAL void * removeChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
+//IN_GENERAL void_p removeChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )str;
-//	char * lpLastChr = basestr;
-//	while ( ( lpLastChr = ( char * )memchr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
+//	LPSTR  basestr = ( LPSTR  )str;
+//	LPSTR  lpLastChr = basestr;
+//	while ( ( lpLastChr = ( LPSTR  )memchr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
 //	{
 //		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
 //		sz--;
@@ -535,12 +537,12 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return sz ? basestr : NULL;
 //}
 
-//IN_GENERAL void * removeiChr( void * const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
+//IN_GENERAL void_p removeiChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )str;
-//	char * lpLastChr = basestr;
-//	while ( ( lpLastChr = ( char * )memichr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
+//	LPSTR  basestr = ( LPSTR  )str;
+//	LPSTR  lpLastChr = basestr;
+//	while ( ( lpLastChr = ( LPSTR  )memichr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
 //	{
 //		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
 //		sz--;
@@ -549,12 +551,12 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return sz ? basestr : NULL;
 //}
 //
-//IN_GENERAL void * removeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//IN_GENERAL void_p removeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )sMem;
-//	char * lpLastChr = basestr;
-//	while ( ( lpLastChr = ( char * )memchrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
+//	LPSTR  basestr = ( LPSTR  )sMem;
+//	LPSTR  lpLastChr = basestr;
+//	while ( ( lpLastChr = ( LPSTR  )memchrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
 //	{
 //		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
 //		memSz--;
@@ -563,12 +565,12 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return memSz ? basestr : NULL;
 //}
 //
-//IN_GENERAL void * removeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//IN_GENERAL void_p removeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )sMem;
-//	char * lpLastChr = basestr;
-//	while ( ( lpLastChr = ( char * )memichrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
+//	LPSTR  basestr = ( LPSTR  )sMem;
+//	LPSTR  lpLastChr = basestr;
+//	while ( ( lpLastChr = ( LPSTR  )memichrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
 //	{
 //		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
 //		memSz--;
@@ -577,13 +579,13 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return memSz ? basestr : NULL;
 //}
 
-//IN_GENERAL void * serializeChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//IN_GENERAL void_p serializeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )sMem;
-//	char * lpLastMem = basestr;
-//	char * lpChr = basestr;
-//	while ( ( lpChr = ( char * )memchrs( lpLastMem , memSz , chrs , chrsCount ) ) )
+//	LPSTR  basestr = ( LPSTR  )sMem;
+//	LPSTR  lpLastMem = basestr;
+//	LPSTR  lpChr = basestr;
+//	while ( ( lpChr = ( LPSTR  )memchrs( lpLastMem , memSz , chrs , chrsCount ) ) )
 //	{
 //		if ( lpChr == lpLastMem )
 //		{
@@ -600,13 +602,13 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return memSz ? sMem : NULL;
 //}
 //
-//IN_GENERAL void * serializeiChrs( void * const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void * const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
+//IN_GENERAL void_p serializeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
 //	ASSERT( pSz );
-//	char * basestr = ( char * )sMem;
-//	char * lpLastMem = basestr;
-//	char * lpChr = basestr;
-//	while ( ( lpChr = ( char * )memichrs( lpLastMem , memSz , chrs , chrsCount ) ) )
+//	LPSTR  basestr = ( LPSTR  )sMem;
+//	LPSTR  lpLastMem = basestr;
+//	LPSTR  lpChr = basestr;
+//	while ( ( lpChr = ( LPSTR  )memichrs( lpLastMem , memSz , chrs , chrsCount ) ) )
 //	{
 //		if ( lpChr == lpLastMem )
 //		{
@@ -868,4 +870,67 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 LPCSTR strihead( LPCSTR str , LPCSTR head )
 {
 	return stristr( str , head ) == str ? str : NULL;
+}
+
+status sendall( int socketfd , buffer buf , size_t * len ) // as beej book says
+{
+	size_t total = 0; // how many bytes we've snt
+	size_t byteleft = *len; // how many we have left to send
+	size_t n;
+
+	while ( total < *len )
+	{
+		n = ( size_t )send( socketfd , buf + total , byteleft , 0 );
+		if ( n == -1 ) { break; }
+		total += n;
+		byteleft -= n;
+	}
+	*len  = total; // return number actually sent
+	return n == -1 ? errGeneral : errOK; // return -1 on failure, 0 on success
+}
+
+status string_to_int( LPCSTR str , int * out )
+{
+	LPSTR  endptr;
+	long val;
+
+	errno = 0;  // reset errno before call
+	val = strtol( str , &endptr , 10 ); // base 10
+
+	// Check for conversion errors
+	if ( errno == ERANGE || val > INT_MAX || val < INT_MIN )
+	{
+		return errGeneral; // overflow/underflow
+	}
+
+	if ( endptr == str )
+	{
+		return errGeneral; // no digits were found
+	}
+
+	// Check for any extra non-digit characters
+	while ( *endptr != '\0' )
+	{
+		if ( *endptr != ' ' && *endptr != '\t' && *endptr != '\n' )
+		{
+			return errGeneral; // invalid character in string
+		}
+		endptr++;
+	}
+
+	*out = ( int )val;
+	return errOK; // success
+}
+
+void buff_fill_seq( buffer buf , size_t size )
+{
+	if ( !buf || size == 0 ) return;
+
+	int num = 1;
+	for ( size_t i = 0; i < size; i++ )
+	{
+		buf[ i ] = ( char )( '0' + num );   // store as character '1'..'9'
+		num++;
+		if ( num > 9 ) num = 1; // wrap back to 1
+	}
 }

@@ -4,7 +4,7 @@
 #define NP 0  // not provided
 
 //#ifndef _MSC_VER
-//	#define null (void *)0
+//	#define null (void_p)0
 //#endif
 
 #ifndef M_PI
@@ -121,7 +121,7 @@
 
 #define DEL( p ) FREE( p )
 #define DEL_AR( p ) FREE( p )
-#define FREE( p ) free( ( void * )p )
+#define FREE( p ) free( ( void_p )p )
 #define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
 #define DAC( x ) do { if( x ) { DEL( x ); x = NULL; } } while( 0 )
 
@@ -230,7 +230,7 @@
 #define _VERBOSE_ECHO(msg,...) do {\
 	SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
-#define VOID_RET ((void*)NULL)
+#define VOID_RET ((void_p)NULL)
 #define MAIN_BAD_RET (1/*Indicate an error*/)
 
 //#define ERR_RET( user_friendly_msg , RET ) 

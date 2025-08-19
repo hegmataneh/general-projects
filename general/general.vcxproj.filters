@@ -7,10 +7,22 @@
     <ClCompile Include="src\json.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\packet_queue.c">
+    <ClCompile Include="src\LamportBakeryAlgorithm.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\circbuf.c">
+    <ClCompile Include="src\dict.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\id_dict.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cirbuf_lockfree.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cirbuf_metric.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cirbuf_packet_sync.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,13 +82,25 @@
     <ClInclude Include="header\g_sys.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\packet_queue.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\circbuf.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="header\struct.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\LamportBakeryAlgorithm.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dict.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\id_dict.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cirbuf_lockfree.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cirbuf_packet_sync.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cirbuf_metric.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>
