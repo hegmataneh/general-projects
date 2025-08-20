@@ -254,3 +254,12 @@
 #ifdef Uses_strcmp
 	#define __INC_string
 #endif
+
+
+#ifdef Uses_sem_t
+	#define Uses_semaphore
+#endif
+
+#ifdef Uses_semaphore
+	#define __INC_semaphore
+#endif

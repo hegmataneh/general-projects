@@ -125,3 +125,6 @@
 	#include <ctype.h>
 #endif
 
+#ifdef __INC_semaphore
+	#include <semaphore.h>
+#endif

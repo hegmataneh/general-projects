@@ -59,3 +59,6 @@
 	#include <vcbuf_popblk.h>
 #endif
 
+#ifdef __INC_vcbuf_nonblk
+	#include <vcbuf_nonblk.h>
+#endif

@@ -2,6 +2,7 @@
 
 #if defined Uses_vcbuf_popblk || !defined __COMPILING
 
+// variable circular buffer block on pop
 typedef struct vcbuf_popblk // conveys synchronized producer/consumer
 {
 	buffer buf;         // raw memory for all rooms
