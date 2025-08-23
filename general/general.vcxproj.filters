@@ -31,6 +31,9 @@
     <ClCompile Include="src\vcbuf_nonblk.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\pub_sub.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -113,6 +116,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\vcbuf_nonblk.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\pub_sub.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

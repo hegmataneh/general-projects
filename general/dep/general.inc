@@ -7,9 +7,9 @@
 #include "../header/g_types.h"
 #include "../header/g_macros.h"
 #include "../header/g_consts.h"
-#include "../header/g_brk.h"
 #include "../header/g_sys.h" 
 #include "../header/g_funcs.h"
+#include "../header/g_brk.h"
 
 #ifdef __INC_struct
 	#include <struct.h>
@@ -61,4 +61,8 @@
 
 #ifdef __INC_vcbuf_nonblk
 	#include <vcbuf_nonblk.h>
+#endif
+
+#ifdef __INC_pub_sub
+	#include <pub_sub.h>
 #endif

@@ -1,4 +1,4 @@
-#define Uses_memcpy
+#define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_t
 #define Uses_cirbuf_packet_sync
 #include <general.dep>

@@ -76,6 +76,7 @@
 
 #ifdef Uses_strcasecmp
 	#define _POSIX_C_SOURCE 200809L
+	#define Uses_STR_funcs
 	#define __INC_strings
 #endif
 

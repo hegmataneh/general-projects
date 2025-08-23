@@ -20,8 +20,12 @@
 
 	
 #ifdef __ENGINE // app must provide def for M_MSG
+	#define MM_MSG(msg) do {\
+		M_showMsg( msg ); \
+		} while(0)
+
 	#define M_MSG {\
-		M_showMsg(); }
+		MM_MSG( __custom_message ); }
 #endif
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen
@@ -105,10 +109,14 @@
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
 //#define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 
+#define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; }
+#define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: status ___localError=d_error
+
 // begin ret and series
 //#define BEGIN_RET_CLOCK d_error=errOK;
-#define BEGIN_RET d_error=errOK; _ErrLvl=0; while( 0 ) { goto __ret; };  __ret: status ___localError=d_error; switch(_ErrLvl) {
-#define BEGR(lvl) d_error=errOK; _ErrLvl=lvl; while( 0 ) { goto __ret; }; __ret: status ___localError=d_error; switch(_ErrLvl) { case lvl:
+#define BEGIN_SMPL d_error=errOK; _ErrLvl=0; BGR_BEFORE_ACTION_PART; while(0) {
+#define BEGIN_RET d_error=errOK; _ErrLvl=0; BGR_BEFORE_ACTION_PART; switch(_ErrLvl) {
+#define BEGR(lvl) d_error=errOK; _ErrLvl=lvl; BGR_BEFORE_ACTION_PART; switch(_ErrLvl) { case lvl:
 
 #define V_END_RET } d_error=___localError;
 #define END_RET V_END_RET return d_error;
@@ -119,7 +127,7 @@
 //#define M_B_END_RET M_V_END_RET return ToBoolean(d_error==errOK);
 
 // no case
-#define V_RET d_error=errOK; while( 0 ) { goto __ret; }; __ret: ;
+#define V_RET d_error=errOK; BGR_DUMMY_WHILE; __ret: ;
 #define RET V_RET return d_error;
 //#define B_RET V_RET return ToBoolean(d_error==errOK);
 
@@ -137,6 +145,12 @@
 
 #define NEWSTR(var,str,lvl)\
 	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
+
+#define M_MALLOC_AR(var,lvl)\
+	M_BREAK_IF(!(var=MALLOC_AR(var,1)),errMemoryLow,lvl)
+
+#define MM_MALLOC_AR(var,lvl,msg)\
+	MM_BREAK_IF(!(var=MALLOC_AR(var,1)),errMemoryLow,lvl,msg)
 
 #endif
 

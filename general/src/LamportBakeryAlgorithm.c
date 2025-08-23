@@ -1,3 +1,4 @@
+#define Uses_MEMSET_ZERO
 #define Uses_BakeryAl
 #include <general.dep>
 

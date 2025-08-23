@@ -23,9 +23,11 @@ LPCSTR read_file( LPCSTR path , buffer pInBuffer /*= if NULL alloc memory so rel
 //----socket functions------------------------------------------------------
 void _close_socket( int * socket_id );
 status sendall( int socketfd , buffer buf , size_t * len );
+int peerTcpClosed( int socketfd );
 
 
 //----error functions------------------------------------------------------
+WEAK_ATTR void M_showMsg( LPCSTR msg );
 LPCSTR internalErrorStr( status errValue );
 status internalErrorVal( LPCSTR errStr );
 LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
@@ -95,3 +97,4 @@ IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 //----buffer functions------------------------------------------------------
 void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
+

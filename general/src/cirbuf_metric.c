@@ -1,5 +1,4 @@
-#define Uses_memset
-#define Uses_calloc
+#define Uses_MEMSET_ZERO
 #define Uses_cbuf_metric
 #include <general.dep>
 

@@ -1,4 +1,4 @@
-﻿#define Uses_strcmp
+﻿#define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_t
 #define Uses_id_dict
 #include <general.dep>

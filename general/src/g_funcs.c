@@ -15,7 +15,7 @@
 #define Uses_send
 #define Uses_basename
 #define Uses_strlen
-#define Uses_malloc
+#define Uses_MEMSET_ZERO
 #define Uses_close
 #define Uses_va_list
 #define Uses_time_t
@@ -31,14 +31,13 @@
 
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out","peer closed"};
+static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out","peer closed","OutofRanje","MaximumExceeded"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
 //-------------------------------------------------------------------------
 const char EOS = '\0'; // 0
-//const WCHAR WEOS = _WT('\0'); // 0
 const char LF = '\n'; // line feed 10
 const char CR = '\r'; // carriage return 13
 
@@ -84,6 +83,12 @@ _EXPORT LPCSTR internalErrorStr(status errValue)
 	}
 	return "Error value out of range";
 }
+
+
+//WEAK_ATTR void M_showMsg( LPCSTR msg )
+//{
+//
+//}
 
 LPSTR newStr( LPCSTR str )
 {
@@ -971,4 +976,15 @@ void dump_buffer( const buffer buff , size_t size )
 
 		printf( "\n" );
 	}
+}
+
+int peerTcpClosed( int socketfd )
+{
+	char c;
+	ssize_t n = recv( socketfd , &c , 1 , MSG_PEEK | MSG_DONTWAIT );
+	if ( n == 0 )
+	{
+		return 1;
+	}
+	return 0;
 }

@@ -7,19 +7,6 @@
 //	#define null (void_p)0
 //#endif
 
-#ifndef M_PI
-	#define M_PI 3.1415926535897932384626433832795
-#endif
-
-#ifndef M_2_PI
-	#define M_2_PI		6.283185307179586476925286766559
-#endif
-#define PI_2		1.57079632679489662
-#define PI_180		0.01745329251994329
-#define M_3_PI_2	4.71238898038468985
-
-#define PHI			1.618
-
 #define PRECISION_OF_DOUBLE 1e-10
 
 //#if defined Uses_VECTOR_LEN || !defined __COMPILING
@@ -43,29 +30,22 @@
 #define MAKE_DWORD(hiWord,loWord)			((DWORD)(((WORD)(((DWORD_PTR)(loWord)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(hiWord)) & 0xffff))) << 16))
 
 //-------------------------------------------------------------------------
-//#if defined __GNUC__
+#if defined __GNUC__
 	/* in general, when static libraries are being made,
 	 * aya mishavad chize moshtaraki ra beyne platform-ha peyda kard. dar symbian, vaghti static
 	 * library darad sakhteh mishavad __LIB__ define shodeh ast.
 	 */
 	#define _EXPORT
 	#define _IMPORT
-//#else
+
+
+	#define WEAK_ATTR __attribute__( ( weak ) )
+	#define STRONG_ATTR
+
+#else
 //	#define _EXPORT __declspec(dllexport)
 //	#define _IMPORT __declspec(dllimport)
-//#endif
-
-#if defined Uses_strcasecmp || !defined __COMPILING
-
-#define stricmp _stricmp
-#define _stricmp strcasecmp
-
 #endif
-
-
-//#define ____TO_STRING(s) #s
-//#define ___TO_STRING(s) (____TO_STRING(s))
-//#define __TO_STRING(s) ((LPCSTR)(___TO_STRING(s)))
 
 //-------------------------------------------------------------------------
 //#define ERROR_DEF(err) status err=internalErrorVal((LPCSTR)#err)
@@ -74,8 +54,20 @@
 //#define LOCAL_ERROR(err) //static ERROR_DEF(err)
 //#define GLOBAL_ERROR(err) //_EXPORT ERROR_DEF(err)
 
-//-------------------------------------------------------------------------
+
+//----- string macro --------------------------------------------------------------------
 #if defined Uses_STR_funcs || !defined __COMPILING
+
+#if defined Uses_strcasecmp || !defined __COMPILING
+
+#define stricmp _stricmp
+#define _stricmp strcasecmp
+
+#endif
+
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+
 
 #define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 #define STRCPY(s1,s2)\
@@ -96,11 +88,14 @@
 #define iSTR_SAME( a , b ) ( stricmp( a , b ) == 0 )
 #define iSTR_DIFF( a , b ) ( stricmp( a , b ) != 0 )
 
-#endif
-
 #define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 
+#endif
+
+
+
 //-------------------------------------------------------------------------
+#if defined Uses_memory_funcs || !defined __COMPILING
 
 #define MALLOC( size ) malloc( size )
 #define MALLOC_AR( p , count ) ( ( __typeof__( *p ) * )malloc( ( size_t )count * sizeof( *p ) ) )
@@ -125,29 +120,8 @@
 #define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
 #define DAC( x ) do { if( x ) { DEL( x ); x = NULL; } } while( 0 )
 
+#endif
 
-
-
-//-------------------------------------------------------------------------
-#define G_SCHAR_MIN  ((schar)0x80)				// -128
-#define G_SCHAR_MAX  ((schar)-1^G_SCHAR_MIN)	// 127
-#define G_UCHAR_MIN  ((uchar)0x00)				// 0
-#define G_UCHAR_MAX  ((uchar)-1^G_UCHAR_MIN)	// 255
-
-#define G_SSHORT_MIN ((sshort)0x8000)			// -32768
-#define G_SSHORT_MAX ((sshort)-1^G_SSHORT_MIN)	// 32767
-#define G_USHORT_MIN ((ushort)0x0000)			// 0
-#define G_USHORT_MAX ((ushort)-1^G_USHORT_MIN)	// 65535
-
-#define G_SLONG_MIN  ((slong)0x80000000L)		// -2,147,483,648
-#define G_SLONG_MAX  ((slong)-1^G_SLONG_MIN)	// 2,147,483,647
-#define G_ULONG_MIN  ((ulong)0x00000000L)		// 0
-#define G_ULONG_MAX  ((ulong)-1^G_ULONG_MIN)	// 4,294,967,295
-
-#define G_SLONGLONG_MIN  ((sint64)0x8000000000000000i64)	// -9,223,372,036,854,775,808
-#define G_SLONGLONG_MAX  ((sint64)-1^G_SLONGLONG_MIN)		// 9,223,372,036,854,775,807
-#define G_ULONGLONG_MIN  ((uint64)0x0000000000000000i64)	// 0
-#define G_ULONGLONG_MAX  ((uint64)-1^G_ULONGLONG_MIN)		// 18,446,744,073,709,551,615
 
 
 //-------------------------------------------------------------------------

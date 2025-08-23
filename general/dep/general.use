@@ -1,8 +1,8 @@
 #define Uses_stricmp
 #define Uses_timespec
 #define Uses_size_t
-#define Uses_M_SERIES_MACROS
-#define Uses_INIT_BREAKABLE_FXN
+//#define Uses_M_SERIES_MACROS
+//#define Uses_INIT_BREAKABLE_FXN
 #define Uses_FILE
 #define Uses_timeval
 
@@ -20,6 +20,7 @@
 #endif
 
 #ifdef Uses_INIT_BREAKABLE_FXN
+	#define Uses_M_SERIES_MACROS
 	#define __INC_brk
 #endif
 
@@ -157,3 +158,78 @@
 	#define Uses_sem_t
 	#define __INC_vcbuf_nonblk
 #endif
+
+#ifdef Uses_pub_sub
+	#define __INC_pub_sub
+#endif
+
+#ifdef Uses_memory_funcs
+	#define Uses_memset
+	#define __INC_macros
+#endif
+
+#ifdef Uses_MALLOC
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MALLOC_AR
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_REALLOC
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_CALLOC
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMSET_ZERO_T
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMSET_ZERO
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMCPY_S
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMCPY
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMCPY_AR
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMCMP_T
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_MEMCMP
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_DEL
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_DEL_AR
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_FREE
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_DAC_PTR
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+#ifdef Uses_DAC
+	#define Uses_memory_funcs
+	#define __INC_macros
+#endif
+
