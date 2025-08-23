@@ -27,7 +27,7 @@ int peerTcpClosed( int socketfd );
 
 
 //----error functions------------------------------------------------------
-WEAK_ATTR void M_showMsg( LPCSTR msg );
+_WEAK_ATTR void M_showMsg( LPCSTR msg );
 LPCSTR internalErrorStr( status errValue );
 status internalErrorVal( LPCSTR errStr );
 LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );

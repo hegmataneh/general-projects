@@ -1233,7 +1233,7 @@ void M_showMsg( const char * msg );
 
 #define INIT_BREAKABLE_FXN() \
 	status d_error;
-	uchar _ErrLvl; \
+	int _ErrLvl; \
 	char __custom_message[ 256 ] = "";
 
 #define BREAK_OK(lvl)\

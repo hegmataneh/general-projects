@@ -85,7 +85,7 @@ _EXPORT LPCSTR internalErrorStr(status errValue)
 }
 
 
-//WEAK_ATTR void M_showMsg( LPCSTR msg )
+//_WEAK_ATTR void M_showMsg( LPCSTR msg )
 //{
 //
 //}

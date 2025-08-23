@@ -233,3 +233,6 @@
 	#define __INC_macros
 #endif
 
+#ifdef Uses_distributor_t
+	#define Uses_pub_sub
+#endif

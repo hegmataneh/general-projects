@@ -19,14 +19,21 @@
 	make_msg_appnd_sys_err( __custom_message , sizeof( __custom_message ) , __snprintf( __custom_message , sizeof( __custom_message ) , "(ln%d)-" fmt , __LINE__ , __VA_ARGS__ ) ); } while ( 0 )
 
 	
-#ifdef __ENGINE // app must provide def for M_MSG
+//#ifdef __ENGINE // app must provide def for M_MSG
 	#define MM_MSG(msg) do {\
 		M_showMsg( msg ); \
 		} while(0)
 
+	#ifdef M_MSG
+		#undef M_MSG
+	#endif
+
 	#define M_MSG {\
 		MM_MSG( __custom_message ); }
-#endif
+
+	#define IF_M_MSG if(d_error!=errOK){\
+		M_MSG; }
+//#endif
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen
 #define MME_BREAK(err,lvl,msg,echo)\
@@ -80,7 +87,7 @@
 
 #define INIT_BREAKABLE_FXN() \
 	status d_error = errOK;  /*c does not have class and data member*/\
-	uchar _ErrLvl = 0; \
+	int _ErrLvl = 0; \
 	char __custom_message[ 256 ] = "";
 
 #define BREAK_OK(lvl)\
@@ -122,7 +129,7 @@
 #define END_RET V_END_RET return d_error;
 //#define B_END_RET V_END_RET return ToBoolean(d_error==errOK);
 
-#define M_V_END_RET V_END_RET M_MSG
+#define M_V_END_RET V_END_RET IF_M_MSG
 #define M_END_RET M_V_END_RET return d_error;
 //#define M_B_END_RET M_V_END_RET return ToBoolean(d_error==errOK);
 
@@ -131,7 +138,7 @@
 #define RET V_RET return d_error;
 //#define B_RET V_RET return ToBoolean(d_error==errOK);
 
-#define M_V_RET V_RET M_MSG
+#define M_V_RET V_RET IF_M_MSG
 #define M_RET M_V_RET return d_error;
 //#define M_B_RET M_V_RET return ToBoolean(d_error==errOK);
 

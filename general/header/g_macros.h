@@ -39,8 +39,8 @@
 	#define _IMPORT
 
 
-	#define WEAK_ATTR __attribute__( ( weak ) )
-	#define STRONG_ATTR
+	#define _WEAK_ATTR __attribute__( ( weak ) )
+	#define _STRONG_ATTR
 
 #else
 //	#define _EXPORT __declspec(dllexport)
@@ -217,5 +217,6 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 #define _THREAD_FXN /*identified as thread callback fxn*/
+#define _CALLBACK_FXN
 
 #endif
