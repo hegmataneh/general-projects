@@ -14,7 +14,7 @@ status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size )
 	if ( !vc ) return errArg;
 
 	vcbuf_nb_destroy( vc );
-	MEMSET_ZERO( vc , 1 );
+	MEMSET_ZERO_O( vc );
 
 	size_t buf_size = capacity * ( ROOM_SIZE( room_size ) );
 	vc->buf = MALLOC( buf_size );
@@ -41,7 +41,7 @@ void vcbuf_nb_destroy( vcbuf_nb * vc )
 	if ( vc->buf )
 	{
 		DAC( vc->buf );
-		MEMSET_ZERO( vc , 1 );
+		MEMSET_ZERO_O( vc );
 	}
 }
 

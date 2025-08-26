@@ -1,8 +1,6 @@
 #define Uses_stricmp
 #define Uses_timespec
 #define Uses_size_t
-//#define Uses_M_SERIES_MACROS
-//#define Uses_INIT_BREAKABLE_FXN
 #define Uses_FILE
 #define Uses_timeval
 
@@ -169,26 +167,32 @@
 #endif
 
 #ifdef Uses_MALLOC
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
 #ifdef Uses_MALLOC_AR
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
 #ifdef Uses_REALLOC
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
 #ifdef Uses_CALLOC
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
 #ifdef Uses_MEMSET_ZERO_T
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
 #ifdef Uses_MEMSET_ZERO
+	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
@@ -235,4 +239,48 @@
 
 #ifdef Uses_distributor_t
 	#define Uses_pub_sub
+#endif
+
+#ifdef Uses_token_item_cl_t
+	#define Uses_TokenRing_cl
+#endif
+
+#ifdef Uses_token_ring_cl_t
+	#define Uses_TokenRing_cl
+#endif
+
+#ifdef Uses_TokenRing_cl
+	#define Uses_pthread_mutex_t
+	#define __INC_TokenRing_cl
+#endif
+
+
+#ifdef Uses_token_item_p_t
+	#define Uses_TokenRing_p
+#endif
+
+#ifdef Uses_token_ring_p_t
+	#define Uses_TokenRing_p
+#endif
+
+#ifdef Uses_TokenRing_p
+	#define Uses_pthread_mutex_t
+	#define __INC_TokenRing_p
+#endif
+
+#ifdef Uses_dyn_arr
+	#define __INC_dyn_arr
+#endif
+
+#ifdef Uses_dict_o
+	#define __INC_dict_o
+#endif
+
+#ifdef Uses_dict_o_t
+	#define Uses_dict_o
+#endif
+
+#ifdef Uses_MEMSET_ZERO_O
+	#define Uses_memset
+	#define Uses_memory_funcs
 #endif

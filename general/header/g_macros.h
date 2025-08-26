@@ -98,27 +98,33 @@
 #if defined Uses_memory_funcs || !defined __COMPILING
 
 #define MALLOC( size ) malloc( size )
+#define MALLOC_ONE( p ) MALLOC_AR( p , 1 )
 #define MALLOC_AR( p , count ) ( ( __typeof__( *p ) * )malloc( ( size_t )count * sizeof( *p ) ) )
+
 #define REALLOC( ptr , size ) realloc( ptr , size )
+#define REALLOC_ONE( p ) REALLOC_AR( p , 1 )
+#define REALLOC_AR( p , count ) ( ( __typeof__( *p ) * )realloc( p , ( size_t )count * sizeof( *p ) ) )
+
 #define CALLOC calloc
 //#define NEWBUF( type , n ) ( type * )MALLOC( sizeof( type ) * ( n ) )
 //#define NEW( type ) ( ( type * )MALLOC( sizeof( type ) ) )
 
-#define MEMSET_ZERO_T( p , type , n ) memset( p , 0 , sizeof( type ) * ( size_t )n )
-#define MEMSET_ZERO( p , n ) memset( (p) , 0 , ( size_t )n * sizeof( *(p) ) )
+#define MEMSET_ZERO_T( p , type , n )	memset( p , 0 , sizeof( type ) * ( size_t )n )
+#define MEMSET_ZERO( p , n )			memset( (p) , 0 , ( size_t )n * sizeof( *(p) ) )
+#define MEMSET_ZERO_O( p )				memset( p , 0 , sizeof( *p ) )
 
-#define MEMCPY_S( a , b , size ) memcpy( a , b , size )
-#define MEMCPY( a , b ) memcpy( a , b , sizeof( *a ) )
-#define MEMCPY_AR( a , b , count ) memcpy( a , b , sizeof( *a ) * ( size_t )count )
+#define MEMCPY_S( a , b , size )	memcpy( a , b , size )
+#define MEMCPY( a , b )				memcpy( a , b , sizeof( *a ) )
+#define MEMCPY_AR( a , b , count )	memcpy( a , b , sizeof( *a ) * ( size_t )count )
 
-#define MEMCMP_T( a , b , type ) memcmp( a , b , sizeof type )
-#define MEMCMP( a , b ) memcmp( a , b , sizeof *a )
+#define MEMCMP_T( a , b , type )	memcmp( a , b , sizeof type )
+#define MEMCMP( a , b )				memcmp( a , b , sizeof *a )
 
-#define DEL( p ) FREE( p )
-#define DEL_AR( p ) FREE( p )
+//#define DEL( p ) FREE( p )
+//#define DEL_AR( p ) FREE( p )
 #define FREE( p ) free( ( void_p )p )
-#define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
-#define DAC( x ) do { if( x ) { DEL( x ); x = NULL; } } while( 0 )
+//#define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
+#define DAC( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
 
 #endif
 
@@ -178,6 +184,15 @@
 
 #define ROUND_UP( i , x ) ( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
+#ifdef _IN
+#error
+#endif
+#define _IN /*input argument*/
+
+#ifdef _OUT
+#error
+#endif
+#define _OUT /*output argument*/
 
 #if defined Uses_Remote_vs_prj || !defined __COMPILING
 
@@ -218,5 +233,7 @@
 
 #define _THREAD_FXN /*identified as thread callback fxn*/
 #define _CALLBACK_FXN
+#define _REGULAR_FXN
+#define _PRIVATE_FXN
 
 #endif

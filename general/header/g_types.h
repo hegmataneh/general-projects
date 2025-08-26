@@ -24,9 +24,11 @@
 typedef long long __int64;				/*in ubuntu gcc -> 8 bytes*/
 typedef unsigned long long __int64u;	/*in ubuntu gcc -> 8 bytes*/
 typedef signed long long __int64s;		/*in ubuntu gcc -> 8 bytes*/
-typedef const char * LPCSTR;	/*in ubuntu gcc -> 8 bytes*/
 
 typedef char * LPSTR;			/*in ubuntu gcc -> 8 bytes*/
+typedef const char * LPCSTR;	/*in ubuntu gcc -> 8 bytes*/ // keep this style
+
+
 
 typedef LPCSTR LPCTSTR;			/*in ubuntu gcc -> 8 bytes*/
 typedef LPSTR LPTSTR;			/*in ubuntu gcc -> 8 bytes*/
@@ -68,7 +70,7 @@ typedef int FILEADDR;
 typedef long status;
 // for when a char * is treated as a string, usually null terminated
 // variables of this type are not d_valid to be null
-typedef char * string;
+typedef LPSTR string;
 // for when a char * is treated as a buffer, usually non-null terminated
 // variables of this type may be null
 typedef char * buffer;

@@ -21,13 +21,13 @@ typedef struct entry
 	LPSTR key;             // dynamically allocated copy of the key
 	long value;            // unique incremental ID
 	struct entry * next;
-} entry_t;
+} id_dict_entry_t;
 
 /* Dictionary structure */
 typedef struct id_dict
 {
 	size_t capacity;			// number of buckets
-	entry_t ** buckets;			// array of bucket heads
+	id_dict_entry_t ** buckets;			// array of bucket heads
 	pthread_mutex_t * locks;	// per-bucket mutexes
 	long counter;				// global ID counter
 	pthread_mutex_t counter_lock;
@@ -44,7 +44,7 @@ typedef struct id_dict
  * Returns:
  *   Pointer to a dictionary, or NULL on allocation failure.
  */
- status dict_init( id_dict_t ** pdict , size_t capacity );
+ status id_dict_init( id_dict_t ** pdict , size_t capacity );
 
 /*
  * dict_free
@@ -54,7 +54,7 @@ typedef struct id_dict
  * Parameters:
  *   d - pointer to dictionary (NULL is safe).
  */
-void dict_free( id_dict_t * d );
+void id_dict_free( id_dict_t * d );
 
 /*
  * dict_put_or_get
@@ -72,7 +72,7 @@ void dict_free( id_dict_t * d );
  *   Non-negative ID (starting at 0) associated with the key.
  *   -1 on allocation failure.
  */
-long dict_put_or_get( id_dict_t * d , LPCSTR key );
+long id_dict_put_or_get( id_dict_t * d , LPCSTR key );
 
 #endif
 

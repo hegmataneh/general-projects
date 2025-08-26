@@ -66,3 +66,19 @@
 #ifdef __INC_pub_sub
 	#include <pub_sub.h>
 #endif
+
+#ifdef __INC_TokenRing_cl
+	#include <TokenRing_cl.h>
+#endif
+
+#ifdef __INC_TokenRing_p
+	#include <TokenRing_p.h>
+#endif
+
+#ifdef __INC_dyn_arr
+	#include <dyn_arr.h>
+#endif
+
+#ifdef __INC_dict_o
+	#include <dict_o.h>
+#endif

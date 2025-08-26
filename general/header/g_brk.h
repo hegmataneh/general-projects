@@ -69,16 +69,17 @@
 /* ageh err function call nabasheh, append o crop ham lazem nist anjam besheh, vali khob
  * ma keh nemitunim in ro tashkhis bedim.
  */
-//#define MME_BREAK_STAT(err,lvl,msg,echo)
-//	do {
-//		d_error=(status)err;
-//		if(d_error!=errOK)
-//		{
-//			M_MK_ERR_MSG(msg,echo);
-//			_ErrLvl=lvl;
-//			goto __ret;
-//		}
-//	} while(0)
+#define MME_BREAK_STAT(err,lvl,msg,echo) \
+do \
+{ \
+	d_error = ( status )err; \
+	if ( d_error != errOK ) \
+	{ \
+		M_MK_ERR_MSG( msg , echo ); \
+		_ErrLvl = lvl; \
+		goto __ret; \
+	} \
+} while ( 0 )
 
 #endif
 
@@ -99,7 +100,7 @@
 
 //#define BREAK(err,lvl) MME_BREAK(err,lvl,NULL,False)
 #define BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,False) /*semicolon after this macro*/
-//#define BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,False)
+#define BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,False)
 
 // N: indicates that this must give a message (is indeed of type M_ series macros), but since this message iterates a lot, we want to temporarily disable it. at last we must get no message if we convert them back to M_.
 //#define N_BREAK BREAK
@@ -109,12 +110,12 @@
 // when giving the default message is enough and no additional msg is required
 //#define M_BREAK(err,lvl) MME_BREAK(err,lvl,NULL,True)
 #define M_BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,True) /*semicolon after this macro*/
-//#define M_BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,True)
+#define M_BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,True)
 
 //#define MM_BREAK(err,lvl,msg) MME_BREAK(err,lvl,msg,True)
 #define MM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,msg,true) /*semicolon after this macro*/
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
-//#define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
+#define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 
 #define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; }
 #define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: status ___localError=d_error
@@ -153,11 +154,17 @@
 #define NEWSTR(var,str,lvl)\
 	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
 
-#define M_MALLOC_AR(var,lvl)\
-	M_BREAK_IF(!(var=MALLOC_AR(var,1)),errMemoryLow,lvl)
+#define M_MALLOC_AR(var,count,lvl)\
+	M_BREAK_IF(!(var=MALLOC_AR(var,count)),errMemoryLow,lvl)
 
-#define MM_MALLOC_AR(var,lvl,msg)\
-	MM_BREAK_IF(!(var=MALLOC_AR(var,1)),errMemoryLow,lvl,msg)
+#define MM_MALLOC_AR(var,count,lvl,msg)\
+	MM_BREAK_IF(!(var=MALLOC_AR(var,count)),errMemoryLow,lvl,msg)
+
+#define M_MALLOC_ONE(var,lvl)\
+	M_BREAK_IF(!(var=MALLOC_ONE(var)),errMemoryLow,lvl)
+
+#define MM_MALLOC_ONE(var,lvl,msg)\
+	MM_BREAK_IF(!(var=MALLOC_ONE(var)),errMemoryLow,lvl,msg)
 
 #endif
 

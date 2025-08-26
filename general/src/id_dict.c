@@ -13,14 +13,14 @@ static ulong hash( LPCSTR str )
 	return h;
 }
 
-status dict_init( id_dict_t ** pdict , size_t capacity)
+status id_dict_init( id_dict_t ** pdict , size_t capacity)
 {
-	(*pdict) = MALLOC_AR( *pdict , 1 );
+	(*pdict) = MALLOC_ONE( *pdict );
 	if ( !(*pdict) ) return errGeneral;
-	MEMSET_ZERO( (*pdict) , 1 );
+	MEMSET_ZERO_O( (*pdict) );
 
 	(*pdict)->capacity = capacity;
-	(*pdict)->buckets = calloc( capacity , sizeof( entry_t * ) );
+	(*pdict)->buckets = calloc( capacity , sizeof( id_dict_entry_t * ) );
 	(*pdict)->locks = malloc( sizeof( pthread_mutex_t ) * capacity );
 	(*pdict)->counter = 0;
 
@@ -39,16 +39,16 @@ status dict_init( id_dict_t ** pdict , size_t capacity)
 	return errOK;
 }
 
-void dict_free( id_dict_t * d )
+void id_dict_free( id_dict_t * d )
 {
 	if ( !d ) return;
 
 	for ( size_t i = 0; i < d->capacity; i++ )
 	{
-		entry_t * e = d->buckets[ i ];
+		id_dict_entry_t * e = d->buckets[ i ];
 		while ( e )
 		{
-			entry_t * tmp = e;
+			id_dict_entry_t * tmp = e;
 			e = e->next;
 			DAC( tmp->key );
 			DAC( tmp );
@@ -62,7 +62,7 @@ void dict_free( id_dict_t * d )
 	DAC( d );
 }
 
-long dict_put_or_get( id_dict_t * d , LPCSTR key )
+long id_dict_put_or_get( id_dict_t * d , LPCSTR key )
 {
 	if ( !d || !key ) return -1;
 
@@ -71,7 +71,7 @@ long dict_put_or_get( id_dict_t * d , LPCSTR key )
 	/* Lock bucket */
 	pthread_mutex_lock( &d->locks[ h ] );
 
-	entry_t * e = d->buckets[ h ];
+	id_dict_entry_t * e = d->buckets[ h ];
 	while ( e )
 	{
 		if ( strcmp( e->key , key ) == 0 )
@@ -88,7 +88,7 @@ long dict_put_or_get( id_dict_t * d , LPCSTR key )
 	long new_id = d->counter++;
 	pthread_mutex_unlock( &d->counter_lock );
 
-	entry_t * new_e = malloc( sizeof( entry_t ) );
+	id_dict_entry_t * new_e = malloc( sizeof( id_dict_entry_t ) );
 	if ( !new_e )
 	{
 		pthread_mutex_unlock( &d->locks[ h ] );

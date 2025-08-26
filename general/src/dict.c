@@ -1,21 +1,9 @@
+#define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
 #define Uses_dict
 #include <general.dep>
 
-typedef struct entry
-{
-	LPSTR  key;
-	LPSTR  value;
-	struct entry * next;
-} entry_t;
-
-struct dict
-{
-	size_t capacity;
-	entry_t ** buckets;
-	pthread_mutex_t * locks;
-};
 
 // Simple string hash function (djb2)
 static ulong hash( LPCSTR str )
@@ -27,34 +15,96 @@ static ulong hash( LPCSTR str )
 	return h;
 }
 
-status dict_init( dict_t ** dd , size_t capacity )
+status dict_init( dict_t * dd )
 {
-	(*dd) = malloc( sizeof( dict_t ) );
-	if ( !(*dd) ) return errGeneral;
+	MEMSET_ZERO_O( dd );
+	return errOK;
+}
 
-	(*dd)->capacity = capacity;
-	(*dd)->buckets = calloc( capacity , sizeof( entry_t * ) );
-	(*dd)->locks = malloc( sizeof( pthread_mutex_t ) * capacity );
-
-	if ( !(*dd)->buckets || !(*dd)->locks )
+// Expand bucket array dynamically if needed
+status dict_expand( dict_t * d , size_t new_size )
+{
+	if ( new_size <= d->size ) return errOK;
+	d->buckets = REALLOC_AR( d->buckets , new_size );
+	if ( !d->buckets )
 	{
-		DAC( (*dd)->buckets );
-		DAC( (*dd)->locks );
-		DAC( (*dd) );
-		return errGeneral;
+		return errMemoryLow;
+	}
+	for ( size_t i = d->size; i < new_size; i++ )
+	{
+		d->buckets[ i ] = NULL;
+	}
+	d->size = new_size;
+	return errOK;
+}
+
+status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
+{
+	unsigned long idx = hash(key);
+
+	// Ensure buckets array is large enough
+	if ( idx >= d->size )
+	{
+		if ( dict_expand( d , idx + 1 ) != errOK )
+		{
+			return errMemoryLow;
+		}
 	}
 
-	for ( size_t i = 0; i < capacity; i++ )
-		pthread_mutex_init( &(*dd)->locks[ i ] , NULL );
+	entry_t * e = d->buckets[ idx ];
+	while ( e )
+	{
+		if ( strcmp( e->key , key ) == 0 )
+		{
+			// Update existing
+			DAC( e->value );
+			e->value = strdup( value );
+			return errOK;
+		}
+		e = e->next;
+	}
+
+	// Insert new
+	entry_t * new_e = MALLOC_ONE( new_e );
+	if ( !new_e )
+	{
+		return errMemoryLow;
+	}
+	new_e->key = strdup( key );
+	new_e->value = strdup( value );
+	new_e->next = d->buckets[ idx ];
+	d->buckets[ idx ] = new_e;
+
+	d->key_count++; // new key added
 
 	return errOK;
+}
+
+LPCSTR dict_get( dict_t * d , LPCSTR key )
+{
+	unsigned long idx = hash( key );
+	if ( idx >= d->size ) return NULL;
+
+	entry_t * e = d->buckets[ idx ];
+	while ( e )
+	{
+		if ( strcmp( e->key , key ) == 0 )
+			return e->value;
+		e = e->next;
+	}
+	return NULL;
+}
+
+size_t dict_count( dict_t * d )
+{
+	return d->key_count;
 }
 
 void dict_free( dict_t * d )
 {
 	if ( !d ) return;
 
-	for ( size_t i = 0; i < d->capacity; i++ )
+	for ( size_t i = 0; i < d->size; i++ )
 	{
 		entry_t * e = d->buckets[ i ];
 		while ( e )
@@ -65,67 +115,28 @@ void dict_free( dict_t * d )
 			DAC( tmp->value );
 			DAC( tmp );
 		}
-		pthread_mutex_destroy( &d->locks[ i ] );
 	}
 
 	DAC( d->buckets );
-	DAC( d->locks );
-	DAC( d );
 }
 
-status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
+status dict_get_keys( dict_t * d , _OUT LPCSTR ** strs , _OUT int * count )
 {
-	ulong h = hash( key ) % d->capacity;
-	pthread_mutex_lock( &d->locks[ h ] );
+	INIT_BREAKABLE_FXN();
+	*count = ( int )dict_count( d );
+	M_MALLOC_AR( *strs , d->key_count , 0 );
+	size_t pos = 0;
 
-	entry_t * e = d->buckets[ h ];
-	while ( e )
+	for ( size_t i = 0; i < d->size; i++ )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		entry_t * e = d->buckets[ i ];
+		while ( e )
 		{
-			// Update existing
-			DAC( e->value );
-			e->value = strdup( value );
-			pthread_mutex_unlock( &d->locks[ h ] );
-			return errOK;
+			*( (*strs) + pos ) = ( LPCSTR )e->key;
+			pos++;
+			e = e->next;
 		}
-		e = e->next;
 	}
-
-	// Insert new
-	entry_t * new_e = malloc( sizeof( entry_t ) );
-	if ( !new_e )
-	{
-		pthread_mutex_unlock( &d->locks[ h ] );
-		return errGeneral;
-	}
-	new_e->key = strdup( key );
-	new_e->value = strdup( value );
-	new_e->next = d->buckets[ h ];
-	d->buckets[ h ] = new_e;
-
-	pthread_mutex_unlock( &d->locks[ h ] );
-	return errOK;
+	BEGIN_SMPL
+	END_RET
 }
-
-LPCSTR dict_get( dict_t * d , LPCSTR key )
-{
-	ulong h = hash( key ) % d->capacity;
-	pthread_mutex_lock( &d->locks[ h ] );
-
-	entry_t * e = d->buckets[ h ];
-	while ( e )
-	{
-		if ( strcmp( e->key , key ) == 0 )
-		{
-			LPCSTR val = e->value;
-			pthread_mutex_unlock( &d->locks[ h ] );
-			return val; // pointer valid until updated
-		}
-		e = e->next;
-	}
-
-	pthread_mutex_unlock( &d->locks[ h ] );
-	return NULL;
-}
-

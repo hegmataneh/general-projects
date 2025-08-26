@@ -21,7 +21,8 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -11,
+	NEXT_GENERAL_ERROR_VALUE = -12,
+	errNoPeer = -11,
 	errMaximumExceeded = -10,
 	errOutofRanje = -9,
 	errPeerClosed = -8,

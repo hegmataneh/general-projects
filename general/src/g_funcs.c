@@ -31,7 +31,8 @@
 
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out","peer closed","OutofRanje","MaximumExceeded"};
+static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out",\
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -987,4 +988,29 @@ int peerTcpClosed( int socketfd )
 		return 1;
 	}
 	return 0;
+}
+
+
+int strsstr( LPCSTR * strs , int strs_count , LPCSTR target )
+{
+	for ( int i = 0; i < strs_count; i++ )
+	{
+		if ( strcmp( target , strs[ i ] ) == 0 )
+		{
+			return i;  // found at index i
+		}
+	}
+	return -1;  // not found
+}
+
+int strsistr( LPCSTR * strs , int strs_count , LPCSTR target )
+{
+	for ( int i = 0; i < strs_count; i++ )
+	{
+		if ( stricmp( target , strs[ i ] ) == 0 )
+		{
+			return i;  // found at index i
+		}
+	}
+	return -1;  // not found
 }

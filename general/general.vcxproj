@@ -87,13 +87,17 @@
   <ItemGroup>
     <ClCompile Include="src\cirbuf_lockfree.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
+    <ClCompile Include="src\cirbuf_packet_sync.c" />
     <ClCompile Include="src\dict.c" />
+    <ClCompile Include="src\dict_o.c" />
+    <ClCompile Include="src\dyn_arr.c" />
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\id_dict.c" />
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
-    <ClCompile Include="src\cirbuf_packet_sync.c" />
     <ClCompile Include="src\pub_sub.c" />
+    <ClCompile Include="src\TokenRing_cl.c" />
+    <ClCompile Include="src\TokenRing_p.c" />
     <ClCompile Include="src\vcbuf_nonblk.c" />
     <ClCompile Include="src\vcbuf_popblk.c" />
   </ItemGroup>
@@ -130,6 +134,8 @@
     <ClInclude Include="header\cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />
     <ClInclude Include="header\dict.h" />
+    <ClInclude Include="header\dict_o.h" />
+    <ClInclude Include="header\dyn_arr.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_funcs.h" />
@@ -143,6 +149,8 @@
     <ClInclude Include="header\cirbuf_packet_sync.h" />
     <ClInclude Include="header\pub_sub.h" />
     <ClInclude Include="header\struct.h" />
+    <ClInclude Include="header\TokenRing_cl.h" />
+    <ClInclude Include="header\TokenRing_p.h" />
     <ClInclude Include="header\vcbuf_nonblk.h" />
     <ClInclude Include="header\vcbuf_popblk.h" />
   </ItemGroup>

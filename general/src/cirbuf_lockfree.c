@@ -11,7 +11,7 @@
 status cbuf_lf_init( cbuf_lf * cblf , size_t capacity , size_t room_size , l_pkg * plpkg )
 {
 	cbuf_lf_free( cblf );
-	MEMSET_ZERO( cblf , 1 );
+	MEMSET_ZERO_O( cblf );
 
 	cblf->lock_pkg = plpkg;
 
@@ -47,7 +47,7 @@ void cbuf_lf_free( cbuf_lf * cblf )
 		}
 		//pthread_mutex_destroy( &cblf->lock );
 		DAC( cblf->buf );
-		MEMSET_ZERO( cblf , 1 );
+		MEMSET_ZERO_O( cblf );
 	}
 }
 

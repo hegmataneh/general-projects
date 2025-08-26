@@ -65,6 +65,9 @@ IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int count , LPC
 //IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr /*= NULL*/ ); // Written By Mohsen
 //IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , LPCSTR doubleStrBuf , int * const pISubStr /*= NULL*/ ); // Written By Mohsen
 
+IN_GENERAL int strsstr( LPCSTR * strs , int strs_count , LPCSTR target );
+IN_GENERAL int strsistr( LPCSTR * strs , int strs_count , LPCSTR target );
+
 // ---- chr --------------------------------------------------------------------------------
 //IN_GENERAL LPCSTR strchr( LPCSTR str , char c ); // Exist
 // n , i , r
