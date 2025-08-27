@@ -167,22 +167,24 @@
 #define ToBOOL( condition )		( ( condition ) ? TRUE : FALSE )
 #define ToBoolean( condition )	( ( condition ) ? True : False )
 
+#define Booleanize( val ) ( !!val )
+
 //-------------------------------------------------------------------------
 
-#define CONTAIN_FLAG( key , flag ) ( ( key ) & ( flag ) )
-#define INCLUDE_FLAG( key , flag ) ( ( key ) | ( flag ) )
-#define EXCLUDE_FLAG( key , flag ) ( ( key ) & ( ( flag ) ^ 0xffffffff ) ) // 32 bit
-#define EXCLUDE_FLAG64( key , flag ) ( ( key ) & ( ( flag ) ^ 0xffffffffffffffff ) )
-#define SET_INCLUDE_FLAG( key , flag ) ( ( key ) = INCLUDE_FLAG( key , flag ) )
-#define SET_EXCLUDE_FLAG( key , flag ) ( ( key ) = EXCLUDE_FLAG( key , flag ) )
+#define CONTAIN_FLAG( key , flag )		( ( key ) & ( flag ) )
+#define INCLUDE_FLAG( key , flag )		( ( key ) | ( flag ) )
+#define EXCLUDE_FLAG( key , flag )		( ( key ) & ( ( flag ) ^ 0xffffffff ) ) // 32 bit
+#define EXCLUDE_FLAG64( key , flag )	( ( key ) & ( ( flag ) ^ 0xffffffffffffffff ) )
+#define SET_INCLUDE_FLAG( key , flag )	( ( key ) = INCLUDE_FLAG( key , flag ) )
+#define SET_EXCLUDE_FLAG( key , flag )	( ( key ) = EXCLUDE_FLAG( key , flag ) )
 
-#define IS_ODD( i ) ( ( ( i ) & 1 ) ? TRUE : FALSE ) // fard
-#define IS_EVEN( i ) ( ( ( i ) & 1 ) ? FALSE : TRUE ) // zoj
-#define POW_OF_2( p ) ( 1 << p )
+#define IS_ODD( i )		( ( ( i ) & 1 ) ? TRUE : FALSE ) // fard
+#define IS_EVEN( i )	( ( ( i ) & 1 ) ? FALSE : TRUE ) // zoj
+#define POW_OF_2( p )	( 1 << p )
 
 //#define MUTABLE_D_ERROR mutable status d_error
 
-#define ROUND_UP( i , x ) ( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
+#define ROUND_UP( i , x )	( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
 #ifdef _IN
 #error

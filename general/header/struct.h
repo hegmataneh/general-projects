@@ -27,4 +27,15 @@ typedef struct lock_pkg
 
 #endif
 
+#if defined Uses_T_2_T || !defined __COMPILING
+
+typedef union int_2_string
+{
+	int i;
+	char ar[ INT_SZ + 1 ]; // base on gcc compiler
+
+} _i2s;
+
+#endif
+
 #endif

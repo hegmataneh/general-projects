@@ -14,8 +14,8 @@ typedef struct BakeryAl
 
 status ba_init( Ba_al * pLB , int thread_count );
 void ba_destroy( Ba_al * pLB );
-void ba_lock( Ba_al * pLB , int i );
-void ba_unlock( Ba_al * pLB , int i );
+void ba_lock( Ba_al * pLB , int idx );
+void ba_unlock( Ba_al * pLB , int idx );
 
 /*
 * note.

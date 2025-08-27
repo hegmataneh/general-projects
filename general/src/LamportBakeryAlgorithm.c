@@ -9,10 +9,10 @@ status ba_init( Ba_al * pLB , int thread_count )
 	if ( !pLB->choosing ) return errGeneral;
 	pLB->number = MALLOC_AR( pLB->number , thread_count );
 	if ( !pLB->number ) return errGeneral;
-	for ( int i = 0 ; i < thread_count ; i++ )
+	for ( int itrd = 0 ; itrd < thread_count ; itrd++ )
 	{
-		pLB->choosing[ i ] = 0;
-		pLB->number[ i ] = 0;
+		pLB->choosing[ itrd ] = 0;
+		pLB->number[ itrd ] = 0;
 	}
 	return errOK;
 }
@@ -23,27 +23,27 @@ void ba_destroy( Ba_al * pLB )
 	DAC( pLB->number );
 }
 
-void ba_lock( Ba_al * pLB , int i )
+void ba_lock( Ba_al * pLB , int idx )
 {
-	pLB->choosing[ i ] = 1;
+	pLB->choosing[ idx ] = 1;
 	// Find the maximum number currently held by any process
 	int max_num = 0;
-	for ( int k = 0; k < pLB->thread_count; k++ )
+	for ( int itrd = 0; itrd < pLB->thread_count; itrd++ )
 	{
-		if ( pLB->number[ k ] > max_num )
+		if ( pLB->number[ itrd ] > max_num )
 		{
-			max_num = pLB->number[ k ];
+			max_num = pLB->number[ itrd ];
 		}
 	}
-	pLB->number[ i ] = max_num + 1;
-	pLB->choosing[ i ] = 0;
+	pLB->number[ idx ] = max_num + 1;
+	pLB->choosing[ idx ] = 0;
 
-	for ( int j = 0; j < pLB->thread_count; j++ )
+	for ( int itrd = 0; itrd < pLB->thread_count; itrd++ )
 	{
-		if ( j == i ) continue; // Skip self
+		if ( itrd == idx ) continue; // Skip self
 
 		// Wait while process j is choosing a number
-		while ( pLB->choosing[ j ] )
+		while ( pLB->choosing[ itrd ] )
 		{
 			// Busy-wait or yield
 		}
@@ -51,10 +51,10 @@ void ba_lock( Ba_al * pLB , int i )
 		// Wait while process j has a smaller or equal number with higher priority (lower ID)
 		while
 		(
-			( pLB->number[ j ] != 0 ) &&
+			( pLB->number[ itrd ] != 0 ) &&
 			(
-				( pLB->number[ j ] < pLB->number[ i ] ) ||
-				( ( pLB->number[ j ] == pLB->number[ i ] ) && ( j < i ) )
+				( pLB->number[ itrd ] < pLB->number[ idx ] ) ||
+				( ( pLB->number[ itrd ] == pLB->number[ idx ] ) && ( itrd < idx ) )
 			)
 		)
 		{
@@ -63,7 +63,7 @@ void ba_lock( Ba_al * pLB , int i )
 	}
 }
 
-void ba_unlock( Ba_al * pLB , int i )
+void ba_unlock( Ba_al * pLB , int idx )
 {
-	pLB->number[ i ] = 0; // Indicate that process i is no longer in the critical section
+	pLB->number[ idx ] = 0; // Indicate that process i is no longer in the critical section
 }

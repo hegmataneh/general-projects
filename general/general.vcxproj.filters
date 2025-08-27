@@ -46,6 +46,12 @@
     <ClCompile Include="src\vcbuf_popblk.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dict_s_i.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\dict_s_o.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -143,6 +149,12 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\dict_o.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dict_s_i.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dict_s_o.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

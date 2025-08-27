@@ -15,7 +15,8 @@ typedef enum
 	SUB_DOUBLE ,
 	SUB_INT_DOUBLE ,
 	SUB_STRING_DOUBLE ,
-	SUB_DIRECT_ONE_CALL_BUFFER_INT
+	SUB_DIRECT_ONE_CALL_BUFFER_INT ,
+	SUB_DIRECT_MULTICAST_CALL_BUFFER_INT
 } sub_type_t;
 
 // Different callback signatures
@@ -25,6 +26,7 @@ typedef void ( *sub_double_t )( void_p data , double v );
 typedef void ( *sub_int_double_t )( void_p data , int i , double d );
 typedef void ( *sub_string_double_t )( void_p data , LPCSTR i , double d );
 typedef status ( *sub_direct_one_call_buffer_int_t )( void_p data , buffer buf , int i );
+typedef status ( *sub_multicast_call_buffer_int_t )( void_p data , buffer buf , int i );
 
 // Union to hold any kind of callback
 typedef union
@@ -35,6 +37,7 @@ typedef union
 	sub_int_double_t int_dbl_cb;
 	sub_string_double_t str_dbl_cb;
 	sub_direct_one_call_buffer_int_t direct_one_call_bfr_int_cb;
+	sub_multicast_call_buffer_int_t multicast_call_buffer_int_cb;
 } sub_func_t;
 
 #define SUB_FXN( fxn ) ( sub_func_t )fxn
@@ -48,20 +51,21 @@ typedef struct
 
 	void_p tring_p_t;
 
-} subscriber_t;
+} subscriber_t , *alloc_sub_t , **ar_alloc_sub_t;
 
 // Distributor
 typedef struct
 {
-	subscriber_t ** subs_grp; // each publish distribute to all
+	ar_alloc_sub_t * subs_grp; // each publish distribute to all
 	int * subs_grp_subd; // each int is subscribed item in each sub grp
 	int grp_count;
 
 } distributor_t;
 
 status distributor_init( distributor_t * d , int grp_count );
+void destroy( distributor_t * d );
 
-status distributor_subscribe_t( distributor_t * d , int iGrp , sub_type_t type , sub_func_t func , void_p data , subscriber_t ** subed );
+status distributor_subscribe_t( distributor_t * d , int iGrp , sub_type_t type , sub_func_t func , void_p data , subscriber_t ** subed /*=NULL*/ );
 status distributor_subscribe( distributor_t * d , int iGrp , sub_type_t type , sub_func_t func , void_p data );
 status distributor_subscribe_with_token( distributor_t * d , int iGrp , sub_type_t type , sub_func_t func , void_p data , void_p tring_p_t /*make it void_p to detach dependency*/ );
 

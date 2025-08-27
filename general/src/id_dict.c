@@ -3,16 +3,6 @@
 #define Uses_id_dict
 #include <general.dep>
 
-/* djb2 hash function */
-static ulong hash( LPCSTR str )
-{
-	ulong h = 5381;
-	uchar c;
-	while ( ( c = (uchar)*str++ ) )
-		h = ( ( h << 5 ) + h ) + c; // h * 33 + c
-	return h;
-}
-
 status id_dict_init( id_dict_t ** pdict , size_t capacity)
 {
 	(*pdict) = MALLOC_ONE( *pdict );
@@ -66,7 +56,7 @@ long id_dict_put_or_get( id_dict_t * d , LPCSTR key )
 {
 	if ( !d || !key ) return -1;
 
-	ulong h = hash( key ) % d->capacity;
+	ulong h = ( ulong )hash8_fnv1a_avalanche( key ) % d->capacity;
 
 	/* Lock bucket */
 	pthread_mutex_lock( &d->locks[ h ] );

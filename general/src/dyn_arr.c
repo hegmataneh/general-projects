@@ -46,9 +46,9 @@ void array_free( dyn_arr * arr )
 	if ( !arr ) return;
 	if ( arr->allocated_pointer_keeper )
 	{
-		for ( int i = 0 ; i < arr->count ; i++ )
+		for ( int iitm = 0 ; iitm < arr->count ; iitm++ )
 		{
-			FREE( ALC_PTR_BLOCK( i ) );
+			FREE( ALC_PTR_BLOCK( iitm ) );
 		}
 	}
 	free( arr->data );

@@ -115,16 +115,12 @@
 	#define Uses_struct
 #endif
 
-#ifdef Uses_dict
-	#define __INC_dict
+#ifdef Uses_dict_s_s
+	#define __INC_dict_s_s
 #endif
 
 #ifdef Uses_id_dict
 	#define __INC_id_dict
-#endif
-
-#ifdef Uses_dict_t
-	#define Uses_dict
 #endif
 
 #ifdef Uses_cbuf_lf
@@ -220,18 +216,12 @@
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
-#ifdef Uses_DEL_AR
-	#define Uses_memory_funcs
-	#define __INC_macros
-#endif
+
 #ifdef Uses_FREE
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
-#ifdef Uses_DAC_PTR
-	#define Uses_memory_funcs
-	#define __INC_macros
-#endif
+
 #ifdef Uses_DAC
 	#define Uses_memory_funcs
 	#define __INC_macros
@@ -283,4 +273,29 @@
 #ifdef Uses_MEMSET_ZERO_O
 	#define Uses_memset
 	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses__i2s
+	#define Uses_T_2_T
+#endif
+
+#ifdef Uses_T_2_T
+	#define Uses_struct
+	#define __INC_struct
+#endif
+
+#ifdef Uses_dict_s_i
+	#define __INC_dict_s_i
+#endif
+
+#ifdef Uses_dict_s_o
+	#define __INC_dict_s_o
+#endif
+
+#ifdef Uses_dict_s_s_t
+	#define Uses_dict_s_s
+#endif
+
+#ifdef Uses_dict_s_i_t
+	#define Uses_dict_s_i
 #endif

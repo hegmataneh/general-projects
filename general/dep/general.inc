@@ -47,7 +47,7 @@
 	#include <cirbuf_lockfree.h>
 #endif
 
-#ifdef __INC_dict
+#ifdef __INC_dict_s_s
 	#include <dict.h>
 #endif
 
@@ -82,3 +82,12 @@
 #ifdef __INC_dict_o
 	#include <dict_o.h>
 #endif
+
+#ifdef __INC_dict_s_i
+	#include <dict_s_i.h>
+#endif
+
+#ifdef __INC_dict_s_o
+	#include <dict_s_o.h>
+#endif
+

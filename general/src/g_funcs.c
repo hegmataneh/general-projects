@@ -32,7 +32,7 @@
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer"};
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -1013,4 +1013,33 @@ int strsistr( LPCSTR * strs , int strs_count , LPCSTR target )
 		}
 	}
 	return -1;  // not found
+}
+
+// Option A: 64-bit FNV-1a accumulator + SplitMix64-style avalanche
+uint8 hash8_fnv1a_avalanche( const char * s )
+{
+	uint64_t x = 1469598103934665603ULL;          // FNV-1a offset
+	const uint64_t prime = 1099511628211ULL;      // FNV-1a prime
+	for ( const unsigned char * p = ( const unsigned char * )s; *p; ++p )
+	{
+		x ^= *p;
+		x *= prime;
+	}
+	// Strong 64-bit avalanche (SplitMix64 finalizer)
+	x ^= x >> 30;
+	x *= 0xbf58476d1ce4e5b9ULL;
+	x ^= x >> 27;
+	x *= 0x94d049bb133111ebULL;
+	x ^= x >> 31;
+	return ( uint8 )x; // take any byte after avalanche
+}
+
+// Simple string hash function (djb2)
+ulong hash( LPCSTR str )
+{
+	ulong h = 5381;
+	uchar c;
+	while ( ( c = ( uchar )*str++ ) )
+		h = ( ( h << 5 ) + h ) + c; // h * 33 + c
+	return h;
 }

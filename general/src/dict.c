@@ -1,28 +1,18 @@
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
-#define Uses_dict
+#define Uses_dict_s_s
 #include <general.dep>
 
 
-// Simple string hash function (djb2)
-static ulong hash( LPCSTR str )
-{
-	ulong h = 5381;
-	uchar c;
-	while ( ( c = (uchar)*str++ ) )
-		h = ( ( h << 5 ) + h ) + c; // h * 33 + c
-	return h;
-}
-
-status dict_init( dict_t * dd )
+status dict_init( dict_s_s_t * dd )
 {
 	MEMSET_ZERO_O( dd );
 	return errOK;
 }
 
 // Expand bucket array dynamically if needed
-status dict_expand( dict_t * d , size_t new_size )
+status dict_expand( dict_s_s_t * d , size_t new_size )
 {
 	if ( new_size <= d->size ) return errOK;
 	d->buckets = REALLOC_AR( d->buckets , new_size );
@@ -38,9 +28,9 @@ status dict_expand( dict_t * d , size_t new_size )
 	return errOK;
 }
 
-status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
+status dict_put( dict_s_s_t * d , LPCSTR key , LPCSTR value )
 {
-	unsigned long idx = hash(key);
+	ulong idx = ( ulong )hash8_fnv1a_avalanche( key );
 
 	// Ensure buckets array is large enough
 	if ( idx >= d->size )
@@ -51,7 +41,7 @@ status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
 		}
 	}
 
-	entry_t * e = d->buckets[ idx ];
+	entry_s_s_t * e = d->buckets[ idx ];
 	while ( e )
 	{
 		if ( strcmp( e->key , key ) == 0 )
@@ -65,7 +55,7 @@ status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
 	}
 
 	// Insert new
-	entry_t * new_e = MALLOC_ONE( new_e );
+	entry_s_s_t * new_e = MALLOC_ONE( new_e );
 	if ( !new_e )
 	{
 		return errMemoryLow;
@@ -80,12 +70,12 @@ status dict_put( dict_t * d , LPCSTR key , LPCSTR value )
 	return errOK;
 }
 
-LPCSTR dict_get( dict_t * d , LPCSTR key )
+LPCSTR dict_get( dict_s_s_t * d , LPCSTR key )
 {
-	unsigned long idx = hash( key );
+	ulong idx = ( ulong )hash8_fnv1a_avalanche( key );
 	if ( idx >= d->size ) return NULL;
 
-	entry_t * e = d->buckets[ idx ];
+	entry_s_s_t * e = d->buckets[ idx ];
 	while ( e )
 	{
 		if ( strcmp( e->key , key ) == 0 )
@@ -95,21 +85,21 @@ LPCSTR dict_get( dict_t * d , LPCSTR key )
 	return NULL;
 }
 
-size_t dict_count( dict_t * d )
+size_t dict_count( dict_s_s_t * d )
 {
 	return d->key_count;
 }
 
-void dict_free( dict_t * d )
+void dict_free( dict_s_s_t * d )
 {
 	if ( !d ) return;
 
 	for ( size_t i = 0; i < d->size; i++ )
 	{
-		entry_t * e = d->buckets[ i ];
+		entry_s_s_t * e = d->buckets[ i ];
 		while ( e )
 		{
-			entry_t * tmp = e;
+			entry_s_s_t * tmp = e;
 			e = e->next;
 			DAC( tmp->key );
 			DAC( tmp->value );
@@ -120,7 +110,7 @@ void dict_free( dict_t * d )
 	DAC( d->buckets );
 }
 
-status dict_get_keys( dict_t * d , _OUT LPCSTR ** strs , _OUT int * count )
+status dict_get_keys( dict_s_s_t * d , _OUT LPCSTR ** strs , _OUT int * count )
 {
 	INIT_BREAKABLE_FXN();
 	*count = ( int )dict_count( d );
@@ -129,7 +119,7 @@ status dict_get_keys( dict_t * d , _OUT LPCSTR ** strs , _OUT int * count )
 
 	for ( size_t i = 0; i < d->size; i++ )
 	{
-		entry_t * e = d->buckets[ i ];
+		entry_s_s_t * e = d->buckets[ i ];
 		while ( e )
 		{
 			*( (*strs) + pos ) = ( LPCSTR )e->key;

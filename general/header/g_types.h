@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef __GNUC__
+#if defined __GNUC__ || !defined __COMPILING
 
 // char			:  1 bytes
 // signed char	: 1 bytes
@@ -19,6 +19,17 @@
 // bool		: 1 bytes
 // void *	: 8 bytes
 // size_t	: 8 bytes
+
+#define CHAR_SZ 1qt
+#define SHORT_SZ 2
+#define INT_SZ 4
+#define LONG_SZ 8
+#define LONGLONG_SZ 8
+#define FLOAT_SZ 4
+#define DOUBLE_SZ 8
+#define LONGDOUBLE_SZ 16
+#define VOIDP_SZ 8
+#define SIZE_T_SZ 8
 
 //-------------------------------------------------------------------------
 typedef long long __int64;				/*in ubuntu gcc -> 8 bytes*/
@@ -48,6 +59,8 @@ typedef signed short   sshort;	/*in ubuntu gcc -> 2 bytes*/
 typedef signed char    schar;	/*in ubuntu gcc -> 1 bytes*/
 
 typedef char CHAR;				/*in ubuntu gcc -> 1 bytes*/
+
+typedef unsigned char uint8;
 
 typedef __int64 bigint;			/*in ubuntu gcc -> 8 bytes*/
 typedef __int64 int64;			/*in ubuntu gcc -> 8 bytes*/

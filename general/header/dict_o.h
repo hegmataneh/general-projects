@@ -2,6 +2,8 @@
 
 #if defined Uses_dict_o || !defined __COMPILING
 
+// just keep temporarily an object
+
 typedef struct entry_o
 {
 	int  key;
