@@ -76,6 +76,8 @@ typedef int64 FILEADDR;
 typedef int FILEADDR;
 #endif
 
+typedef int sockfd;
+
 #endif
 
 //-------------------------------------------------------------------------

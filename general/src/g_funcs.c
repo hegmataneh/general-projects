@@ -131,7 +131,7 @@ LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format
 	return msg_holder;
 }
 
-void _close_socket( int * socket_id )
+void _close_socket( sockfd * socket_id )
 {
 	close( *socket_id );
 	*socket_id = -1;
@@ -879,7 +879,7 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 	return stristr( str , head ) == str ? str : NULL;
 }
 
-status sendall( int socketfd , buffer buf , size_t * len ) // as beej book says
+status sendall( sockfd socketfd , buffer buf , size_t * len ) // as beej book says
 {
 	size_t total = 0; // how many bytes we've snt
 	size_t byteleft = *len; // how many we have left to send
@@ -979,7 +979,7 @@ void dump_buffer( const buffer buff , size_t size )
 	}
 }
 
-int peerTcpClosed( int socketfd )
+int peerTcpClosed( sockfd socketfd )
 {
 	char c;
 	ssize_t n = recv( socketfd , &c , 1 , MSG_PEEK | MSG_DONTWAIT );

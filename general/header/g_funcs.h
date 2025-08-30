@@ -21,9 +21,9 @@ LPCSTR read_file( LPCSTR path , buffer pInBuffer /*= if NULL alloc memory so rel
 
 
 //----socket functions------------------------------------------------------
-void _close_socket( int * socket_id );
-status sendall( int socketfd , buffer buf , size_t * len );
-int peerTcpClosed( int socketfd );
+void _close_socket( sockfd * socket_id );
+status sendall( sockfd socketfd , buffer buf , size_t * len );
+int peerTcpClosed( sockfd socketfd );
 
 
 //----error functions------------------------------------------------------

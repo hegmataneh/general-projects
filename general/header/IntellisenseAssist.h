@@ -1158,57 +1158,6 @@ const char * read_file( const char * path , char * pInBuffer /*= if NULL alloc m
 	return RET; } while(0);
 
 
-typedef int errno_t;
-
-
-typedef long long __int64;
-typedef unsigned long long __int64u;
-typedef signed long long __int64s;
-typedef const char * LPCSTR;
-
-
-typedef char * LPSTR;
-
-typedef LPCSTR LPCTSTR;
-typedef LPSTR LPTSTR;
-
-
-typedef __int64u ubigint;
-typedef __int64u uint64;
-typedef unsigned long    ulong;
-typedef unsigned int     uint;
-typedef unsigned short   ushort;
-typedef unsigned char    uchar;
-
-typedef __int64s sbigint;
-typedef __int64s sint64;
-typedef signed long	   slong;
-typedef signed int     sint;
-typedef signed short   sshort;
-typedef signed char    schar;
-
-typedef __int64 bigint;
-typedef __int64 int64;
-
-typedef __int64 QWORD, * LPQWORD;
-
-typedef long status;
-
-typedef char * string;
-
-typedef char * buffer;
-
-#error 11
-
-enum GeBoolean
-{
-	eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff
-};
-#define Boolean GeBoolean
-#define False eFalse
-#define True eTrue
-#define Null eNull
-
 
 const char EOS = '\0'; // 0
 const char LF = '\n'; // line feed 10
