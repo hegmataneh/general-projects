@@ -37,7 +37,7 @@ void destroy( distributor_t * dis )
 	DAC( dis->subs_grp );
 }
 
-status distributor_subscribe_t( distributor_t * dis , int iGrp , sub_type_t type , sub_func_t func , void_p data , subscriber_t ** subed )
+status distributor_subscribe_t( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , subscriber_t ** subed )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -63,12 +63,17 @@ status distributor_subscribe_t( distributor_t * dis , int iGrp , sub_type_t type
 	M_END_RET
 }
 
-status distributor_subscribe( distributor_t * dis , int iGrp , sub_type_t type , sub_func_t func , void_p data )
+status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data )
+{
+	return distributor_subscribe_t( dis , 0 , type , func , data , NULL );
+}
+
+status distributor_subscribe_ingrp( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data )
 {
 	return distributor_subscribe_t( dis , iGrp , type , func , data , NULL );
 }
 
-status distributor_subscribe_with_token( distributor_t * dis , int iGrp , sub_type_t type , sub_func_t func , void_p data , void_p src_tring )
+status distributor_subscribe_with_ring( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , void_p src_tring )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -83,8 +88,20 @@ status distributor_subscribe_with_token( distributor_t * dis , int iGrp , sub_ty
 	M_END_RET
 }
 
+status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data )
+{
+	INIT_BREAKABLE_FXN();
+
+	subscriber_t * subed = NULL;
+	BREAK_STAT( distributor_subscribe_t( dis , 0 , type , func , data , &subed ) , 0 );
+	subed->token = token;
+
+	BEGIN_SMPL
+	M_END_RET
+}
+
 // Publish different kinds of events
-void distributor_publish_str( distributor_t * dis , LPCSTR src_msg )
+void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
@@ -104,21 +121,21 @@ void distributor_publish_str( distributor_t * dis , LPCSTR src_msg )
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							dis->subs_grp[ igrp ][ isub ]->func.str_cb( dis->subs_grp[ igrp ][ isub ]->data , src_msg );	
+							dis->subs_grp[ igrp ][ isub ]->func.str_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_msg );	
 							break;
 						}
 					}
 				}
 				else
 				{
-					dis->subs_grp[ igrp ][ isub ]->func.str_cb( dis->subs_grp[ igrp ][ isub ]->data , src_msg );
+					dis->subs_grp[ igrp ][ isub ]->func.str_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_msg );
 				}
 			}
 		}
 	}
 }
 
-void distributor_publish_int( distributor_t * dis , int src_v )
+void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
@@ -138,21 +155,21 @@ void distributor_publish_int( distributor_t * dis , int src_v )
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							dis->subs_grp[ igrp ][ isub ]->func.int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_v );
+							dis->subs_grp[ igrp ][ isub ]->func.int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_v );
 							break;
 						}
 					}
 				}
 				else
 				{
-					dis->subs_grp[ igrp ][ isub ]->func.int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_v );
+					dis->subs_grp[ igrp ][ isub ]->func.int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_v );
 				}
 			}
 		}
 	}
 }
 
-void distributor_publish_double( distributor_t * dis , double src_v  )
+void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
@@ -172,21 +189,21 @@ void distributor_publish_double( distributor_t * dis , double src_v  )
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							dis->subs_grp[ igrp ][ isub ]->func.dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_v );
+							dis->subs_grp[ igrp ][ isub ]->func.dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_v );
 							break;
 						}
 					}
 				}
 				else
 				{
-					dis->subs_grp[ igrp ][ isub ]->func.dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_v );
+					dis->subs_grp[ igrp ][ isub ]->func.dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_v );
 				}
 			}
 		}
 	}
 }
 
-void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d  )
+void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
@@ -206,21 +223,21 @@ void distributor_publish_int_double( distributor_t * dis , int src_i , double sr
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							dis->subs_grp[ igrp ][ isub ]->func.int_dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_i , src_d );
+							dis->subs_grp[ igrp ][ isub ]->func.int_dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_i , src_d );
 							break;
 						}
 					}
 				}
 				else
 				{
-					dis->subs_grp[ igrp ][ isub ]->func.int_dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_i , src_d );
+					dis->subs_grp[ igrp ][ isub ]->func.int_dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_i , src_d );
 				}
 			}
 		}
 	}
 }
 
-void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d  )
+void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
@@ -240,21 +257,21 @@ void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , doub
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							dis->subs_grp[ igrp ][ isub ]->func.str_dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_str , src_d );
+							dis->subs_grp[ igrp ][ isub ]->func.str_dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_str , src_d );
 							break;
 						}
 					}
 				}
 				else
 				{
-					dis->subs_grp[ igrp ][ isub ]->func.str_dbl_cb( dis->subs_grp[ igrp ][ isub ]->data , src_str , src_d );
+					dis->subs_grp[ igrp ][ isub ]->func.str_dbl_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_str , src_d );
 				}
 			}
 		}
 	}
 }
 
-status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i )
+status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL*/ )
 {
 	status aggr_ret = errOK;
 	int any_call_happend = 0;
@@ -276,13 +293,13 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_buf , src_i );
+							return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
 						}
 					}
 				}
 				else
 				{
-					return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_buf , src_i );
+					return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
 				}
 			}
 			else if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_MULTICAST_CALL_BUFFER_INT )
@@ -299,17 +316,37 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
 							any_call_happend = 1;
-							aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_buf , src_i );
+							aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
 						}
 					}
 				}
 				else
 				{
 					any_call_happend = 1;
-					aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( dis->subs_grp[ igrp ][ isub ]->data , src_buf , src_i );
+					aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
 				}
 			}
 		}
 	}
 	return any_call_happend ? aggr_ret : errNoPeer;
+}
+
+status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
+	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ )
+{
+	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
+	{
+		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		{
+			if
+			(
+				dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_VOIDP &&
+				dis->subs_grp[ igrp ][ isub ]->token == token
+			)
+			{
+				return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_voidp_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , ptr );
+			}
+		}
+	}
+	return errNoPeer;
 }

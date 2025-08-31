@@ -92,6 +92,8 @@ typedef char * buffer;
 
 typedef void * void_p;
 
+typedef void * pass_p; // pass data pointer
+
 //-------------------------------------------------------------------------
 enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
 #define Boolean GeBoolean

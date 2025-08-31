@@ -186,6 +186,13 @@
 
 #define ROUND_UP( i , x )	( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
+#ifndef ISNULL
+#define ISNULL( a , b ) ( (a) ? (a) : (b) )
+//#define COALESCE()
+#endif
+
+#define DO_WHILE(x) do { x; } while(0)
+
 #ifdef _IN
 #error
 #endif
@@ -216,6 +223,7 @@
 
 #if defined DIRECT_ECHO_BUF || !defined __COMPILING
 	#define _DIRECT_ECHO(s,...) do { __snprintf(DIRECT_ECHO_BUF , sizeof(DIRECT_ECHO_BUF),s,##__VA_ARGS__); } while(0)
+	//#define DIRECT_ECHO_BUF _g->stat.last_command // add this just before include dep
 #endif
 
 #define _VERBOSE_ECHO(msg,...) do {\
