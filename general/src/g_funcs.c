@@ -1,4 +1,4 @@
-/*
+﻿/*
 	80/5/22, hamidi:
 	1.  errorStr and ErrorVal functions modified, so that a new value is generated for a new
 		d_error, but without any d_error string instead of not generating a new value for it.
@@ -338,6 +338,65 @@ void format_elapsed_time( time_t start , time_t end , LPSTR  buffer , size_t buf
 	size_t len = strlen( buffer );
 	if ( len > 0 && buffer[ len - 1 ] == ' ' )
 		buffer[ len - 1 ] = '\0';
+}
+
+//// difference in nanoseconds
+//long long timespec_diff_nsec( struct timespec * start , struct timespec * end )
+//{
+//	return ( long long )( end->tv_sec - start->tv_sec ) * 1000000000LL
+//		+ ( end->tv_nsec - start->tv_nsec );
+//}
+//
+//// difference in milliseconds
+//double timespec_diff_ms( struct timespec * start , struct timespec * end )
+//{
+//	return ( end->tv_sec - start->tv_sec ) * 1000.0
+//		+ ( end->tv_nsec - start->tv_nsec ) / 1000000.0;
+//}
+//
+//// difference in seconds
+//double timespec_diff_sec( struct timespec * start , struct timespec * end )
+//{
+//	return ( end->tv_sec - start->tv_sec )
+//		+ ( end->tv_nsec - start->tv_nsec ) / 1000000000.0;
+//}
+//
+//struct timespec timespec_sub( struct timespec start , struct timespec end )
+//{
+//	struct timespec temp;
+//	temp.tv_sec = end.tv_sec - start.tv_sec;
+//	temp.tv_nsec = end.tv_nsec - start.tv_nsec;
+//	if ( temp.tv_nsec < 0 )
+//	{
+//		temp.tv_sec -= 1;
+//		temp.tv_nsec += 1000000000;
+//	}
+//	return temp;
+//}
+//
+//struct timespec timeval_diff_timespec( struct timeval start , struct timeval end )
+//{
+//	struct timespec temp;
+//
+//	// convert to seconds + nanoseconds
+//	temp.tv_sec = end.tv_sec - start.tv_sec;
+//	temp.tv_nsec = ( end.tv_usec - start.tv_usec ) * 1000; // usec → nsec
+//
+//	if ( temp.tv_nsec < 0 )
+//	{
+//		temp.tv_sec -= 1;
+//		temp.tv_nsec += 1000000000;
+//	}
+//
+//	return temp;
+//}
+
+long long timeval_diff_nsec( struct timeval * start , struct timeval * end )
+{
+	long long res = ( long long )( end->tv_sec - start->tv_sec ) * 1000000000LL
+		+ ( long long )( end->tv_usec - start->tv_usec ) * 1000LL;
+	if ( res < 0 ) res = 0;
+	return res;
 }
 
 void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR  buffer , size_t buf_size , int type /*=0*/ )

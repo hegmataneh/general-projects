@@ -42,3 +42,8 @@ enum
 //extern uchar _ErrLvl; // does not dependable in multi thread app
 
 #define MAX_PACKET_SIZE 2048
+
+
+#define SEND_1470_Byte_IN_UDP_in_nanosec 12300
+#define EACH_VOLATILE_LOOP_in_nano_sec 0.3825
+#define EACH_SECOND_in_nano_Sec 1000000000

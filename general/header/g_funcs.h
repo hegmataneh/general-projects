@@ -14,6 +14,12 @@ void round_up_to_next_interval( struct timespec * now , int min_val , int interv
 void format_elapsed_time( time_t start , time_t end , LPSTR buffer , size_t buf_size );
 void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
 
+//long long timespec_diff_nsec( struct timespec * start , struct timespec * end ); // difference in nanoseconds
+//double timespec_diff_ms( struct timespec * start , struct timespec * end ); // difference in milliseconds
+//double timespec_diff_sec( struct timespec * start , struct timespec * end ); // difference in seconds
+//struct timespec timespec_sub( struct timespec start , struct timespec end );
+//struct timespec timeval_diff_timespec( struct timeval start , struct timeval end );
+long long timeval_diff_nsec( struct timeval * start , struct timeval * end );
 
 //----file functions------------------------------------------------------
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
