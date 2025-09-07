@@ -26,7 +26,7 @@ void cbuf_m_free( cbuf_metr * buf )
 void cbuf_m_reset( cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples ) return;
-	memset( buf->samples , 0 , buf->capacity * sizeof( uint64_t ) );
+	MEMSET( buf->samples , 0 , buf->capacity * sizeof( uint64_t ) );
 	buf->head = 0;
 	buf->filled = 0;
 }

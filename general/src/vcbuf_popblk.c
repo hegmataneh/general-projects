@@ -56,7 +56,7 @@ void vcbuf_push( vcbuf * vc , const buffer buf , size_t len )
 	pthread_mutex_lock( &vc->lock );
 
 	HDR( vc->buf + ( vc->head * ROOM_SIZE( vc->room_size ) ) ) = ( HDR_TYPE )len;
-	memcpy( vc->buf + ( vc->head * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , buf , len );
+	MEMCPY_OR( vc->buf + ( vc->head * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , buf , len );
 	vc->head = ( vc->head + 1 ) % vc->capacity;
 	vc->count++;
 	int full = ( vc->head == vc->tail );
@@ -93,7 +93,7 @@ status vcbuf_pop( vcbuf * vc , buffer out_buf , size_t * out_len , long timeout_
 	}
 
 	*out_len = ( size_t )HDR( vc->buf + ( vc->tail * ROOM_SIZE( vc->room_size ) ) );
-	memcpy( out_buf , vc->buf + ( vc->tail * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , *out_len );
+	MEMCPY_OR( out_buf , vc->buf + ( vc->tail * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , *out_len );
 	vc->tail = ( vc->tail + 1 ) % vc->capacity;
 	vc->count--;
 

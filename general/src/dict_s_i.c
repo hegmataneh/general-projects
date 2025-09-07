@@ -44,7 +44,7 @@ status dict_s_i_put( dict_s_i_t * d , LPCSTR key , int value , int update_Value 
 	entry_s_i_t * e = d->buckets[ idx ];
 	while ( e )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		if ( STRCMP( e->key , key ) == 0 )
 		{
 			// Update existing
 			if ( update_Value )
@@ -80,7 +80,7 @@ status dict_s_i_get( dict_s_i_t * d , LPCSTR key , int * value )
 	entry_s_i_t * e = d->buckets[ idx ];
 	while ( e )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		if ( STRCMP( e->key , key ) == 0 )
 		{
 			*value = e->value;
 			return errOK;
@@ -125,11 +125,11 @@ status dict_s_i_try_put( dict_s_i_t * d , LPCSTR key , int value , int * exist )
 	return dict_s_i_put( d , key , value , 1 );
 }
 
-status dict_s_i_get_keys( dict_s_i_t * d , _OUT LPCSTR ** strs , _OUT int * count )
+status dict_s_i_get_keys( dict_s_i_t * d , _NEW_OUT_P LPCSTR ** strs , _RET_VAL_P int * count )
 {
 	INIT_BREAKABLE_FXN();
 	*count = ( int )dict_s_i_count( d );
-	M_MALLOC_AR( *strs , d->key_count , 0 );
+	N_MALLOC_AR( *strs , d->key_count , 0 );
 	size_t pos = 0;
 
 	for ( size_t i = 0; i < d->size; i++ )

@@ -98,6 +98,7 @@
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
     <ClCompile Include="src\pub_sub.c" />
+    <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_cl.c" />
     <ClCompile Include="src\TokenRing_p.c" />
     <ClCompile Include="src\vcbuf_nonblk.c" />
@@ -152,6 +153,7 @@
     <ClInclude Include="header\LamportBakeryAlgorithm.h" />
     <ClInclude Include="header\cirbuf_packet_sync.h" />
     <ClInclude Include="header\pub_sub.h" />
+    <ClInclude Include="header\str.h" />
     <ClInclude Include="header\struct.h" />
     <ClInclude Include="header\TokenRing_cl.h" />
     <ClInclude Include="header\TokenRing_p.h" />

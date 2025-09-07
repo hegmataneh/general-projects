@@ -15,6 +15,11 @@
 	#include <struct.h>
 #endif
 
+#ifdef __INC_str
+	#include <str.h>
+#endif
+
+
 #ifdef __INC_yaml_h
 	#include <yaml.h>
 #endif

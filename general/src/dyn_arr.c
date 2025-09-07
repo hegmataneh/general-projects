@@ -22,8 +22,8 @@ status array_init( dyn_arr * arr , size_t item_size , size_t growStep )
 	
 	MEMSET_ZERO_O( arr );
 
-	M_BREAK_IF( !( arr->data = MALLOC_AR( arr->data , growStep ) ) , errMemoryLow , 0 );
-	memset( arr->data , 0 , growStep * item_size );
+	N_BREAK_IF( !( arr->data = MALLOC_AR( arr->data , growStep ) ) , errMemoryLow , 0 );
+	MEMSET( arr->data , 0 , growStep * item_size );
 	
 	arr->item_size = item_size;
 	arr->capacity = growStep;
@@ -31,7 +31,7 @@ status array_init( dyn_arr * arr , size_t item_size , size_t growStep )
 	arr->growStep = growStep;
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 status alc_ptr_array_init( dyn_arr * arr , size_t growStep )
@@ -51,7 +51,7 @@ void array_free( dyn_arr * arr )
 			FREE( ALC_PTR_BLOCK( iitm ) );
 		}
 	}
-	free( arr->data );
+	FREE( arr->data );
 	arr->data = NULL;
 	arr->capacity = 0;
 	arr->count = 0;
@@ -62,9 +62,9 @@ status array_resize( dyn_arr * arr , size_t new_capacity )
 {
 	if ( !arr || new_capacity == 0 ) return errArg;
 	if ( new_capacity < arr->count ) return errArg; // can't shrink below used
-	void * new_data = realloc( arr->data , arr->item_size * new_capacity );
+	void * new_data = REALLOC( arr->data , arr->item_size * new_capacity );
 	if ( !new_data ) return errMemoryLow;
-	memset( new_data + arr->count * arr->item_size , 0 , ( new_capacity - arr->count ) * arr->item_size ); // zero expanded slot
+	MEMSET( new_data + arr->count * arr->item_size , 0 , ( new_capacity - arr->count ) * arr->item_size ); // zero expanded slot
 	arr->data = new_data;
 	arr->capacity = new_capacity;
 	return errOK;
@@ -79,7 +79,7 @@ status array_add( dyn_arr * arr , void * item )
 		if ( ( d_error = array_resize( arr , arr->capacity + arr->growStep ) ) != errOK )
 			return d_error;
 	}
-	memcpy( BLOCK_INDEX_ADD( arr->count ) , item , arr->item_size );
+	MEMCPY_OR( BLOCK_INDEX_ADD( arr->count ) , item , arr->item_size );
 	arr->count++;
 	return errOK;
 }
@@ -95,7 +95,7 @@ status array_delete( dyn_arr * arr , size_t index )
 	{
 		DAC( ALC_PTR_BLOCK( index ) );
 	}
-	memmove( target , next , move_size );
+	MEMMOVE( target , next , move_size );
 	arr->count--;
 	return errOK;
 }
@@ -126,6 +126,6 @@ status array_set( dyn_arr * arr , size_t index , void * item )
 			DAC( ALC_PTR_BLOCK( index ) );
 		}
 	}
-	memcpy( BLOCK_INDEX_ADD( index ) , item , arr->item_size );
+	MEMCPY_OR( BLOCK_INDEX_ADD( index ) , item , arr->item_size );
 	return errOK;
 }

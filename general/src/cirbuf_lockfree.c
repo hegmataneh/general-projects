@@ -61,7 +61,7 @@ void cbuf_lf_push( cbuf_lf * cblf , const void_p data , size_t data_len , int ca
 	//pthread_mutex_lock( &cblf->lock );
 
 	HDR( cblf->buf + ( cblf->head * ROOM_SIZE( cblf->room_size ) ) ) = ( HDR_TYPE )data_len;
-	memcpy( cblf->buf + ( cblf->head * ROOM_SIZE( cblf->room_size ) ) + HDR_SIZE , data , data_len );
+	MEMCPY_OR( cblf->buf + ( cblf->head * ROOM_SIZE( cblf->room_size ) ) + HDR_SIZE , data , data_len );
 	cblf->head = ( cblf->head + 1 ) % cblf->capacity;
 	cblf->full = ( cblf->head == cblf->tail );
 	if ( cblf->full )
@@ -95,7 +95,7 @@ status cbuf_lf_pop( cbuf_lf * cblf , void_p item , size_t *data_len , int caller
 	}
 
 	*data_len = ( size_t )HDR( cblf->buf + ( cblf->tail * ROOM_SIZE( cblf->room_size ) ) );
-	memcpy( item , cblf->buf + ( cblf->tail * ROOM_SIZE( cblf->room_size ) ) + HDR_SIZE , *data_len );
+	MEMCPY_OR( item , cblf->buf + ( cblf->tail * ROOM_SIZE( cblf->room_size ) ) + HDR_SIZE , *data_len );
 	cblf->full = 0;
 	cblf->tail = ( cblf->tail + 1 ) % cblf->capacity;
 

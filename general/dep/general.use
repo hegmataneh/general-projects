@@ -116,6 +116,7 @@
 #endif
 
 #ifdef Uses_dict_s_s
+	#define Uses_strings_ar
 	#define __INC_dict_s_s
 #endif
 
@@ -298,4 +299,8 @@
 
 #ifdef Uses_dict_s_i_t
 	#define Uses_dict_s_i
+#endif
+
+#ifdef Uses_strings_ar
+	#define __INC_str
 #endif

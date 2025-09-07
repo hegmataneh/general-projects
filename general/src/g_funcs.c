@@ -95,7 +95,7 @@ LPSTR newStr( LPCSTR str )
 {
 	if(!str)str="";
 	if(!str[0])return "";
-	size_t sz=strlen(str)+1;
+	size_t sz=STRLEN(str)+1;
 	LPSTR temp=MALLOC_AR(temp,sz);
 	if (temp) strcpy(temp,str);
 	return temp;
@@ -148,7 +148,7 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 	fseek( file , 0 , SEEK_END );
 	long len = ftell( file );
 	fseek( file , 0 , SEEK_SET );
-	LPSTR  buffer = pInBuffer ? pInBuffer : malloc( (size_t)(len + 1) );
+	LPSTR  buffer = pInBuffer ? pInBuffer : MALLOC( (size_t)(len + 1) );
 
 	if ( buffer == NULL )
 	{
@@ -172,7 +172,7 @@ LPCSTR trim_trailing_zeros(LPSTR s) {
     LPSTR dot = strchr(s, '.');
     if (!dot) return s;
 
-    LPSTR end = s + strlen(s) - 1;
+    LPSTR end = s + STRLEN(s) - 1;
     while (end > dot && *end == '0') {
         *end = '\0';
         end--;
@@ -198,7 +198,7 @@ LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_floa
 	char buf2[64];
 	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float );
 	snprintf( buf , buflen , buf2 , value );
-	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s" , trim_trailing_zeros(buf) , ( strlen(units[unit]) > 0 || strlen(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
+	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s" , trim_trailing_zeros(buf) , ( STRLEN(units[unit]) > 0 || STRLEN(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
 	strncpy( buf , buf2 , buflen );
 
 	return buf;
@@ -255,7 +255,7 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 		exe_path[ len ] = '\0';
 		snprintf( name_part , sizeof( name_part ) , "%s" , basename( exe_path ) );
 		get_datetime_str( datetime , sizeof( datetime ) );
-		snprintf( name_part + strlen( name_part ) , sizeof( name_part ) - strlen( name_part ) , "_%s.txt" , datetime );
+		snprintf( name_part + STRLEN( name_part ) , sizeof( name_part ) - STRLEN( name_part ) , "_%s.txt" , datetime );
 	}
 	else
 	{
@@ -263,9 +263,9 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 	}
 
 	// Normalize path: check if trailing slash is needed
-	if ( path && strlen( path ) > 0 )
+	if ( path && STRLEN( path ) > 0 )
 	{
-		size_t path_len = strlen( path );
+		size_t path_len = STRLEN( path );
 		if ( path[ path_len - 1 ] == '/' || path[ path_len - 1 ] == '\\' )
 		{
 			snprintf( final_path , sizeof( final_path ) , "%s%s" , path , name_part );
@@ -284,9 +284,9 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 	int counter = 1;
 	while ( file_exists( final_path ) )
 	{
-		if ( path && strlen( path ) > 0 )
+		if ( path && STRLEN( path ) > 0 )
 		{
-			size_t path_len = strlen( path );
+			size_t path_len = STRLEN( path );
 			if ( path[ path_len - 1 ] == '/' || path[ path_len - 1 ] == '\\' )
 			{
 				snprintf( final_path , sizeof( final_path ) , "%s%s_%d" , path , name_part , counter++ );
@@ -335,7 +335,7 @@ void format_elapsed_time( time_t start , time_t end , LPSTR  buffer , size_t buf
 		offset += snprintf( buffer + offset , buf_size - (size_t)offset , "%ds" , seconds );
 
 	// Remove trailing space if any
-	size_t len = strlen( buffer );
+	size_t len = STRLEN( buffer );
 	if ( len > 0 && buffer[ len - 1 ] == ' ' )
 		buffer[ len - 1 ] = '\0';
 }
@@ -569,20 +569,20 @@ IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int countstrs ,
 
 IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ) // Written By Mohsen
 {
-	size_t t1 = strlen( from );
-	ASSERT( t1 == strlen( to ) );
+	size_t t1 = STRLEN( from );
+	ASSERT( t1 == STRLEN( to ) );
 	LPSTR  lpC;
 	while ( ( lpC = strpbrk( ( LPSTR )str , from ) ) )
 	{
-		*lpC = to[ ( LPSTR  )memchr( from , *lpC , t1 ) - from ];
+		*lpC = to[ ( LPSTR  )MEMCHR( from , *lpC , t1 ) - from ];
 	}
 }
 
 IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz ) // Written By Mohsen
 {
-	if ( sz == -1 ) sz = strlen( str );
+	if ( sz == -1 ) sz = STRLEN( str );
 	LPSTR  lpHead;
-	while ( ( lpHead = ( LPSTR  )memchr( str , fromChar , sz ) ) )
+	while ( ( lpHead = ( LPSTR  )MEMCHR( str , fromChar , sz ) ) )
 	{
 		*lpHead = toChar;
 	}
@@ -594,9 +594,9 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	ASSERT( pSz );
 //	LPSTR  basestr = ( LPSTR  )str;
 //	LPSTR  lpLastChr = basestr;
-//	while ( ( lpLastChr = ( LPSTR  )memchr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
+//	while ( ( lpLastChr = ( LPSTR  )MEMCHR( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
 //	{
-//		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
+//		MEMMOVE( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
 //		sz--;
 //	}
 //	if ( pSz ) *pSz = sz;
@@ -610,7 +610,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memichr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
 //	{
-//		memmove( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
+//		MEMMOVE( lpLastChr , lpLastChr + 1 , basestr + sz - lpLastChr - 1 );
 //		sz--;
 //	}
 //	if ( pSz ) *pSz = sz;
@@ -624,7 +624,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memchrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
 //	{
-//		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
+//		MEMMOVE( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
 //		memSz--;
 //	}
 //	if ( pSz ) *pSz = memSz;
@@ -638,7 +638,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memichrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
 //	{
-//		memmove( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
+//		MEMMOVE( lpLastChr , lpLastChr + 1 , basestr + memSz - lpLastChr - 1 );
 //		memSz--;
 //	}
 //	if ( pSz ) *pSz = memSz;
@@ -659,7 +659,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //			memSz--;
 //			continue;
 //		}
-//		memmove( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
+//		MEMMOVE( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
 //		memSz = lpLastMem + memSz - lpChr - 1;
 //		lpLastMem++;
 //	}
@@ -682,7 +682,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //			memSz--;
 //			continue;
 //		}
-//		memmove( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
+//		MEMMOVE( lpLastMem , lpChr , lpLastMem + memSz - lpChr );
 //		memSz = lpLastMem + memSz - lpChr - 1;
 //		lpLastMem++;
 //	}
@@ -1054,7 +1054,7 @@ int strsstr( LPCSTR * strs , int strs_count , LPCSTR target )
 {
 	for ( int i = 0; i < strs_count; i++ )
 	{
-		if ( strcmp( target , strs[ i ] ) == 0 )
+		if ( STRCMP( target , strs[ i ] ) == 0 )
 		{
 			return i;  // found at index i
 		}
@@ -1066,7 +1066,7 @@ int strsistr( LPCSTR * strs , int strs_count , LPCSTR target )
 {
 	for ( int i = 0; i < strs_count; i++ )
 	{
-		if ( stricmp( target , strs[ i ] ) == 0 )
+		if ( STRICMP( target , strs[ i ] ) == 0 )
 		{
 			return i;  // found at index i
 		}

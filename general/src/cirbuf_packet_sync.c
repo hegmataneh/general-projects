@@ -29,7 +29,7 @@ void cbuf_ps_push( cbuf_packet * q , const buffer buf , size_t len )
 		pthread_cond_wait( &q->not_full , &q->lock );
 	}
 
-	memcpy( q->data[ q->tail ] , buf , len );
+	MEMCPY_OR( q->data[ q->tail ] , buf , len );
 	q->lengths[ q->tail ] = len;
 	q->tail = ( q->tail + 1 ) % QUEUE_CAPACITY;
 	q->count++;
@@ -48,7 +48,7 @@ void cbuf_ps_pop( cbuf_packet * q , buffer out_buf , size_t * out_len )
 	}
 
 	size_t len = q->lengths[ q->head ];
-	memcpy( out_buf , q->data[ q->head ] , len );
+	MEMCPY_OR( out_buf , q->data[ q->head ] , len );
 	*out_len = len;
 
 	q->head = ( q->head + 1 ) % QUEUE_CAPACITY;
@@ -77,7 +77,7 @@ int cbuf_ps_try_pop( cbuf_packet * q , buffer out_buf , size_t * out_len )
 	}
 
 	size_t len = q->lengths[ q->head ];
-	memcpy( out_buf , q->data[ q->head ] , len );
+	MEMCPY_OR( out_buf , q->data[ q->head ] , len );
 	*out_len = len;
 
 	q->head = ( q->head + 1 ) % QUEUE_CAPACITY;

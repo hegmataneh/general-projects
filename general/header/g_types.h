@@ -83,9 +83,13 @@ typedef int sockfd;
 //-------------------------------------------------------------------------
 // hamidi, 850529: az anjayi keh short budane status baese beh vojud amadane padding bytes dar class-ha mishavad va in khod baese dastresie nadorost beh virtual table-haye class-ha va dar natijeh exception beh khatere seda zadeh shodane pointer-haye nadorost migardad, status ra long ta'rif mikonim.
 typedef long status;
+
 // for when a char * is treated as a string, usually null terminated
 // variables of this type are not d_valid to be null
 typedef LPSTR string;
+
+typedef const char * * strings; // array of string. pay attention to free inner data and outer pointer to them
+
 // for when a char * is treated as a buffer, usually non-null terminated
 // variables of this type may be null
 typedef char * buffer;

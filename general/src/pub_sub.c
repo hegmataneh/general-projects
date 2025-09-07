@@ -10,16 +10,16 @@ status distributor_init( distributor_t * dis , int grp_count )
 
 	MEMSET_ZERO_O( dis );
 
-	M_MALLOC_AR( dis->subs_grp , grp_count , 0 );
+	N_MALLOC_AR( dis->subs_grp , grp_count , 0 );
 	MEMSET_ZERO( dis->subs_grp , grp_count );
 
-	M_MALLOC_AR( dis->subs_grp_subd , grp_count , 1 );
+	N_MALLOC_AR( dis->subs_grp_subd , grp_count , 1 );
 	MEMSET_ZERO( dis->subs_grp_subd , grp_count );
 
 	dis->grp_count = grp_count;
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 void destroy( distributor_t * dis )
@@ -41,13 +41,13 @@ status distributor_subscribe_t( distributor_t * dis , int iGrp /*1 on flat list*
 {
 	INIT_BREAKABLE_FXN();
 
-	M_BREAK_IF( iGrp >= dis->grp_count , errMaximumExceeded , 0 );
+	N_BREAK_IF( iGrp >= dis->grp_count , errMaximumExceeded , 0 );
 
 	dis->subs_grp[ iGrp ] = ( ar_alloc_sub_t )REALLOC_AR( ( ar_alloc_sub_t )dis->subs_grp[ iGrp ] , dis->subs_grp_subd[ iGrp ] + 1 );
-	M_BREAK_IF( !dis->subs_grp[ iGrp ] , errMemoryLow , 0 );
+	N_BREAK_IF( !dis->subs_grp[ iGrp ] , errMemoryLow , 0 );
 	MEMSET_ZERO( dis->subs_grp[ iGrp ] + dis->subs_grp_subd[ iGrp ] , 1 );
 
-	M_MALLOC_ONE( dis->subs_grp[ iGrp ][ dis->subs_grp_subd[ iGrp ] ] , 0 );
+	N_MALLOC_ONE( dis->subs_grp[ iGrp ][ dis->subs_grp_subd[ iGrp ] ] , 0 );
 	MEMSET_ZERO_O( dis->subs_grp[ iGrp ][ dis->subs_grp_subd[ iGrp ] ] );
 
 	dis->subs_grp[ iGrp ][ dis->subs_grp_subd[ iGrp ] ]->type = type;
@@ -60,7 +60,7 @@ status distributor_subscribe_t( distributor_t * dis , int iGrp /*1 on flat list*
 	dis->subs_grp_subd[ iGrp ]++;
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data )
@@ -85,7 +85,7 @@ status distributor_subscribe_with_ring( distributor_t * dis , int iGrp /*1 on fl
 	BREAK_STAT( token_ring_p_add( tring , subed ) , 0 );
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data )
@@ -97,7 +97,7 @@ status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t typ
 	subed->token = token;
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 // Publish different kinds of events

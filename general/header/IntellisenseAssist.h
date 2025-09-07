@@ -382,9 +382,6 @@ int fileno(FILE *stream);
 #define RAND_MAX 2147483647
 typedef struct { int quot, rem; } div_t;
 typedef struct { long quot, rem; } ldiv_t;
-void *malloc(size_t size);
-void *calloc(size_t nmemb, size_t size);
-void *realloc(void *ptr, size_t size);
 void free(void *ptr);
 void abort(void);
 void exit(int status);

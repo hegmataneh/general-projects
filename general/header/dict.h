@@ -35,7 +35,10 @@ LPCSTR dict_get( dict_s_s_t * d , LPCSTR key );
 size_t dict_count( dict_s_s_t * d );
 
 // Return array of keys. Caller must free the array (but not the strings).
-status dict_get_keys( dict_s_s_t * d , _OUT LPCSTR ** strs , _OUT int * count );
+status dict_get_keys_ref( dict_s_s_t * d , _NEW_OUT_P strings * strs , _RET_VAL_P int * count );
+
+// Return array of keys.
+status dict_get_keys_strings( dict_s_s_t * d , _RET_VAL_P strings_ar * strs );
 
 #endif
 

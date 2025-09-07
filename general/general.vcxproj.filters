@@ -52,6 +52,9 @@
     <ClCompile Include="src\dict_s_o.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\str.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -155,6 +158,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\dict_s_o.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\str.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

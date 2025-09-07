@@ -17,7 +17,7 @@ status token_ring_p_add( token_ring_p_t * ring , void_p turn_key )
 
 	struct token_item_p * item;
 
-	M_MALLOC_ONE( item , 0 );
+	N_MALLOC_ONE( item , 0 );
 	MEMSET_ZERO_O( item );
 
 	item->next = NULL;
@@ -45,7 +45,7 @@ status token_ring_p_add( token_ring_p_t * ring , void_p turn_key )
 	pthread_mutex_unlock( &ring->lock );
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 void token_ring_p_curr( token_ring_p_t * ring , void_p * turn )

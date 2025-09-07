@@ -10,8 +10,8 @@ status id_dict_init( id_dict_t ** pdict , size_t capacity)
 	MEMSET_ZERO_O( (*pdict) );
 
 	(*pdict)->capacity = capacity;
-	(*pdict)->buckets = calloc( capacity , sizeof( id_dict_entry_t * ) );
-	(*pdict)->locks = malloc( sizeof( pthread_mutex_t ) * capacity );
+	(*pdict)->buckets = CALLOC( capacity , sizeof( id_dict_entry_t * ) );
+	(*pdict)->locks = MALLOC( sizeof( pthread_mutex_t ) * capacity );
 	(*pdict)->counter = 0;
 
 	if ( !(*pdict)->buckets || !(*pdict)->locks )
@@ -64,7 +64,7 @@ long id_dict_put_or_get( id_dict_t * d , LPCSTR key )
 	id_dict_entry_t * e = d->buckets[ h ];
 	while ( e )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		if ( STRCMP( e->key , key ) == 0 )
 		{
 			long val = e->value;
 			pthread_mutex_unlock( &d->locks[ h ] );
@@ -78,7 +78,7 @@ long id_dict_put_or_get( id_dict_t * d , LPCSTR key )
 	long new_id = d->counter++;
 	pthread_mutex_unlock( &d->counter_lock );
 
-	id_dict_entry_t * new_e = malloc( sizeof( id_dict_entry_t ) );
+	id_dict_entry_t * new_e = MALLOC( sizeof( id_dict_entry_t ) );
 	if ( !new_e )
 	{
 		pthread_mutex_unlock( &d->locks[ h ] );

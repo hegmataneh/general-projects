@@ -98,17 +98,19 @@ do \
 		goto __ret;\
 	} while(0)
 
-//#define BREAK(err,lvl) MME_BREAK(err,lvl,NULL,False)
+#define BREAK(err,lvl) MME_BREAK(err,lvl,NULL,False)
 #define BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,False) /*semicolon after this macro*/
 #define BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,False)
 
 // N: indicates that this must give a message (is indeed of type M_ series macros), but since this message iterates a lot, we want to temporarily disable it. at last we must get no message if we convert them back to M_.
-//#define N_BREAK BREAK
+#define N_BREAK BREAK
 #define N_BREAK_IF BREAK_IF
-//#define N_BREAK_STAT BREAK_STAT
+#define N_BREAK_STAT BREAK_STAT
+
+#if !defined( __ENGINE ) || !defined __COMPILING // kernel does not have any tools to show msg
 
 // when giving the default message is enough and no additional msg is required
-//#define M_BREAK(err,lvl) MME_BREAK(err,lvl,NULL,True)
+#define M_BREAK(err,lvl) MME_BREAK(err,lvl,NULL,True)
 #define M_BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,True) /*semicolon after this macro*/
 #define M_BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,True)
 
@@ -117,8 +119,10 @@ do \
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
 #define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 
+#endif
+
 #define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; }
-#define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: status ___localError=d_error
+#define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: while(0) {}; status ___localError=d_error
 
 // begin ret and series
 //#define BEGIN_RET_CLOCK d_error=errOK;
@@ -130,18 +134,29 @@ do \
 #define END_RET V_END_RET return d_error;
 //#define B_END_RET V_END_RET return ToBoolean(d_error==errOK);
 
+#define N_V_END_RET V_END_RET
+#define N_END_RET N_V_END_RET return d_error;
+
+#if !defined( __ENGINE ) || !defined __COMPILING // kernel does not have any tools to show msg
+
 #define M_V_END_RET V_END_RET IF_M_MSG
 #define M_END_RET M_V_END_RET return d_error;
 //#define M_B_END_RET M_V_END_RET return ToBoolean(d_error==errOK);
+
+#endif
 
 // no case
 #define V_RET d_error=errOK; BGR_DUMMY_WHILE; __ret: ;
 #define RET V_RET return d_error;
 //#define B_RET V_RET return ToBoolean(d_error==errOK);
 
+#if !defined( __ENGINE ) || !defined __COMPILING // kernel does not have any tools to show msg
+
 #define M_V_RET V_RET IF_M_MSG
 #define M_RET M_V_RET return d_error;
 //#define M_B_RET M_V_RET return ToBoolean(d_error==errOK);
+
+#endif
 
 //#define ASSERT_NO_ERROR
 //	V_RET
@@ -151,20 +166,33 @@ do \
 //	ASSERT_NO_ERROR
 //	return d_error;
 
-#define NEWSTR(var,str,lvl)\
-	M_BREAK_IF(!(var=newStr(str)),errMemoryLow,lvl)
+#define N_NEWSTR(ptr,str,lvl)\
+	N_BREAK_IF(!(ptr=newStr(str)),errMemoryLow,lvl)
 
-#define M_MALLOC_AR(var,count,lvl)\
-	M_BREAK_IF(!(var=MALLOC_AR(var,count)),errMemoryLow,lvl)
+#define N_MALLOC_AR(ptr,count,lvl)\
+	N_BREAK_IF(!(ptr=MALLOC_AR(ptr,count)),errMemoryLow,lvl)
 
-#define MM_MALLOC_AR(var,count,lvl,msg)\
-	MM_BREAK_IF(!(var=MALLOC_AR(var,count)),errMemoryLow,lvl,msg)
+#define N_MALLOC_ONE(ptr,lvl)\
+	N_BREAK_IF(!(ptr=MALLOC_ONE(ptr)),errMemoryLow,lvl)
 
-#define M_MALLOC_ONE(var,lvl)\
-	M_BREAK_IF(!(var=MALLOC_ONE(var)),errMemoryLow,lvl)
+#if !defined( __ENGINE ) || !defined __COMPILING // kernel does not have any tools to show msg
 
-#define MM_MALLOC_ONE(var,lvl,msg)\
-	MM_BREAK_IF(!(var=MALLOC_ONE(var)),errMemoryLow,lvl,msg)
+#define NEWSTR(ptr,str,lvl)\
+	M_BREAK_IF(!(ptr=newStr(str)),errMemoryLow,lvl)
+
+#define M_MALLOC_AR(ptr,count,lvl)\
+	M_BREAK_IF(!(ptr=MALLOC_AR(ptr,count)),errMemoryLow,lvl)
+
+#define MM_MALLOC_AR(ptr,count,lvl,msg)\
+	MM_BREAK_IF(!(ptr=MALLOC_AR(ptr,count)),errMemoryLow,lvl,msg)
+
+#define M_MALLOC_ONE(ptr,lvl)\
+	M_BREAK_IF(!(ptr=MALLOC_ONE(ptr)),errMemoryLow,lvl)
+
+#define MM_MALLOC_ONE(ptr,lvl,msg)\
+	MM_BREAK_IF(!(ptr=MALLOC_ONE(ptr)),errMemoryLow,lvl,msg)
+
+#endif
 
 #endif
 

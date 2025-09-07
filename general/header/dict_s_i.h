@@ -37,7 +37,7 @@ status dict_s_i_try_put( dict_s_i_t * d , LPCSTR key , int value , int * exist )
 size_t dict_s_i_count( dict_s_i_t * d );
 
 // Return array of keys. Caller must free the array (but not the strings).
-status dict_s_i_get_keys( dict_s_i_t * d , _OUT LPCSTR ** strs , _OUT int * count );
+status dict_s_i_get_keys( dict_s_i_t * d , _NEW_OUT_P LPCSTR ** strs , _RET_VAL_P int * count );
 
 #endif
 

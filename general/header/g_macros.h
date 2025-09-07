@@ -35,12 +35,12 @@
 	 * aya mishavad chize moshtaraki ra beyne platform-ha peyda kard. dar symbian, vaghti static
 	 * library darad sakhteh mishavad __LIB__ define shodeh ast.
 	 */
-	#define _EXPORT
-	#define _IMPORT
+	#define _EXPORT /*obj declared at global namespace*/
+	#define _IMPORT /*extern and linked to global namespace obj*/
 
 
-	#define _WEAK_ATTR __attribute__( ( weak ) )
-	#define _STRONG_ATTR
+	#define _WEAK_ATTR __attribute__( ( weak ) ) /*low priority in linkage*/
+	#define _STRONG_ATTR /*hi priority in linkage*/
 
 #else
 //	#define _EXPORT __declspec(dllexport)
@@ -60,35 +60,40 @@
 
 #if defined Uses_strcasecmp || !defined __COMPILING
 
-#define stricmp _stricmp
-#define _stricmp strcasecmp
+#define stricmp			_stricmp
+#define _stricmp		strcasecmp
+
+#define STRICMP			stricmp
 
 #endif
 
-#define STRINGIFY(x) #x
-#define TOSTRING(x) STRINGIFY(x)
+#define STRINGIFY(x)	#x
+#define TOSTRING(x)		STRINGIFY(x)
 
 
-#define STRCMP(s1,s2) strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
+#define STRCMP(s1,s2)	strcmp(s1,s2)
+//#define STRCMP(s1,s2)	strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
+
 #define STRCPY(s1,s2)\
 	do {\
 	strncpy_s(s1,s2,sizeof(s1)-1);\
 	s1[sizeof(s1)-1]=EOS;\
 	delBlanks_s(s1,sizeof(s1));\
 	} while(0)
+
 #define STRNCPY(s1,s2,n)\
 	do {\
 	strncpy_s(s1,s2,n-1);\
 	s1[n-1]=EOS;\
 	} while(0)
 
-#define STR_SAME( a , b ) ( strcmp( a , b ) == 0 )
-#define STR_DIFF( a , b ) ( strcmp( a , b ) != 0 )
+#define STR_SAME( a , b )	( strcmp( a , b ) == 0 )
+#define STR_DIFF( a , b )	( strcmp( a , b ) != 0 )
 
-#define iSTR_SAME( a , b ) ( stricmp( a , b ) == 0 )
-#define iSTR_DIFF( a , b ) ( stricmp( a , b ) != 0 )
+#define iSTR_SAME( a , b )	( stricmp( a , b ) == 0 )
+#define iSTR_DIFF( a , b )	( stricmp( a , b ) != 0 )
 
-#define DELSTR(str) do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+#define DELSTR(str)			do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 
 #endif
 
@@ -97,34 +102,52 @@
 //-------------------------------------------------------------------------
 #if defined Uses_memory_funcs || !defined __COMPILING
 
-#define MALLOC( size ) malloc( size )
-#define MALLOC_ONE( p ) MALLOC_AR( p , 1 )
-#define MALLOC_AR( p , count ) ( ( __typeof__( *p ) * )malloc( ( size_t )count * sizeof( *p ) ) )
+#define MALLOC( size )					malloc( size )
+#define MALLOC_ONE( ptr )				MALLOC_AR( ptr , 1 )
+#define MALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )malloc( ( size_t )count * sizeof( *ptr ) ) )
 
-#define REALLOC( ptr , size ) realloc( ptr , size )
-#define REALLOC_ONE( p ) REALLOC_AR( p , 1 )
-#define REALLOC_AR( p , count ) ( ( __typeof__( *p ) * )realloc( p , ( size_t )count * sizeof( *p ) ) )
+#define REALLOC( ptr , size )			realloc( ptr , size )
+#define REALLOC_ONE( ptr )				REALLOC_AR( ptr , 1 )
+#define REALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )count * sizeof( *ptr ) ) )
+#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *ptr ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )count * sizeof( *ptr ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
 
-#define CALLOC calloc
-//#define NEWBUF( type , n ) ( type * )MALLOC( sizeof( type ) * ( n ) )
-//#define NEW( type ) ( ( type * )MALLOC( sizeof( type ) ) )
+#define CALLOC							calloc
+//#define NEWBUF( type , n )			( type * )MALLOC( sizeof( type ) * ( n ) )
+//#define NEW( type )					( ( type * )MALLOC( sizeof( type ) ) )
 
-#define MEMSET_ZERO_T( p , type , n )	memset( p , 0 , sizeof( type ) * ( size_t )n )
-#define MEMSET_ZERO( p , n )			memset( (p) , 0 , ( size_t )n * sizeof( *(p) ) )
-#define MEMSET_ZERO_O( p )				memset( p , 0 , sizeof( *p ) )
+#define MEMSET( ptr , chr , sz )		memset( ptr , chr , sz )
 
-#define MEMCPY_S( a , b , size )	memcpy( a , b , size )
-#define MEMCPY( a , b )				memcpy( a , b , sizeof( *a ) )
-#define MEMCPY_AR( a , b , count )	memcpy( a , b , sizeof( *a ) * ( size_t )count )
+#define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )n )
+#define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )n * sizeof( *(ptr) ) )
+#define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *ptr ) )
 
-#define MEMCMP_T( a , b , type )	memcmp( a , b , sizeof type )
-#define MEMCMP( a , b )				memcmp( a , b , sizeof *a )
+#define MEMCPY_ORIGINAL( a , b , size )	memcpy( a , b , size )
+#define MEMCPY_OR( a , b , size )		MEMCPY_ORIGINAL( a , b , size )
+#define MEMCPY( a , b )					MEMCPY_ORIGINAL( a , b , sizeof( *a ) )
+#define MEMCPY_AR( a , b , count )		MEMCPY_ORIGINAL( a , b , sizeof( *a ) * ( size_t )count )
 
-//#define DEL( p ) FREE( p )
-//#define DEL_AR( p ) FREE( p )
-#define FREE( p ) free( ( void_p )p )
-//#define DAC_PTR( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
-#define DAC( x ) do { if( x ) { FREE( x ); x = NULL; } } while( 0 )
+#define MEMCMP_T( a , b , type )		memcmp( a , b , sizeof type )
+#define MEMCMP( a , b )					memcmp( a , b , sizeof *a )
+
+//#define DEL( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
+//#define DEL_AR( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
+
+#define FREE( ptr )						FREE_PTR( ptr )
+#define FREE_PTR( ptr )					free( ( void_p )ptr )
+#define FREE_PPTR( pptr , count )		do { for ( int ___i = 0 ; ___i < count ; ___i++ ) { FREE_PTR( pptr[ ___i ] ); } FREE_PTR( pptr ); } while( 0 )
+
+#define FREE_PLAIN_PTR( ptr )			FREE_PTR( ptr )
+#define FREE_DOUBLE_PTR( pptr , count )	FREE_PPTR( pptr , count )
+
+#define DAC( ptr )						DAC_PTR( ptr )
+#define DAC_PTR( ptr )					do { if( ptr ) { FREE( ptr ); ptr = NULL; } } while( 0 )
+#define DAC_PPTR( pptr , count )		do { if( pptr ) { FREE_PPTR( pptr , count ); pptr = NULL; } } while( 0 )
+
+#define MEMMOVE( dest , src , len )		memmove( dest , src , len )
+
+#define MEMCHR( s , c , n )				memchr( s , c , n )
+
+#define STRLEN( s ) strlen( s )
 
 #endif
 
@@ -137,22 +160,22 @@
 
 //-------------------------------------------------------------------------
 // hamidi, 860510: where to store memory leak log. may be useful also elsewhere.
-#if defined ARM || !defined __COMPILING // CE Device
-	//#define ROOT_PATH "\\SDMMC Disk\\Navi\\" // Navi Up+
-	#define ROOT_PATH "\\Storage Card\\Navi\\" // Mio Device
-#elif defined UNDER_CE || !defined __COMPILING // CE Emulator
-	#define ROOT_PATH "\\Storage Card\\"
-#elif defined _MSC_VER || !defined __COMPILING // Windows XP
-		/*yeh fekri beh hale in bekonim.
-		c:\ jaye monasebi nist. %temp% beh nazar dorosttarin ja miad, vali bayad process
-		besheh ta tabdil beh yek folder-e ghabele estefadeh basheh.
-		dar halikeh in kar hamehja nemituneh anjam besheh...*/
-	#define ROOT_PATH "c:\\"
-#elif defined __GNUC__ || !defined __COMPILING // Linux
-	#define ROOT_PATH "/tmp/"
-#elif defined __SYMBIAN32__ || !defined __COMPILING
-	#define ROOT_PATH "c:\\"  // fe'lan farz mikonim hamin khubeh ta ba'd
-#endif  // platform selector
+//#if defined ARM || !defined __COMPILING // CE Device
+//	//#define ROOT_PATH "\\SDMMC Disk\\Navi\\" // Navi Up+
+//	#define ROOT_PATH "\\Storage Card\\Navi\\" // Mio Device
+//#elif defined UNDER_CE || !defined __COMPILING // CE Emulator
+//	#define ROOT_PATH "\\Storage Card\\"
+//#elif defined _MSC_VER || !defined __COMPILING // Windows XP
+//		/*yeh fekri beh hale in bekonim.
+//		c:\ jaye monasebi nist. %temp% beh nazar dorosttarin ja miad, vali bayad process
+//		besheh ta tabdil beh yek folder-e ghabele estefadeh basheh.
+//		dar halikeh in kar hamehja nemituneh anjam besheh...*/
+//	#define ROOT_PATH "c:\\"
+//#elif defined __GNUC__ || !defined __COMPILING // Linux
+//	#define ROOT_PATH "/tmp/"
+//#elif defined __SYMBIAN32__ || !defined __COMPILING
+//	#define ROOT_PATH "c:\\"  // fe'lan farz mikonim hamin khubeh ta ba'd
+//#endif  // platform selector
 
 //-------------------------------------------------------------------------
 
@@ -198,10 +221,19 @@
 #endif
 #define _IN /*input argument*/
 
-#ifdef _OUT
+//#define _OUT /*output argument*/
+
+#ifdef _NEW_OUT_P
 #error
 #endif
-#define _OUT /*output argument*/
+#define _NEW_OUT_P /*output argument that allocated and freed by caller*/
+
+#ifdef _RET_VAL_P
+#error
+#endif
+#define _RET_VAL_P /*output argument that just filled and mng by caller*/
+
+
 
 #if defined Uses_Remote_vs_prj || !defined __COMPILING
 

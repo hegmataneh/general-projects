@@ -47,3 +47,5 @@ enum
 #define SEND_1470_Byte_IN_UDP_in_nanosec 12300
 #define EACH_VOLATILE_LOOP_in_nano_sec 0.3825
 #define EACH_SECOND_in_nano_Sec 1000000000
+
+#define AUTO_MODERATE_BUFFER_CAPACITY 10 /*simple array that must realloc x more room if size reach capacity*/

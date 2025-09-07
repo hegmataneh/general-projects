@@ -44,7 +44,7 @@ status dict_put( dict_s_s_t * d , LPCSTR key , LPCSTR value )
 	entry_s_s_t * e = d->buckets[ idx ];
 	while ( e )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		if ( STRCMP( e->key , key ) == 0 )
 		{
 			// Update existing
 			DAC( e->value );
@@ -78,7 +78,7 @@ LPCSTR dict_get( dict_s_s_t * d , LPCSTR key )
 	entry_s_s_t * e = d->buckets[ idx ];
 	while ( e )
 	{
-		if ( strcmp( e->key , key ) == 0 )
+		if ( STRCMP( e->key , key ) == 0 )
 			return e->value;
 		e = e->next;
 	}
@@ -110,11 +110,14 @@ void dict_free( dict_s_s_t * d )
 	DAC( d->buckets );
 }
 
-status dict_get_keys( dict_s_s_t * d , _OUT LPCSTR ** strs , _OUT int * count )
+/// <summary>
+/// Return array of keys. Caller must free the array (but not the strings)
+/// </summary>
+status dict_get_keys_ref( dict_s_s_t * d , _NEW_OUT_P strings * strs , _RET_VAL_P int * count )
 {
 	INIT_BREAKABLE_FXN();
 	*count = ( int )dict_count( d );
-	M_MALLOC_AR( *strs , d->key_count , 0 );
+	N_MALLOC_AR( *strs , d->key_count , 0 );
 	size_t pos = 0;
 
 	for ( size_t i = 0; i < d->size; i++ )
@@ -122,11 +125,45 @@ status dict_get_keys( dict_s_s_t * d , _OUT LPCSTR ** strs , _OUT int * count )
 		entry_s_s_t * e = d->buckets[ i ];
 		while ( e )
 		{
-			*( (*strs) + pos ) = ( LPCSTR )e->key;
+			*( (*strs) + pos ) = e->key;
 			pos++;
 			e = e->next;
 		}
 	}
-	BEGIN_SMPL
+	BEGIN_RET
 	END_RET
+}
+
+/// <summary>
+/// you must strs by free_string_ar 
+/// </summary>
+status dict_get_keys_strings( dict_s_s_t * d , _RET_VAL_P strings_ar * strs )
+{
+	INIT_BREAKABLE_FXN();
+	
+	strings ret_strs = NULL;
+	int ret_count = 0;
+	BREAK_STAT( dict_get_keys_ref( d , &ret_strs , &ret_count ) , 0 );
+	if ( ret_count > 0 )
+	{
+		init_string_ar( strs );
+		for ( int i = 0 ; i < ret_count ; i++ )
+		{
+			BREAK_STAT( addTo_string_ar( strs , ret_strs[ i ] ) , 2 );
+		}
+	}
+
+	DAC( ret_strs );
+
+	BEGIN_RET
+	case 2:
+	{
+		free_string_ar( strs );
+	}
+	case 1:
+	{
+		DAC( ret_strs );
+		break;
+	}
+	N_END_RET
 }

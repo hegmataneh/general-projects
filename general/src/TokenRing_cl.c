@@ -17,7 +17,7 @@ status token_ring_cl_add( token_ring_cl_t * ring , callback_t1 cb , void_p user_
 
 	token_item_cl_t * item;
 	
-	M_MALLOC_ONE( item , 0 );
+	N_MALLOC_ONE( item , 0 );
 	MEMSET_ZERO_O( item );
 	
 	item->callback = cb;
@@ -46,7 +46,7 @@ status token_ring_cl_add( token_ring_cl_t * ring , callback_t1 cb , void_p user_
 	pthread_mutex_unlock( &ring->lock );
 
 	BEGIN_SMPL
-	M_END_RET
+	N_END_RET
 }
 
 void token_ring_cl_next( token_ring_cl_t * ring )

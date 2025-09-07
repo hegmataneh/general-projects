@@ -1,3 +1,4 @@
+#define Uses_memory_funcs
 #define Uses_printf
 #define Uses_errno
 #define Uses_free
@@ -312,7 +313,7 @@ result( json_element ) json_parse( typed( json_string ) json_str )
 		return result_err( json_element )( JSON_ERROR_EMPTY );
 	}
 
-	typed( size ) len = strlen( json_str );
+	typed( size ) len = STRLEN( json_str );
 	if ( len == 0 )
 	{
 		return result_err( json_element )( JSON_ERROR_EMPTY );
@@ -344,7 +345,7 @@ result( json_entry ) json_parse_entry( typed( json_string ) * str_ptr )
 	result( json_element_type ) type_result = json_guess_element_type( *str_ptr );
 	if ( result_is_err( json_element_type )( &type_result ) )
 	{
-		free( ( void_p )key.as_string );
+		FREE( ( void_p )key.as_string );
 		return result_map_err( json_entry , json_element_type , &type_result );
 	}
 	typed( json_element_type ) type =
@@ -354,7 +355,7 @@ result( json_entry ) json_parse_entry( typed( json_string ) * str_ptr )
 		json_parse_element_value( str_ptr , type );
 	if ( result_is_err( json_element_value )( &value_result ) )
 	{
-		free( ( void_p )key.as_string );
+		FREE( ( void_p )key.as_string );
 		return result_map_err( json_entry , json_element_value , &value_result );
 	}
 	typed( json_element_value ) value =
@@ -596,7 +597,7 @@ result( json_element_value ) json_parse_object( typed( json_string ) * str_ptr )
 				if ( entries[ bucket ] == NULL )
 				{
 					typed( json_entry ) * temp_entry = alloc( typed( json_entry ) );
-					memcpy( temp_entry , &entry , sizeof( typed( json_entry ) ) );
+					MEMCPY_OR( temp_entry , &entry , sizeof( typed( json_entry ) ) );
 					entries[ bucket ] = temp_entry;
 					break;
 				}
@@ -734,7 +735,7 @@ result( json_element_value ) json_parse_boolean( typed( json_string ) * str_ptr 
 result( json_element )
 json_object_find( typed( json_object ) * obj , typed( json_string ) key )
 {
-	if ( key == NULL || strlen( key ) == 0 )
+	if ( key == NULL || STRLEN( key ) == 0 )
 		return result_err( json_element )( JSON_ERROR_INVALID_KEY );
 
 	typed( uint64 ) bucket = json_key_hash( key ) % obj->count;
@@ -744,7 +745,7 @@ json_object_find( typed( json_object ) * obj , typed( json_string ) key )
 	for ( size_t i = 0; i < obj->count; i++ )
 	{
 		typed( json_entry ) * entry = obj->entries[ bucket ];
-		if ( strcmp( key , entry->key ) == 0 )
+		if ( STRCMP( key , entry->key ) == 0 )
 			return result_ok( json_element )( entry->element );
 
 		bucket = ( bucket + 1 ) % obj->count;
@@ -1055,7 +1056,7 @@ void json_free( typed( json_element ) * element )
 
 void json_free_string( typed( json_string ) string )
 {
-	free( ( void_p )string );
+	FREE( ( void_p )string );
 }
 
 void json_free_object( typed( json_object ) * object )
@@ -1065,7 +1066,7 @@ void json_free_object( typed( json_object ) * object )
 
 	if ( object->count == 0 )
 	{
-		free( object );
+		FREE( object );
 		return;
 	}
 
@@ -1075,14 +1076,14 @@ void json_free_object( typed( json_object ) * object )
 
 		if ( entry != NULL )
 		{
-			free( ( void_p )entry->key );
+			FREE( ( void_p )entry->key );
 			json_free( &entry->element );
-			free( entry );
+			FREE( entry );
 		}
 	}
 
-	free( object->entries );
-	free( object );
+	FREE( object->entries );
+	FREE( object );
 }
 
 void json_free_array( typed( json_array ) * array )
@@ -1092,7 +1093,7 @@ void json_free_array( typed( json_array ) * array )
 
 	if ( array->count == 0 )
 	{
-		free( array );
+		FREE( array );
 		return;
 	}
 
@@ -1104,8 +1105,8 @@ void json_free_array( typed( json_array ) * array )
 	}
 
 	// Lastly free
-	free( array->elements );
-	free( array );
+	FREE( array->elements );
+	FREE( array );
 }
 
 typed( json_string ) json_error_to_string( typed( json_error ) error )
