@@ -1,3 +1,6 @@
+#ifdef Uses_pthread_create
+	#define __INC_pthread
+#endif
 
 #ifdef Uses_isprint
 	#define __INC_ctype
