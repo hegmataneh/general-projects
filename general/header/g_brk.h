@@ -2,6 +2,12 @@
 
 #if defined Uses_M_SERIES_MACROS || !defined __COMPILING
 
+/* NOTICE .
+mohsen 14040618
+-kernel function must not use M_BREAK because they do not have msg tools
+-just inner app space function should show msg and outer must ignore to show because inner know whats the right msg
+*/
+
 
 #ifndef private
 
@@ -12,16 +18,20 @@
 //
 //#endif
 
+#define EACH_FXN_MSG_HOLDER __custom_message
+
 #define M_MK_ERR_MSG(msg,echo) do {\
-	make_msg_appnd_sys_err( __custom_message , sizeof( __custom_message ) , __snprintf( __custom_message , sizeof( __custom_message ) , "(ln%d)-%s" , __LINE__ , ( msg ? msg : "" ) ) ); } while ( 0 )
+		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , "(%s:%d)-%s(%s)(%s)" ,\
+			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , ( msg ? msg : "" ) , __conditional_internalErrorStr(d_error,msg) , systemErrorStr(NP) ); } while ( 0 )
 
 #define M_MK_ERR_FMT_MSG(fmt,...) do {\
-	make_msg_appnd_sys_err( __custom_message , sizeof( __custom_message ) , __snprintf( __custom_message , sizeof( __custom_message ) , "(ln%d)-" fmt , __LINE__ , __VA_ARGS__ ) ); } while ( 0 )
+		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , "(%s:%d)-" fmt "(%s)(%s)",\
+			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , __VA_ARGS__ , __conditional_internalErrorStr(d_error,fmt) , systemErrorStr(NP) ); } while ( 0 )
 
 	
 //#ifdef __ENGINE // app must provide def for M_MSG
 	#define MM_MSG(msg) do {\
-		M_showMsg( msg ); \
+			M_showMsg( msg ); \
 		} while(0)
 
 	#ifdef M_MSG
@@ -29,10 +39,10 @@
 	#endif
 
 	#define M_MSG {\
-		MM_MSG( __custom_message ); }
+		MM_MSG( EACH_FXN_MSG_HOLDER ); }
 
-	#define IF_M_MSG if(d_error!=errOK){\
-		M_MSG; }
+	#define IF_M_MSG if ( d_error != errOK && d_error != one_time_echo_err ){\
+		M_MSG; d_error = one_time_echo_err; }
 //#endif
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen
@@ -89,7 +99,7 @@ do \
 #define INIT_BREAKABLE_FXN() \
 	status d_error = errOK;  /*c does not have class and data member*/\
 	int _ErrLvl = 0; \
-	char __custom_message[ 256 ] = "";
+	char EACH_FXN_MSG_HOLDER [ 256 ] = "";
 
 #define BREAK_OK(lvl)\
 	do {\
@@ -121,7 +131,7 @@ do \
 
 #endif
 
-#define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; }
+#define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; } /*just to ignore warning*/
 #define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: while(0) {}; status ___localError=d_error
 
 // begin ret and series
@@ -129,6 +139,8 @@ do \
 #define BEGIN_SMPL d_error=errOK; _ErrLvl=0; BGR_BEFORE_ACTION_PART; while(0) {
 #define BEGIN_RET d_error=errOK; _ErrLvl=0; BGR_BEFORE_ACTION_PART; switch(_ErrLvl) {
 #define BEGR(lvl) d_error=errOK; _ErrLvl=lvl; BGR_BEFORE_ACTION_PART; switch(_ErrLvl) { case lvl:
+
+// if inner buggy fxn show msg then horra if not, outer caller just can through d_error msg
 
 #define V_END_RET } d_error=___localError;
 #define END_RET V_END_RET return d_error;

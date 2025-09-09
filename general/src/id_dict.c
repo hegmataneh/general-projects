@@ -6,7 +6,7 @@
 status id_dict_init( id_dict_t ** pdict , size_t capacity)
 {
 	(*pdict) = MALLOC_ONE( *pdict );
-	if ( !(*pdict) ) return errGeneral;
+	if ( !(*pdict) ) return errMemoryLow;
 	MEMSET_ZERO_O( (*pdict) );
 
 	(*pdict)->capacity = capacity;

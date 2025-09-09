@@ -36,8 +36,10 @@ int peerTcpClosed( sockfd socketfd );
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
 LPCSTR internalErrorStr( status errValue );
 status internalErrorVal( LPCSTR errStr );
-LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
-
+//LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
+LPCSTR systemErrorStr( int prcID /*just for future use*/ );
+LPCSTR __FUNCTION_shrtn( LPCSTR str );
+LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
 
 //----String functions------------------------------------------------------
 LPSTR newStr(LPCSTR); // donot use it directly use NEWSTR instead

@@ -31,8 +31,8 @@
 
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[64]={"errOK","errGeneral","errMemoryLow","errInvalidString","errCanceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound"};
+static LPCSTR errStrs[64]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -101,24 +101,40 @@ LPSTR newStr( LPCSTR str )
 	return temp;
 }
 
+LPCSTR systemErrorStr( int prcID /*just for future use*/ )
+{
+	return errno ? ( LPCSTR )strerror( errno ) : "";
+}
+
+LPCSTR __FUNCTION_shrtn( LPCSTR str ) // just shorten __FUNCTION__
+{
+	int len = ( int )strlen( str );
+	return ( LPCSTR )( ( ( LPSTR )str ) + (len > 5 ? len - 5 : 0) );
+}
+
+LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
+{
+	return ( (ifnotstr && strlen(ifnotstr)) ? "" : internalErrorStr( err ) );
+}
+
 //LPCSTR __msg( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR msg , int line_number )
 //{
 //	snprintf( msg_holder , size_of_msg_holder , "%s: ln(%d)\n" , msg , line_number );
 //	return msg_holder;
 //}
 
-LPCSTR make_msg_appnd_sys_err( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg )
-{
-	if ( errno != 0 )
-	{
-		snprintf( msg_holder , size_of_msg_holder , "%s (%d):%s" , cst_msg , errno , strerror(errno) );
-	}
-	else
-	{
-		snprintf( msg_holder , size_of_msg_holder , "%s" , cst_msg );
-	}
-	return msg_holder;
-}
+//LPCSTR make_msg_appnd_sys_err( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg )
+//{
+//	if ( errno != 0 )
+//	{
+//		snprintf( msg_holder , size_of_msg_holder , "%s (%d):%s" , cst_msg , errno , strerror(errno) );
+//	}
+//	else
+//	{
+//		snprintf( msg_holder , size_of_msg_holder , "%s" , cst_msg );
+//	}
+//	return msg_holder;
+//}
 
 LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format , ... )
 {

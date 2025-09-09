@@ -19,7 +19,7 @@ status cbuf_lf_init( cbuf_lf * cblf , size_t capacity , size_t room_size , l_pkg
 	cblf->buf = MALLOC( buf_size );
 	if ( !cblf->buf )
 	{
-		return errGeneral;
+		return errMemoryLow;
 	}
 
 	cblf->room_size = room_size;

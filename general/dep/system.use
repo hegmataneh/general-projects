@@ -235,10 +235,6 @@
 	#define __INC_time
 #endif
 
-#ifdef Uses_timespec
-	#define __INC_time
-#endif
-
 #ifdef Uses_timeval
 	#define __INC_sys_time
 #endif

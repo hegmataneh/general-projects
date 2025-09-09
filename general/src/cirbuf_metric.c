@@ -4,9 +4,9 @@
 
 status cbuf_m_init( cbuf_metr * buf , size_t capacity )
 {
-	if ( !buf || capacity == 0 ) return errGeneral;
+	if ( !buf || capacity == 0 ) return errArg;
 	buf->samples = ( uint64_t * )calloc( capacity , sizeof( uint64_t ) );
-	if ( !buf->samples ) return errGeneral;
+	if ( !buf->samples ) return errMemoryLow;
 	buf->capacity = capacity;
 	buf->head = 0;
 	buf->filled = 0;
@@ -60,7 +60,7 @@ uint64_t cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n )
 
 status cbuf_m_peek_latest( const cbuf_metr * buf , uint64_t * out_val )
 {
-	if ( !buf || !buf->samples || buf->filled == 0 || !out_val ) return errGeneral;
+	if ( !buf || !buf->samples || buf->filled == 0 || !out_val ) return errArg;
 	size_t latest_idx = ( buf->head + buf->capacity - 1 ) % buf->capacity;
 	*out_val = buf->samples[ latest_idx ];
 	return errOK;
