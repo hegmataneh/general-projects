@@ -54,7 +54,7 @@
 	#define __INC_yaml_h
 #endif
 
-#ifdef Uses_Remote_vs_prj
+#ifdef Uses_ERROR_SECTION
 	#define __INC_macros
 #endif
 
@@ -304,3 +304,17 @@
 #ifdef Uses_strings_ar
 	#define __INC_str
 #endif
+
+#ifdef Uses_cirbuf_infinite
+	#define __INC_cirbuf_infinite
+#endif
+
+
+#ifdef Uses_ci_sgm_t
+	#define Uses_cirbuf_infinite
+#endif
+
+#ifdef Uses_ci_sgmgr_t
+	#define Uses_cirbuf_infinite
+#endif
+

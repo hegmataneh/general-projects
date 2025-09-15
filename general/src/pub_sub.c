@@ -63,6 +63,16 @@ status distributor_subscribe_t( distributor_t * dis , int iGrp /*1 on flat list*
 	N_END_RET
 }
 
+status distributor_get_data( distributor_t * dis , pass_p * pdata )
+{
+	if ( dis->grp_count && dis->subs_grp_subd[ 0 ] && dis->subs_grp )
+	{
+		*pdata = dis->subs_grp[ 0 ][ 0 ]->data;
+		return errOK;
+	}
+	return errNotFound;
+}
+
 status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data )
 {
 	return distributor_subscribe_t( dis , 0 , type , func , data , NULL );

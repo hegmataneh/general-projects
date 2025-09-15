@@ -96,3 +96,7 @@
 	#include <dict_s_o.h>
 #endif
 
+#ifdef __INC_cirbuf_infinite
+	#include <cirbuf_infinite.h>
+#endif
+

@@ -91,7 +91,7 @@ do \
 	} \
 } while ( 0 )
 
-#endif
+#endif // private
 
 
 #ifndef public
@@ -129,7 +129,7 @@ do \
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
 #define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 
-#endif
+#endif // #if !defined( __ENGINE )
 
 #define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; } /*just to ignore warning*/
 #define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: while(0) {}; status ___localError=d_error
@@ -155,7 +155,7 @@ do \
 #define M_END_RET M_V_END_RET return d_error;
 //#define M_B_END_RET M_V_END_RET return ToBoolean(d_error==errOK);
 
-#endif
+#endif // #if !defined( __ENGINE )
 
 // no case
 #define V_RET d_error=errOK; BGR_DUMMY_WHILE; __ret: ;
@@ -168,7 +168,7 @@ do \
 #define M_RET M_V_RET return d_error;
 //#define M_B_RET M_V_RET return ToBoolean(d_error==errOK);
 
-#endif
+#endif // #if !defined( __ENGINE )
 
 //#define ASSERT_NO_ERROR
 //	V_RET
@@ -204,9 +204,9 @@ do \
 #define MM_MALLOC_ONE(ptr,lvl,msg)\
 	MM_BREAK_IF(!(ptr=MALLOC_ONE(ptr)),errMemoryLow,lvl,msg)
 
-#endif
+#endif // #if !defined( __ENGINE ) 
 
-#endif
+#endif // public
 
-#endif  // Uses_M_SERIES_MACROS
+#endif  // defined Uses_M_SERIES_MACROS
 

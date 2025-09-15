@@ -61,6 +61,7 @@ typedef struct
 typedef struct
 {
 	ar_alloc_sub_t * subs_grp; // each publish distribute to all
+	// TODO . maybe it must be aligned and non false share
 	int * subs_grp_subd; // each int is subscribed item in each sub grp
 	int grp_count;
 
@@ -87,6 +88,8 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ );
+
+status distributor_get_data( distributor_t * dis , pass_p * pdata );
 
 #endif
 

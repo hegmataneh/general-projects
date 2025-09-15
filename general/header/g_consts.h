@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 
 //-------------------------------------------------------------------------
 extern const char EOS; // 0
@@ -21,18 +21,19 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -17,
-	one_time_echo_err = -16, // this err just use for condition where at app level one M_V_END_RET show err msg and outer caller should ignore it
+	NEXT_GENERAL_ERROR_VALUE = -18,
+	errOverflow = -17, // if cannot fit and grow not allowed
+	one_time_echo_err = -16, // origin -> this err just use for condition where at app level one M_V_END_RET show err msg and outer caller should ignore it
 	errCreation = -15,
 	errSocket = -14,
 	errDevice = -13,
 	errNotFound = -12,
-	errNoPeer = -11,
+	errNoPeer = -11, // origin -> tcp peer disconnected
 	errMaximumExceeded = -10,
 	errOutofRanje = -9,
 	errPeerClosed = -8,
 	errTimeout = -7,
-	errArg = -6,
+	errArg = -6, // origin -> bad argument
 	errSyntax = -5,
 	errCanceled = -4,  // indeed this indicates a normal abort and is not an d_error condition
 	errInvalidString = -3,

@@ -85,6 +85,7 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="src\cirbuf_infinite.c" />
     <ClCompile Include="src\cirbuf_lockfree.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
     <ClCompile Include="src\cirbuf_packet_sync.c" />
@@ -134,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
+    <ClInclude Include="header\cirbuf_infinite.h" />
     <ClInclude Include="header\cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />
     <ClInclude Include="header\dict.h" />

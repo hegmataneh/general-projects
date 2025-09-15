@@ -2,14 +2,17 @@
 
 #if defined Uses_vcbuf_nonblk || !defined __COMPILING
 
+// TODO . implement fast push with false sharing and lignment
+
 // variable circular buffer not block on push and pop . but used as one to one
+//_FALSE_SHARE_SAFE
 typedef struct vcbuf_nonblk // conveys synchronized one producer one consumer
 {
-	buffer buf;         // raw memory for all rooms
-	size_t room_size;     // size of each room
-	size_t capacity;      // number of rooms
-	size_t head;          // write index
-	size_t tail;          // read index
+	buffer buf;			// raw memory for all rooms
+	size_t room_size;	// size of each room
+	size_t capacity;	// number of rooms
+	size_t head;		// write index
+	size_t tail;		// read index
 	size_t err_full;
 
 	sem_t gateway;

@@ -98,12 +98,17 @@ typedef void * void_p;
 
 typedef void * pass_p; // pass data pointer
 
+typedef char   DATAB; // data block / byte
+
 //-------------------------------------------------------------------------
-enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff };
+
+typedef enum GeBoolean { eFalse = 0 , eTrue = 1 , eNull = 0x7fffffff } GeBoolean;
+
 #define Boolean GeBoolean
 #define False eFalse
 #define True eTrue
 #define Null eNull
+
 
 #define LLONG( ll ) ll##L
 #define LLONGLONG( ll ) ll##LL

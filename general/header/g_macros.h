@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 
 //-------------------------------------------------------------------------
 #define NP 0  // not provided
@@ -74,11 +74,11 @@
 #define STRCMP(s1,s2)	strcmp(s1,s2)
 //#define STRCMP(s1,s2)	strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 
-#define STRCPY(s1,s2)\
+#define STRCPY(dst,src)\
 	do {\
-	strncpy_s(s1,s2,sizeof(s1)-1);\
-	s1[sizeof(s1)-1]=EOS;\
-	delBlanks_s(s1,sizeof(s1));\
+	strncpy_s(dst,src,sizeof(dst)-1);\
+	dst[sizeof(dst)-1]=EOS;\
+	delBlanks_s(dst,sizeof(dst));\
 	} while(0)
 
 #define STRNCPY(s1,s2,n)\
@@ -102,29 +102,32 @@
 //-------------------------------------------------------------------------
 #if defined Uses_memory_funcs || !defined __COMPILING
 
-#define MALLOC( size )					malloc( size )
+#define MALLOC( size )					malloc( size ) /*allocate and left uninitialized. so faster*/
 #define MALLOC_ONE( ptr )				MALLOC_AR( ptr , 1 )
-#define MALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )malloc( ( size_t )count * sizeof( *ptr ) ) )
+#define MALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )malloc( ( size_t )( count ) * sizeof( *ptr ) ) )
 
 #define REALLOC( ptr , size )			realloc( ptr , size )
 #define REALLOC_ONE( ptr )				REALLOC_AR( ptr , 1 )
-#define REALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )count * sizeof( *ptr ) ) )
-#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *ptr ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )count * sizeof( *ptr ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
+#define REALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )( count ) * sizeof( *ptr ) ) )
+#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *ptr ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )( count ) * sizeof( *ptr ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
 
-#define CALLOC							calloc
+#define CALLOC( amount , size )			calloc( amount , size ) /*allocate and memset with zero. so slower*/
+#define CALLOC_ONE( ptr )				calloc( 1 , sizeof( *ptr ) )
+#define CALLOC_AR( ptr , count )		calloc( ( count ) , sizeof( *ptr ) )
+
 //#define NEWBUF( type , n )			( type * )MALLOC( sizeof( type ) * ( n ) )
 //#define NEW( type )					( ( type * )MALLOC( sizeof( type ) ) )
 
 #define MEMSET( ptr , chr , sz )		memset( ptr , chr , sz )
 
-#define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )n )
-#define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )n * sizeof( *(ptr) ) )
+#define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )( n ) )
+#define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )( n ) * sizeof( *(ptr) ) )
 #define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *ptr ) )
 
 #define MEMCPY_ORIGINAL( a , b , size )	memcpy( a , b , size )
 #define MEMCPY_OR( a , b , size )		MEMCPY_ORIGINAL( a , b , size )
 #define MEMCPY( a , b )					MEMCPY_ORIGINAL( a , b , sizeof( *a ) )
-#define MEMCPY_AR( a , b , count )		MEMCPY_ORIGINAL( a , b , sizeof( *a ) * ( size_t )count )
+#define MEMCPY_AR( a , b , count )		MEMCPY_ORIGINAL( a , b , sizeof( *a ) * ( size_t )( count ) )
 
 #define MEMCMP_T( a , b , type )		memcmp( a , b , sizeof type )
 #define MEMCMP( a , b )					memcmp( a , b , sizeof *a )
@@ -134,7 +137,7 @@
 
 #define FREE( ptr )						FREE_PTR( ptr )
 #define FREE_PTR( ptr )					free( ( void_p )ptr )
-#define FREE_PPTR( pptr , count )		do { for ( int ___i = 0 ; ___i < count ; ___i++ ) { FREE_PTR( pptr[ ___i ] ); } FREE_PTR( pptr ); } while( 0 )
+#define FREE_PPTR( pptr , count )		do { for ( int ___i = 0 ; ___i < ( count ) ; ___i++ ) { FREE_PTR( pptr[ ___i ] ); } FREE_PTR( pptr ); } while( 0 )
 
 #define FREE_PLAIN_PTR( ptr )			FREE_PTR( ptr )
 #define FREE_DOUBLE_PTR( pptr , count )	FREE_PPTR( pptr , count )
@@ -235,7 +238,7 @@
 
 
 
-#if defined Uses_Remote_vs_prj || !defined __COMPILING
+#if defined Uses_ERROR_SECTION || !defined __COMPILING
 
 // INIT_BREAKABLE_FXN()
 
@@ -261,14 +264,17 @@
 #define _VERBOSE_ECHO(msg,...) do {\
 	SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
-#define VOID_RET ((void_p)NULL)
-#define MAIN_BAD_RET (1/*Indicate an error*/)
 
 //#define ERR_RET( user_friendly_msg , RET ) 
 //	do {
 //	_DETAIL_ERROR( user_friendly_msg );
 //	return RET; } while(0);
 
+#endif // #if defined Uses_ERROR_SECTION
+
+
+#define VOID_RET ((void_p)NULL)
+#define MAIN_BAD_RET (1/*Indicate an error*/)
 
 #define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -276,6 +282,23 @@
 #define _THREAD_FXN /*identified as thread callback fxn*/
 #define _CALLBACK_FXN
 #define _REGULAR_FXN
-#define _PRIVATE_FXN
 
-#endif
+#define _PRIVATE_FXN static
+
+#define _FALSE_SHARE_SAFE /*speed up memory access*/
+#define _ALIGNED(date) /*speed up struct member access*/
+
+
+#define _PAD_NAME2(line) pad_##line
+#define _PAD_NAME(line)  _PAD_NAME2(line)
+// Main macro to insert padding
+#define PAD(sz) char _PAD_NAME(__LINE__)[sz]
+
+#define CACHE_LINE_SIZE 64 /*see chatgpt for extra explnation*/
+
+#define ALIGN_STRUCT(sz) __attribute__( ( aligned( sz ) ) ) /*__attribute__( ( aligned( CACHE_LINE_SIZE ) ) )*/
+
+#define MACRO_E( mcro ) do { mcro; } while(0);
+#define NULL_ACT MACRO_E( while(0) )
+#define RANJE_ACT1( swt_var , cse1 , true_act , false_act ) do { switch( swt_var ) { case cse1: { true_act; break; } default: { false_act; } } } while( 0 )
+#define RANJE_ACT2( swt_var , cse1 , cse2 , true_act , false_act ) do { switch( swt_var ) { case cse1: case cse2: { true_act; break; } default: { false_act; } } } while( 0 )
