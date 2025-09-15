@@ -152,7 +152,7 @@
 
 #define STRLEN( s ) strlen( s )
 
-#endif
+#endif // Uses_memory_funcs
 
 
 
@@ -302,3 +302,7 @@
 #define NULL_ACT MACRO_E( while(0) )
 #define RANJE_ACT1( swt_var , cse1 , true_act , false_act ) do { switch( swt_var ) { case cse1: { true_act; break; } default: { false_act; } } } while( 0 )
 #define RANJE_ACT2( swt_var , cse1 , cse2 , true_act , false_act ) do { switch( swt_var ) { case cse1: case cse2: { true_act; break; } default: { false_act; } } } while( 0 )
+
+
+#define PRE_MAIN_INITIALIZATION __attribute__( ( constructor ) ) /*put it before global fxn then system call it before main in gcc*/
+

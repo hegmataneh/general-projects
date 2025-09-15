@@ -11,6 +11,11 @@
 #include "../header/g_funcs.h"
 #include "../header/g_brk.h"
 
+
+#ifdef __INC_DGB
+	#include <dbg.h>
+#endif
+
 #ifdef __INC_struct
 	#include <struct.h>
 #endif

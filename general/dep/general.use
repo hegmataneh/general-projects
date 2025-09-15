@@ -158,6 +158,16 @@
 	#define __INC_pub_sub
 #endif
 
+
+#ifdef Uses__VERBOSE_ECHO
+	#define Uses_ERROR_SECTION
+	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses_FREE_DOUBLE_PTR
+	#define Uses_memory_funcs
+#endif
+
 #ifdef Uses_memory_funcs
 	#define Uses_memset
 	#define __INC_macros
@@ -183,11 +193,28 @@
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
+
+#ifdef Uses_STRLEN
+	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses__ECHO
+	#define Uses_ERROR_SECTION
+#endif
+
+
+
 #ifdef Uses_MEMSET_ZERO_T
 	#define Uses_memset
 	#define Uses_memory_funcs
 	#define __INC_macros
 #endif
+
+#ifdef Uses_MEMSET
+	#define Uses_memset
+	#define Uses_memory_funcs
+#endif
+
 #ifdef Uses_MEMSET_ZERO
 	#define Uses_memset
 	#define Uses_memory_funcs
@@ -318,3 +345,14 @@
 	#define Uses_cirbuf_infinite
 #endif
 
+#ifdef Uses_SYS_ALIVE_CHECK
+	#define Uses_DGB
+#endif
+
+#ifdef Uses_CODE_DBG_TOOLS
+	#define Uses_DGB
+#endif
+
+#ifdef Uses_DGB
+	#define __INC_DGB
+#endif

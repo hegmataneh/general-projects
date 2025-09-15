@@ -58,6 +58,9 @@
     <ClCompile Include="src\cirbuf_infinite.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dbg.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -167,6 +170,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\cirbuf_infinite.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dbg.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>
