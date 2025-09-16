@@ -1,3 +1,16 @@
+#ifdef Uses_strdup
+	#define _GNU_SOURCE
+	#define __INC_string
+#endif
+
+#ifdef Uses_pthread_spinlock_t
+	#define __INC_pthread
+#endif
+
+#ifdef Uses_atomic_size_t
+	#define __INC_stdatomic
+#endif
+
 #ifdef Uses_pthread_create
 	#define __INC_pthread
 #endif

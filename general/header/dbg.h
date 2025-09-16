@@ -1,6 +1,6 @@
 #pragma once
 
-#define __USE_DBG_TOOLS /*uncomment this to use dbg tools*/
+//#define __USE_DBG_TOOLS /*uncomment this to use dbg tools*/
 
 #if defined Uses_DGB || !defined __COMPILING /*at scope of compiler each source must use it*/
 
@@ -26,7 +26,9 @@ extern LPCSTR __map_c2idx[MAX_TU];
 #define __CODE_DBG_TOOLS_INIT __attribute__((constructor)) \
 							static void ___code_init( void )\
 							{\
-								__tu_local_counter = ++__tu_global_counter;\
+								__tu_local_counter = __tu_global_counter;\
+								__map_c2idx[ __tu_local_counter ] = get_filename(__FILE__);\
+								__tu_global_counter++;\
 							}
 /*~private*/
 

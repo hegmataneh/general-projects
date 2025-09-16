@@ -128,3 +128,7 @@
 #ifdef __INC_semaphore
 	#include <semaphore.h>
 #endif
+
+#ifdef __INC_stdatomic
+	#include <stdatomic.h>
+#endif

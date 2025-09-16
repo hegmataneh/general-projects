@@ -24,7 +24,7 @@ long long timeval_diff_nsec( struct timeval * start , struct timeval * end );
 //----file functions------------------------------------------------------
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
 LPCSTR read_file( LPCSTR path , buffer pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
-
+const char * get_filename( const char * path );
 
 //----socket functions------------------------------------------------------
 void _close_socket( sockfd * socket_id );
@@ -110,3 +110,4 @@ void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
 uint8 hash8_fnv1a_avalanche( const char * s );
 ulong hash( LPCSTR str );
+

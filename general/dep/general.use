@@ -356,3 +356,14 @@
 #ifdef Uses_DGB
 	#define __INC_DGB
 #endif
+
+#ifdef Uses_dict_fst
+	#define Uses_uint64_t
+	#define Uses_pthread_spinlock_t
+	#define Uses_atomic_size_t
+	#define __dict_fst
+#endif
+
+#ifdef Uses_kv_table_t
+	#define Uses_dict_fst
+#endif

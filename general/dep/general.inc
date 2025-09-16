@@ -105,3 +105,7 @@
 	#include <cirbuf_infinite.h>
 #endif
 
+#ifdef __dict_fst
+	#include <dict_fst.h>
+#endif
+
