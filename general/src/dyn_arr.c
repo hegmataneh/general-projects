@@ -118,7 +118,7 @@ void * array_get( dyn_arr * arr , size_t index )
 status array_set( dyn_arr * arr , size_t index , void * item )
 {
 	if ( !arr || index >= arr->count || !item ) return errArg;
-	ASSERT( index < arr->count );
+	WARNING( index < arr->count );
 	if ( arr->allocated_pointer_keeper )
 	{
 		if ( index < arr->count )

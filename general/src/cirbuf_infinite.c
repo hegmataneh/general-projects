@@ -3,7 +3,11 @@
 #define Uses_cirbuf_infinite
 #include <general.dep>
 
-/* ---------- Utilities ---------- */
+size_t * ptotal_items = NULL;	  // temp
+size_t * ptotal_bytes = NULL;	  // temp
+size_t * psegment_total = NULL;	  // temp
+size_t * pfilled_count = NULL;	  // temp
+
 
 /* Allocate and initialize a segment with given capacities */
 _PRIVATE_FXN status ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size_t offsets_capacity )
@@ -39,6 +43,7 @@ _PRIVATE_FXN status ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size
 	( *psgm )->active_lock = False;
 	//( *psgm )->filled = False;
 	( *psgm )->in_filled_queue = False;
+
 	return errOK;
 }
 
@@ -142,7 +147,7 @@ _PRIVATE_FXN void filled_queue_push( ci_sgmgr_t * mgr , ci_sgm_t * s )
 		mgr->filled_tail->queue_next = s;
 		mgr->filled_tail = s;
 	}
-	//mgr->filled_count++;
+	mgr->filled_count++;
 	pthread_cond_signal( &mgr->filled_cond );
 }
 
@@ -156,7 +161,7 @@ _PRIVATE_FXN ci_sgm_t * filled_queue_pop( ci_sgmgr_t * mgr )
 	//s->next = s->prev = s; /* reset ring pointers to self (not re-inserted yet) */
 	s->in_filled_queue = False;
 	s->queue_next = NULL;
-	//mgr->filled_count--;
+	mgr->filled_count--;
 	return s;
 }
 
@@ -192,10 +197,16 @@ status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t defa
 	mgr->ring = NULL;
 	mgr->active = NULL;
 	mgr->filled_head = mgr->filled_tail = NULL;
-	//mgr->filled_count = 0;
+	mgr->filled_count = 0;
 	mgr->segment_total = 0;
-	//mgr->total_items = 0;
-	//mgr->total_bytes = 0;
+	mgr->total_items = 0;
+	mgr->total_bytes = 0;
+
+	ptotal_items = &mgr->total_items;
+	ptotal_bytes = &mgr->total_bytes;
+	psegment_total = &mgr->segment_total;
+	pfilled_count = &mgr->filled_count;
+
 	return errOK;
 }
 
@@ -257,7 +268,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 					break;
 				}
 				mgr_ring_ft = mgr_ring_ft->next;
-				ASSERT( mgr_ring_ft ); // if there is circular buf so next never could possibly be null
+				WARNING( mgr_ring_ft ); // if there is circular buf so next never could possibly be null
 			} while ( mgr_ring_ft && mgr_ring_ft != mgr->ring );
 		}
 		/* If still none, try create if allowed */
@@ -277,12 +288,12 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 			/* If ring pointer was empty, ensure manager ring points to this new seg */
 			//if ( !mgr->ring ) mgr->ring = psgm_active;
 		}
-		ASSERT( psgm_active );
+		WARNING( psgm_active );
 		segmgr_set_active_locked( mgr , psgm_active );
 	}
 
 	/* If item is larger than buffer capacity -> error (we don't split items) */
-	ASSERT( len <= mgr->default_seg_capacity );
+	WARNING( len <= mgr->default_seg_capacity );
 	if ( len > psgm_active->buf_capacity )
 	{
 		segmgr_set_active_locked( mgr , NULL );
@@ -299,7 +310,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 		/* find next empty segment */
 		ci_sgm_t * next_empty = NULL;
 		ci_sgm_t * pnext = psgm_active->next;
-		ASSERT( pnext && mgr->ring ); // there is active seg so how ring could be null
+		WARNING( pnext && mgr->ring ); // there is active seg so how ring could be null
 		if ( pnext && mgr->ring )
 		{
 			do
@@ -310,7 +321,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 					break;
 				}
 				pnext = pnext->next;
-				ASSERT( pnext ); // circular???
+				WARNING( pnext ); // circular???
 			} while ( pnext != mgr->ring );
 		}
 
@@ -335,7 +346,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 		psgm_active = mgr->active;
 	}
 
-	ASSERT( psgm_active );
+	WARNING( psgm_active );
 
 	/* Ensure offsets capacity */
 	if ( psgm_active->itm_count + 1 > psgm_active->offsets_capacity )
@@ -357,10 +368,10 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 	psgm_active->buf_used += len;
 
 	/* Update manager stats */
-	//mgr->total_items++;
-	//mgr->total_bytes += len;
+	mgr->total_items++;
+	mgr->total_bytes += len;
 
-	ASSERT( psgm_active->buf_used <= psgm_active->buf_capacity );
+	WARNING( psgm_active->buf_used <= psgm_active->buf_capacity );
 
 	/* If segment becomes exactly full, mark filled and move active */
 	if ( psgm_active->buf_used == psgm_active->buf_capacity )
@@ -443,10 +454,10 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	pthread_mutex_lock( &mgr->lock );
 
 	/* Reset */
-	//mgr->total_items -= s->itm_count;
+	mgr->total_items -= s->itm_count;
 	/* subtract bytes */
-	//size_t bytes = s->buf_used;
-	//if (mgr->total_bytes >= bytes) mgr->total_bytes -= bytes;
+	size_t bytes = s->buf_used;
+	if (mgr->total_bytes >= bytes) mgr->total_bytes -= bytes;
 	s->buf_used = 0;
 	s->itm_count = 0;
 	//s->filled = False;

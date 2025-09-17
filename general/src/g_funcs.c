@@ -66,7 +66,7 @@ _EXPORT LPCSTR internalErrorStr(status errValue)
 {
 	if ( errValue > errOK )
 	{
-		//ASSERT( 0 );
+		//WARNING( 0 );
 		return "An error occur in mfc fxn"; // mohsen ageh error > 0 mi toneh beh M_mkShowMsg bereh pas chera barayeh amadanesh beh in fxn fekri nashodeh
 	}
 	if ( errValue <= errOK && errValue > _err )
@@ -109,7 +109,7 @@ LPCSTR systemErrorStr( int prcID /*just for future use*/ )
 LPCSTR __FUNCTION_shrtn( LPCSTR str ) // just shorten __FUNCTION__
 {
 	int len = ( int )strlen( str );
-	return ( LPCSTR )( ( ( LPSTR )str ) + (len > 5 ? len - 5 : 0) );
+	return ( LPCSTR )( ( ( LPSTR )str ) + (len > 10 ? len - 10 : 0) );
 }
 
 LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
@@ -586,7 +586,7 @@ IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int countstrs ,
 IN_GENERAL void convertChr( LPCSTR str , LPCSTR from , LPCSTR to ) // Written By Mohsen
 {
 	size_t t1 = STRLEN( from );
-	ASSERT( t1 == STRLEN( to ) );
+	WARNING( t1 == STRLEN( to ) );
 	LPSTR  lpC;
 	while ( ( lpC = strpbrk( ( LPSTR )str , from ) ) )
 	{
@@ -607,7 +607,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 
 //IN_GENERAL void_p removeChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )str;
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )MEMCHR( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
@@ -621,7 +621,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 
 //IN_GENERAL void_p removeiChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )str;
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memichr( lpLastChr , chr , basestr + sz - lpLastChr ) ) )
@@ -635,7 +635,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //
 //IN_GENERAL void_p removeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )sMem;
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memchrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
@@ -649,7 +649,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //
 //IN_GENERAL void_p removeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )sMem;
 //	LPSTR  lpLastChr = basestr;
 //	while ( ( lpLastChr = ( LPSTR  )memichrs( lpLastChr , basestr + memSz - lpLastChr , chrs , chrsCount ) ) )
@@ -663,7 +663,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 
 //IN_GENERAL void_p serializeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )sMem;
 //	LPSTR  lpLastMem = basestr;
 //	LPSTR  lpChr = basestr;
@@ -686,7 +686,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //
 //IN_GENERAL void_p serializeiChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
-//	ASSERT( pSz );
+//	WARNING( pSz );
 //	LPSTR  basestr = ( LPSTR  )sMem;
 //	LPSTR  lpLastMem = basestr;
 //	LPSTR  lpChr = basestr;
@@ -755,7 +755,7 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //			if ( eos != EOS )
 //			{
 //				::swap( ceos[ 0 ] , eos );
-//				ASSERT( eos == EOS );
+//				WARNING( eos == EOS );
 //			}
 //			::swap( str[ 0 ] , eos );
 //			ceos = str;
@@ -764,7 +764,7 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //	if ( eos != EOS )
 //	{
 //		::swap( ceos[ 0 ] , eos );
-//		ASSERT( eos == EOS );
+//		WARNING( eos == EOS );
 //	}
 //	return str;
 //}
@@ -782,7 +782,7 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //			if ( eos != EOS )
 //			{
 //				::swap( ceos[ 0 ] , eos );
-//				ASSERT( eos == EOS );
+//				WARNING( eos == EOS );
 //			}
 //			::swap( str[ 0 ] , eos );
 //			ceos = str;
@@ -791,7 +791,7 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //	if ( eos != EOS )
 //	{
 //		::swap( ceos[ 0 ] , eos );
-//		ASSERT( eos == EOS );
+//		WARNING( eos == EOS );
 //	}
 //	return str;
 //}
@@ -958,7 +958,6 @@ status sendall( sockfd socketfd , buffer buf , size_t * len ) // as beej book sa
 {
 	size_t total = 0; // how many bytes we've snt
 	size_t byteleft = *len; // how many we have left to send
-	size_t n;
 	ssize_t send_ret;
 
 	while ( total < *len )
@@ -969,12 +968,11 @@ status sendall( sockfd socketfd , buffer buf , size_t * len ) // as beej book sa
 			return errPeerClosed;
 		}
 		if ( send_ret == -1 ) { break; }
-		n = ( size_t )send_ret;
-		total += n;
-		byteleft -= n;
+		total += ( size_t )send_ret;
+		byteleft -= ( size_t )send_ret;
 	}
 	*len  = total; // return number actually sent
-	return n == -1 ? errGeneral : errOK; // return -1 on failure, 0 on success
+	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
 }
 
 status string_to_int( LPCSTR str , int * out )
@@ -1109,6 +1107,24 @@ uint8 hash8_fnv1a_avalanche( const char * s )
 	return ( uint8 )x; // take any byte after avalanche
 }
 
+uint64 hash64_fnv1a_avalanche( const char * s )
+{
+	const uint64 FNV_OFFSET_BASIS = 14695981039346656037ULL;
+	const uint64 FNV_PRIME = 1099511628211ULL;
+	uint64 h = FNV_OFFSET_BASIS;
+	const unsigned char * p = ( const unsigned char * )s;
+	while ( *p )
+	{
+		h ^= ( uint64 )( *p++ );
+		h *= FNV_PRIME;
+	}
+	// final avalanche (optional)
+	h ^= ( h >> 33 );
+	h *= 0xff51afd7ed558ccdULL;
+	h ^= ( h >> 33 );
+	return h;
+}
+
 // Simple string hash function (djb2)
 ulong hash( LPCSTR str )
 {
@@ -1117,4 +1133,12 @@ ulong hash( LPCSTR str )
 	while ( ( c = ( uchar )*str++ ) )
 		h = ( ( h << 5 ) + h ) + c; // h * 33 + c
 	return h;
+}
+
+const char * get_filename( const char * path )
+{
+	const char * slash = strrchr( path , '/' );  // find last '/'
+	if ( slash )
+		return slash + 1;  // return part after last '/'
+	return path;  // no '/' found, whole string is filename
 }

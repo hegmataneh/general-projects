@@ -91,6 +91,7 @@
     <ClCompile Include="src\cirbuf_packet_sync.c" />
     <ClCompile Include="src\dbg.c" />
     <ClCompile Include="src\dict.c" />
+    <ClCompile Include="src\dict_fst.c" />
     <ClCompile Include="src\dict_o.c" />
     <ClCompile Include="src\dict_s_i.c" />
     <ClCompile Include="src\dict_s_o.c" />
@@ -141,6 +142,7 @@
     <ClInclude Include="header\cirbuf_metric.h" />
     <ClInclude Include="header\dbg.h" />
     <ClInclude Include="header\dict.h" />
+    <ClInclude Include="header\dict_fst.h" />
     <ClInclude Include="header\dict_o.h" />
     <ClInclude Include="header\dict_s_i.h" />
     <ClInclude Include="header\dict_s_o.h" />

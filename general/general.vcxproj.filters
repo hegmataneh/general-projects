@@ -61,6 +61,9 @@
     <ClCompile Include="src\dbg.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dict_fst.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -173,6 +176,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\dbg.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dict_fst.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -124,10 +124,10 @@
 #define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )( n ) * sizeof( *(ptr) ) )
 #define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *ptr ) )
 
-#define MEMCPY_ORIGINAL( a , b , size )	memcpy( a , b , size )
-#define MEMCPY_OR( a , b , size )		MEMCPY_ORIGINAL( a , b , size )
-#define MEMCPY( a , b )					MEMCPY_ORIGINAL( a , b , sizeof( *a ) )
-#define MEMCPY_AR( a , b , count )		MEMCPY_ORIGINAL( a , b , sizeof( *a ) * ( size_t )( count ) )
+#define MEMCPY_ORIGINAL( dst , src , size )	memcpy( dst , src , size )
+#define MEMCPY_OR( dst , src , size )		MEMCPY_ORIGINAL( dst , src , size )
+#define MEMCPY( dst , src )					MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) )
+#define MEMCPY_AR( dst , src , count )		MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) * ( size_t )( count ) )
 
 #define MEMCMP_T( a , b , type )		memcmp( a , b , sizeof type )
 #define MEMCMP( a , b )					memcmp( a , b , sizeof *a )
@@ -306,3 +306,14 @@
 
 #define PRE_MAIN_INITIALIZATION __attribute__( ( constructor ) ) /*put it before global fxn then system call it before main in gcc*/
 
+
+
+#ifdef _DEBUG
+#define CHK_WARN( expr )	if (!(expr)) {\
+					fprintf( stderr , "Assertion failed: %s, file %s, line %d\n" ,\
+						#expr , __FILE__ , __LINE__ );\
+					}
+#define WARNING( expr ) CHK_WARN( expr )
+#else
+#define WARNING( expr )
+#endif

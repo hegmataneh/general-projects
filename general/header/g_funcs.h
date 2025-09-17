@@ -109,5 +109,6 @@ IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
 uint8 hash8_fnv1a_avalanche( const char * s );
+uint64 hash64_fnv1a_avalanche( const char * s );
 ulong hash( LPCSTR str );
 

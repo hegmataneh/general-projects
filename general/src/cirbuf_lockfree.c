@@ -53,7 +53,7 @@ void cbuf_lf_free( cbuf_lf * cblf )
 
 void cbuf_lf_push( cbuf_lf * cblf , const void_p data , size_t data_len , int caller_thread_data /*=0 passed to lock*/ )
 {
-	ASSERT( data_len <= cblf->room_size );
+	WARNING( data_len <= cblf->room_size );
 	if ( cblf->lock_pkg )
 	{
 		cblf->lock_pkg->clb_lock( cblf->lock_pkg->clb_pdata , caller_thread_data );

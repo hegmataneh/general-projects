@@ -8,17 +8,16 @@
 #define _DEBUG
 #endif
 
-#ifdef _DEBUG
-#define Uses_assert
-//#pragma message("Debug build active")
-#endif
+//#ifdef _DEBUG
+//#define Uses_assert
+////#pragma message("Debug build active")
+//#endif
 
 #ifdef NDEBUG
 //#pragma message("Release build active")
 #endif
 
 #define Uses_free
-//#define Uses_memset
 
 #include "general.use"
 #include "general.use"

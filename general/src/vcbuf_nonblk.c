@@ -9,19 +9,22 @@
 #define ROOM_SIZE(s) (s + HDR_SIZE)
 #define HDR( p )  ( *( ( HDR_TYPE * )( p ) ) )
 
+size_t * perr_full = NULL;
+
 status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size )
 {
 	if ( !vc ) return errArg;
-	if ( ( capacity & ( capacity - 1 ) ) != 0 )
-	{
-		return errArg; // Capacity must be power of two
-	}
+	//if ( ( capacity & ( capacity - 1 ) ) != 0 )
+	//{
+	//	WARNING( 0 );
+	//	return errArg; // Capacity must be power of two
+	//}
 
 	//vcbuf_nb_destroy( vc );
 	MEMSET_ZERO_O( vc );
 
 	size_t buf_size = capacity * ( ROOM_SIZE( room_size ) );
-	vc->buf = MALLOC( buf_size );
+	vc->buf = CALLOC_AR( vc->buf , buf_size );
 	if ( !vc->buf )
 	{
 		return errMemoryLow;
@@ -32,6 +35,8 @@ status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size )
 	vc->head = 0;
 	vc->tail = 0;
 	sem_init( &vc->gateway , 0 , 0 );
+
+	perr_full = &vc->err_full;
 
 	return errOK;
 }
@@ -51,10 +56,10 @@ void vcbuf_nb_destroy( vcbuf_nb * vc )
 
 status vcbuf_nb_push( vcbuf_nb * vc , const buffer buf , size_t len )
 {
-	ASSERT( len <= vc->room_size );
+	WARNING( len <= vc->room_size );
 
 	// head should not close to tail less than 1 space . but tail could . to distinct empty from not empty
-	if ( (vc->head + 1) == vc->tail || ( ( vc->head + 1 ) & ( vc->capacity - 1 ) ) == vc->tail )
+	if ( (vc->head + 1) == vc->tail || ( ( vc->head + 1 ) % ( vc->capacity ) ) == vc->tail )
 	{
 		vc->err_full++;
 		return errGeneral; // no overwrite old one . just lost them
@@ -62,8 +67,8 @@ status vcbuf_nb_push( vcbuf_nb * vc , const buffer buf , size_t len )
 	
 	HDR( vc->buf + ( vc->head * ROOM_SIZE( vc->room_size ) ) ) = ( HDR_TYPE )len;
 	MEMCPY_OR( vc->buf + ( vc->head * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , buf , len );
-	//vc->head = ( vc->head + 1 ) % vc->capacity; // slow
-	vc->head = ( vc->head + 1 ) & ( vc->capacity - 1 ); // faster . but buufer should be power of two
+	vc->head = ( vc->head + 1 ) % vc->capacity; // slow
+	//vc->head = ( vc->head + 1 ) & ( vc->capacity - 1 ); // faster . but buffer should be power of two
 
 	sem_post( &vc->gateway );
 	return errOK;
@@ -83,8 +88,8 @@ status vcbuf_nb_pop( vcbuf_nb * vc , buffer out_buf , size_t * out_len , long ti
 
 	*out_len = ( size_t )HDR( vc->buf + ( vc->tail * ROOM_SIZE( vc->room_size ) ) );
 	MEMCPY_OR( out_buf , vc->buf + ( vc->tail * ROOM_SIZE( vc->room_size ) ) + HDR_SIZE , *out_len );
-	//vc->tail = ( vc->tail + 1 ) % vc->capacity;
-	vc->tail = ( vc->tail + 1 ) & ( vc->capacity - 1 );
+	vc->tail = ( vc->tail + 1 ) % vc->capacity;
+	//vc->tail = ( vc->tail + 1 ) & ( vc->capacity - 1 );
 	
 	return errOK;
 }

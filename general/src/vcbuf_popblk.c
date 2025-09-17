@@ -51,7 +51,7 @@ void vcbuf_destroy( vcbuf * vc )
 
 void vcbuf_push( vcbuf * vc , const buffer buf , size_t len )
 {
-	ASSERT( len <= vc->room_size );
+	WARNING( len <= vc->room_size );
 
 	pthread_mutex_lock( &vc->lock );
 

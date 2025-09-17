@@ -72,7 +72,7 @@ typedef struct cirbuf_inf_sgmgr
 	/* Queue of filled segments (simple singly-linked queue using segment->next as queue link) */
 	ci_sgm_t * filled_head;
 	ci_sgm_t * filled_tail; // sequentially link filled seg in queue
-	//size_t filled_count;
+	size_t filled_count;
 
 	/* Limits and policies */
 	size_t default_seg_capacity;
@@ -80,8 +80,8 @@ typedef struct cirbuf_inf_sgmgr
 	Boolean allow_grow;      /* whether manager may allocate new segments */
 
 	/* Optional stats */
-	//size_t total_items;
-	//size_t total_bytes;
+	size_t total_items;
+	size_t total_bytes;
 } ci_sgmgr_t;
 
 typedef status (*seg_item_cb)(buffer data, size_t len, pass_p ud);

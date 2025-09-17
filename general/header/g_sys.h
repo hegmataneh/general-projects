@@ -50,16 +50,16 @@
 	//#define _atoi64 atoll
 	//#define _splitpath_s splitpath
 
-	#ifdef __GNUC__  // dar symbian prototype-esh ro jayi peyda kardam.
-		//wchar_t *_wcsrev( wchar_t *src );
-		
-		#ifdef _DEBUG
-		#define ASSERT(x) assert(x)
-		#else
-		#define ASSERT(x)
-		#endif
+	//#ifdef __GNUC__  // dar symbian prototype-esh ro jayi peyda kardam.
+	//	//wchar_t *_wcsrev( wchar_t *src );
+	//	
+	//	#ifdef _DEBUG
+	//	#define ASSERT(x) assert(x)
+	//	#else
+	//	#define ASSERT(x)
+	//	#endif
 
-	#endif
+	//#endif
 
 #endif  // end of providing what ANSI C++ lacks
 
