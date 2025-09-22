@@ -2,7 +2,7 @@
 
 #if defined Uses_vcbuf_nonblk || !defined __COMPILING
 
-// TODO . implement fast push with false sharing and lignment
+// TODO . implement fast push with False sharing and lignment
 
 // variable circular buffer not block on push and pop . but used as one to one
 //_FALSE_SHARE_SAFE

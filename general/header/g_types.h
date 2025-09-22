@@ -40,9 +40,15 @@ typedef char * LPSTR;			/*in ubuntu gcc -> 8 bytes*/
 typedef const char * LPCSTR;	/*in ubuntu gcc -> 8 bytes*/ // keep this style
 
 
+typedef LPSTR INNER_STR; /*used inside local function and it must be freed at the end*/
+typedef LPSTR PASSED_STR; /*string that passed inside function and just could be read not freed atall*/
 
-typedef LPCSTR LPCTSTR;			/*in ubuntu gcc -> 8 bytes*/
-typedef LPSTR LPTSTR;			/*in ubuntu gcc -> 8 bytes*/
+typedef LPCSTR INNER_CSTR; /*used inside local function and it must be freed at the end*/
+typedef LPCSTR PASSED_CSTR; /*string that passed inside function and just could be read not freed atall*/
+
+
+//typedef LPCSTR LPCTSTR;			/*in ubuntu gcc -> 8 bytes*/
+//typedef LPSTR LPTSTR;			/*in ubuntu gcc -> 8 bytes*/
 
 typedef __int64u ubigint;		/*in ubuntu gcc -> 8 bytes*/
 typedef __int64u uint64;		/*in ubuntu gcc -> 8 bytes*/
@@ -86,7 +92,7 @@ typedef long status;
 
 // for when a char * is treated as a string, usually null terminated
 // variables of this type are not d_valid to be null
-typedef LPSTR string;
+typedef PASSED_STR string;
 
 typedef const char * * strings; // array of string. pay attention to free inner data and outer pointer to them
 
@@ -121,6 +127,7 @@ typedef void ( *callback_t3 )( void_p , void_p );
 typedef void_p ( *callback_t4 )( void_p , void_p );
 typedef void ( *callback_t5 )( void_p , int );
 
+typedef PASSED_CSTR ( *callback_t6 )( pass_p /*pass_data*/ );
 
 //-------------------------------------------------------------------------
 #define G_SCHAR_MIN  ((schar)0x80)				// -128

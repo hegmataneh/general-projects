@@ -1,3 +1,11 @@
+#ifdef Uses_locale
+	#define __INC_locale
+#endif
+
+#ifdef Uses_notcurses
+	#define __INC_notcurses
+#endif
+
 #ifdef Uses_strdup
 	#define _GNU_SOURCE
 	#define __INC_string

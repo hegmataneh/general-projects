@@ -61,7 +61,7 @@ typedef struct
 typedef struct
 {
 	ar_alloc_sub_t * subs_grp; // each publish distribute to all
-	// TODO . maybe it must be aligned and non false share
+	// TODO . maybe it must be aligned and non False share
 	int * subs_grp_subd; // each int is subscribed item in each sub grp
 	int grp_count;
 

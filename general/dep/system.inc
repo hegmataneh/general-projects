@@ -50,7 +50,7 @@
 	#include <stdlib.h>
 #endif
 
-#ifdef __INC_stdbool
+#ifdef __INC_stdbool // in some code it made conflict
 	#include <stdbool.h>
 #endif
 
@@ -131,4 +131,12 @@
 
 #ifdef __INC_stdatomic
 	#include <stdatomic.h>
+#endif
+
+#ifdef __INC_notcurses
+	#include <notcurses/notcurses.h>
+#endif
+
+#ifdef __INC_locale
+	#include <locale.h>
 #endif

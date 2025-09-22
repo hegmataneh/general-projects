@@ -104,16 +104,16 @@
 
 #define MALLOC( size )					malloc( size ) /*allocate and left uninitialized. so faster*/
 #define MALLOC_ONE( ptr )				MALLOC_AR( ptr , 1 )
-#define MALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )malloc( ( size_t )( count ) * sizeof( *ptr ) ) )
+#define MALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )malloc( ( size_t )( count ) * sizeof( *(ptr) ) ) )
 
 #define REALLOC( ptr , size )			realloc( ptr , size )
 #define REALLOC_ONE( ptr )				REALLOC_AR( ptr , 1 )
-#define REALLOC_AR( ptr , count )		( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )( count ) * sizeof( *ptr ) ) )
-#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *ptr ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *ptr ) * )realloc( ptr , ( size_t )( count ) * sizeof( *ptr ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
+#define REALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) )
+#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *(ptr) ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
 
-#define CALLOC( amount , size )			calloc( amount , size ) /*allocate and memset with zero. so slower*/
-#define CALLOC_ONE( ptr )				calloc( 1 , sizeof( *ptr ) )
-#define CALLOC_AR( ptr , count )		calloc( ( count ) , sizeof( *ptr ) )
+#define CALLOC( count , elem_size )		calloc( ( count ) , ( elem_size ) ) /*allocate and memset with zero. so slower*/
+#define CALLOC_ONE( ptr )				CALLOC( 1 , sizeof( *(ptr) ) )
+#define CALLOC_AR( ptr , count )		CALLOC( ( count ) , sizeof( *(ptr) ) )
 
 //#define NEWBUF( type , n )			( type * )MALLOC( sizeof( type ) * ( n ) )
 //#define NEW( type )					( ( type * )MALLOC( sizeof( type ) ) )
@@ -122,7 +122,7 @@
 
 #define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )( n ) )
 #define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )( n ) * sizeof( *(ptr) ) )
-#define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *ptr ) )
+#define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *(ptr) ) )
 
 #define MEMCPY_ORIGINAL( dst , src , size )	memcpy( dst , src , size )
 #define MEMCPY_OR( dst , src , size )		MEMCPY_ORIGINAL( dst , src , size )
@@ -190,7 +190,7 @@
 
 //-------------------------------------------------------------------------
 #define Tobool( condition )		( ( condition ) ? true : false )
-#define ToBOOL( condition )		( ( condition ) ? TRUE : FALSE )
+//#define ToBOOL( condition )		( ( condition ) ? TRUE : FALSE )
 #define ToBoolean( condition )	( ( condition ) ? True : False )
 
 #define Booleanize( val ) ( !!val )
@@ -317,3 +317,48 @@
 #else
 #define WARNING( expr )
 #endif
+
+
+//-----  color part --------------------------------------------------------------------
+#ifndef _MSC_VER
+#define RGB(r,g,b) (((((b)<<8)|(g))<<8)|(r))
+#endif
+#define RGBColor(r,g,b) ((((((ulong)(b))<<8)|((ulong)(g)))<<8)|((ulong)(r)))
+
+#define RGB2YUV(R,G,B) MAKE_DWORD( MAKE_WORD( 0 , 0.7*(R) - 0.6*(G) - 0.1*(B) ) , MAKE_WORD( -0.3*(R) - 0.6*(G) + 0.9*(B) , 0.3*(R) + 0.6*(G) + 0.1*(B) ) )
+#define YUV2RGB(Y,U,V) MAKE_DWORD( MAKE_WORD( 0 , Y + U ) , MAKE_WORD( Y - 0.166667*(U) - 0.5*(V) , Y + V ) )
+
+// sort according to Microsoft Windows default 16-color palette
+#define BLACK		RGB(0x00,0x00,0x00)
+#define LOW_RED		RGB(0x80,0x00,0x00) // MAROON
+#define LOW_GREEN	RGB(0x00,0x80,0x00)
+#define OLIVE		RGB(0x80,0x80,0x00) // BROWN
+#define LOW_BLUE	RGB(0x00,0x00,0x80) // NAVY
+#define LOW_MAGENTA	RGB(0x80,0x00,0x80) // PURPLE
+#define LOW_CYAN	RGB(0x00,0x80,0x80) // TEAL
+#define LIGHT_GRAY	RGB(0xC0,0xC0,0xC0) // SILVER
+#define GRAY		RGB(0x80,0x80,0x80)
+#define RED			RGB(0xff,0x00,0x00)
+#define GREEN		RGB(0x00,0xff,0x00)
+#define YELLOW		RGB(0xff,0xff,0x00)
+#define BLUE		RGB(0x00,0x00,0xff)
+#define MAGENTA		RGB(0xff,0x00,0xff)
+#define CYAN		RGB(0x00,0xff,0xff)
+#define WHITE		RGB(0xff,0xff,0xff)
+
+#define BLUE_3		RGB(0x00,0x00,0xc8)
+#define BLUE_4		RGB(0x00,0x00,0x2D)
+#define GRAY_3		RGB(0x55,0x55,0x55)
+
+#define C_RGB_1		RGB(0x1e,0x1e,0x1e)
+#define C_RGB_2		RGB(0x32,0x32,0x46)
+
+
+#define RANDOM_COLOR RGB(random(256),random(256),random(256))
+#define INVALID_COLOR 0x01000000  // >= this value are invalid colors
+
+#define RED_PART(rgb)   (((rgb)&0x0000FFL)>>0)
+#define GREEN_PART(rgb) (((rgb)&0x00FF00L)>>8)
+#define BLUE_PART(rgb)  (((rgb)&0xFF0000L)>>16)
+
+#define DARKER(rgb)		(((rgb)>>1)&0x7f7f7fL)

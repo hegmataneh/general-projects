@@ -184,7 +184,7 @@ _PRIVATE_FXN ci_sgm_t * filled_queue_pop_tail( ci_sgmgr_t * mgr )
 
 /* ---------- Public Manager API ---------- */
 
-/* Initialize manager. If allow_grow==true, manager will allocate new segments when needed. */
+/* Initialize manager. If allow_grow==True, manager will allocate new segments when needed. */
 status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t default_offsets_capacity , Boolean allow_grow )
 {
 	if ( !mgr ) return errArg;
@@ -405,7 +405,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 }
 
 /* Pop a filled segment for flushing.
-* If block==true, block until a filled segment is available.
+* If block==True, block until a filled segment is available.
 * Returns pointer to a segment (caller owns it until calling ci_sgm_mark_empty()).
 *
 * Note: returned segment remains *in the ring*. Consumers should not modify next/prev links.

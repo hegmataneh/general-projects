@@ -109,3 +109,7 @@
 	#include <dict_fst.h>
 #endif
 
+#ifdef __INC_nncursor
+	#include <nncursor.h>
+#endif
+

@@ -367,3 +367,19 @@
 #ifdef Uses_kv_table_t
 	#define Uses_dict_fst
 #endif
+
+#ifdef Uses_ncursor
+	#define Uses_dict_fst
+#endif
+
+
+#ifdef Uses_nncursor
+	#define Uses_locale
+	#define Uses_notcurses
+	#define Uses_dyn_arr
+	#define __INC_nncursor
+#endif
+
+#ifdef Uses_nnc_req
+	#define Uses_nncursor
+#endif

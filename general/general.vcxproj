@@ -100,6 +100,7 @@
     <ClCompile Include="src\id_dict.c" />
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
+    <ClCompile Include="src\nncursor.c" />
     <ClCompile Include="src\pub_sub.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_cl.c" />
@@ -158,6 +159,7 @@
     <ClInclude Include="header\json.h" />
     <ClInclude Include="header\LamportBakeryAlgorithm.h" />
     <ClInclude Include="header\cirbuf_packet_sync.h" />
+    <ClInclude Include="header\nncursor.h" />
     <ClInclude Include="header\pub_sub.h" />
     <ClInclude Include="header\str.h" />
     <ClInclude Include="header\struct.h" />
@@ -175,6 +177,7 @@
       <ShowIncludes>
       </ShowIncludes>
     </ClCompile>
+    <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>

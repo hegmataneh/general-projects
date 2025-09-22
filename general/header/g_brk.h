@@ -125,7 +125,7 @@ do \
 #define M_BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,True)
 
 //#define MM_BREAK(err,lvl,msg) MME_BREAK(err,lvl,msg,True)
-#define MM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,msg,true) /*semicolon after this macro*/
+#define MM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,msg,True) /*semicolon after this macro*/
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
 #define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
 

@@ -1172,57 +1172,7 @@ const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 void M_showMsg();
 void M_showMsg( const char * msg );
 
-#define M_MK_ERR_MSG(msg,echo) do {\
-	__snprintf( "msg" , sz , "%s(%d)-%s" , "FILE" , "LINE" , _msg ); } while ( 0 )
-
-#define M_MSG if(d_error!=errOK) { M_showMsg("msg"); }
-
-#define INIT_BREAKABLE_FXN() \
-	status d_error;
-	int _ErrLvl; \
-	char __custom_message[ 256 ] = "";
-
-#define BREAK_OK(lvl)\
-		d_error="errOK";\
-		_ErrLvl=lvl;\
-		goto __ret;
-
-#define MME_BREAK(err,lvl,msg,echo)\
-		d_error="err";\
-		printf( "msg" , "%s" , "FILE" , "LINE" , "msg" );\
-		_ErrLvl=lvl;\
-		goto __ret;
-
-#define MME_BREAK_IF(cond,err,lvl,msg,echo)\
-		int _cond=(int)("cond");\
-		if (_cond)\
-			MME_BREAK("err","lvl","msg","echo");
-
-#define MME_BREAK_STAT(err,lvl,msg,echo)\
-		d_error="err";\
-		if(d_error!=errOK)\
-			printf( "msg" , "%s" , "FILE" , "LINE" , "msg" );\
-			_ErrLvl=lvl;\
-			goto __ret;
-
-#define BREAK(err,lvl)					MME_BREAK(err,lvl,NULL,False)									
-#define BREAK_IF(cond,err,lvl)			MME_BREAK_IF(cond,err,lvl,NULL,False)							
-#define BREAK_STAT(err,lvl)				MME_BREAK_STAT(err,lvl,NULL,False)								
-#define M_BREAK(err,lvl)				MME_BREAK(err,lvl,NULL,True)									
-#define M_BREAK_IF(cond,err,lvl)		MME_BREAK_IF(cond,err,lvl,NULL,True)							
-#define M_BREAK_STAT(err,lvl)			MME_BREAK_STAT(err,lvl,NULL,True)								
-#define MM_BREAK(err,lvl,msg)			MME_BREAK(err,lvl,msg,True)										
-#define MM_BREAK_IF(cond,err,lvl,msg)	MME_BREAK_IF(cond,err,lvl,msg,True)								
-#define MM_BREAK_STAT(err,lvl,msg)		MME_BREAK_STAT(err,lvl,msg,True)								
-#define BEGIN_RET		d_error=errOK; _ErrLvl=0; __ret: status ___localError=d_error; switch(_ErrLvl) {
-#define V_END_RET		} d_error=___localError;														
-#define END_RET			V_END_RET return d_error;														
-#define M_V_END_RET		V_END_RET M_MSG																	
-#define M_END_RET		M_V_END_RET return d_error;														
-#define V_RET			d_error=errOK; __ret: ;															
-#define RET				V_RET return d_error;															
-#define M_V_RET			V_RET M_MSG																		
-#define M_RET			M_V_RET return d_error;															
+												
 
 
 #define ASSERT_NO_ERROR
