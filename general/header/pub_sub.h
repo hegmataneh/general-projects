@@ -10,6 +10,7 @@ Synchronous publisher–subscriber (pub/sub)
 // Possible subscriber types
 typedef enum
 {
+	SUB_VOID ,
 	SUB_STRING ,
 	SUB_INT ,
 	SUB_DOUBLE ,
@@ -21,6 +22,7 @@ typedef enum
 } sub_type_t;
 
 // Different callback signatures
+typedef void ( *sub_void_t )( pass_p data );
 typedef void ( *sub_string_t )( pass_p data , LPCSTR msg );
 typedef void ( *sub_int_t )( pass_p data , int v );
 typedef void ( *sub_double_t )( pass_p data , double v );
@@ -33,6 +35,7 @@ typedef status ( *sub_direct_one_call_voidp_t )( pass_p data , void_p ptr );
 // Union to hold any kind of callback
 typedef union
 {
+	sub_void_t							void_cb;
 	sub_string_t						str_cb;
 	sub_int_t							int_cb;
 	sub_double_t						dbl_cb;
@@ -65,6 +68,8 @@ typedef struct
 	int * subs_grp_subd; // each int is subscribed item in each sub grp
 	int grp_count;
 
+	e_direction iteration_dir;
+
 } distributor_t;
 
 status distributor_init( distributor_t * dis , int grp_count );
@@ -79,12 +84,13 @@ status distributor_subscribe_with_ring( distributor_t * dis , int iGrp /*1 on fl
 status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data ); // only callback with same token call
 
 // Publish different kinds of events
-void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL*/ );
-void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL*/ );
-void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL*/ );
-void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL*/ );
-void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL*/ );
-status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL*/ );
+void distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ );
+void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL if subscriber precede*/ );
+void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL if subscriber precede*/ );
+void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ );
+void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ );
+void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL if subscriber precede*/ );
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ );

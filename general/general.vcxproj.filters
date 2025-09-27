@@ -67,6 +67,9 @@
     <ClCompile Include="src\nncursor.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\dyn_mem_mv_sf_arr.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -185,6 +188,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\nncursor.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\dyn_mem_mv_sf_arr.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

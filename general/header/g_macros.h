@@ -289,6 +289,9 @@
 #define _ALIGNED(date) /*speed up struct member access*/
 
 
+#define _MEMMOVE_UNSAFE_FXN /*used in fxn that return pointer to place that is not safe when main block moved to other place and pointer is dangled*/
+
+
 #define _PAD_NAME2(line) pad_##line
 #define _PAD_NAME(line)  _PAD_NAME2(line)
 // Main macro to insert padding

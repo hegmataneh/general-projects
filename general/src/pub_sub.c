@@ -18,6 +18,8 @@ status distributor_init( distributor_t * dis , int grp_count )
 
 	dis->grp_count = grp_count;
 
+	dis->iteration_dir = e_dir_default;
+
 	BEGIN_SMPL
 	N_END_RET
 }
@@ -110,13 +112,53 @@ status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t typ
 	N_END_RET
 }
 
+void distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ )
+{
+	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
+	{
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
+		{
+			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_VOID )
+			{
+				dis->subs_grp[ igrp ][ isub ]->func.void_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) );
+			}
+		}
+	}
+}
+
 // Publish different kinds of events
-void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL*/ )
+void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_STRING )
 			{
@@ -145,12 +187,25 @@ void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data
 	}
 }
 
-void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL*/ )
+void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_INT )
 			{
@@ -179,12 +234,25 @@ void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=N
 	}
 }
 
-void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL*/ )
+void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DOUBLE )
 			{
@@ -213,12 +281,25 @@ void distributor_publish_double( distributor_t * dis , double src_v , pass_p dat
 	}
 }
 
-void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL*/ )
+void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_INT_DOUBLE )
 			{
@@ -247,12 +328,25 @@ void distributor_publish_int_double( distributor_t * dis , int src_i , double sr
 	}
 }
 
-void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL*/ )
+void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_STRING_DOUBLE )
 			{
@@ -281,14 +375,27 @@ void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , doub
 	}
 }
 
-status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL*/ )
+status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL if subscriber precede*/ )
 {
 	status aggr_ret = errOK;
 	int any_call_happend = 0;
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{
 		int one_token_ring_called = 0;
-		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		int start , end , step;
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = dis->subs_grp_subd[ igrp ];
+			step = 1;
+		}
+		else
+		{
+			start = dis->subs_grp_subd[ igrp ] - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
 		{
 			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_BUFFER_INT )
 			{
@@ -342,7 +449,7 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 }
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
-	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ )
+	void_p token /*token that spec calle*/ , pass_p data /*=NULL if subscriber precede*/ )
 {
 	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
 	{

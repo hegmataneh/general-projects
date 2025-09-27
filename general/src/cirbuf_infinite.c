@@ -3,11 +3,6 @@
 #define Uses_cirbuf_infinite
 #include <general.dep>
 
-size_t * ptotal_items = NULL;	  // temp
-size_t * ptotal_bytes = NULL;	  // temp
-size_t * psegment_total = NULL;	  // temp
-size_t * pfilled_count = NULL;	  // temp
-
 
 /* Allocate and initialize a segment with given capacities */
 _PRIVATE_FXN status ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size_t offsets_capacity )
@@ -201,11 +196,6 @@ status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t defa
 	mgr->segment_total = 0;
 	mgr->total_items = 0;
 	mgr->total_bytes = 0;
-
-	ptotal_items = &mgr->total_items;
-	ptotal_bytes = &mgr->total_bytes;
-	psegment_total = &mgr->segment_total;
-	pfilled_count = &mgr->filled_count;
 
 	return errOK;
 }

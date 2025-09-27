@@ -38,13 +38,17 @@ typedef struct kv_table
 	pthread_mutex_t id_lock;
 } kv_table_t;
 
-status dict_fst_create( kv_table_t * tbl , size_t nbuckets );
+// create dictionary with hit array size
+status dict_fst_create( kv_table_t * tbl , size_t nbuckets /*count of array size dic use, =0 use default val*/ );
 void dict_fst_destroy( kv_table_t * tbl );
 status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval ,
 	_RET_VAL_P uint64 * key_hash /*=NULL*/ , _RET_VAL_P uint64 * uniq_id /*=NULL*/ , int * istat /*=NULL*/ );
-status dict_fst_get_bykey( kv_table_t * t , const char * key , int * int_out , void_p * p_out );
+
+status dict_fst_get_bykey( kv_table_t * t , const char * key , _RET_VAL_P int * int_out , _RET_VAL_P void_p * p_out );
 status dict_fst_get_faster_by_hash_id( kv_table_t * t , uint64 key_hash , uint64 uniq_id , int * out , void_p * p_out );
+
 status dict_fst_get_hash_id_bykey( kv_table_t * t , const char * key , _RET_VAL_P uint64 * key_hash /*=NULL*/ , _RET_VAL_P uint64 * uniq_id /*=NULL*/ );
+
 status dict_fst_delete( kv_table_t * t , const char * key );
 int dict_fst_lock_key( kv_table_t * t , const char * key );
 status dict_fst_unlock_key( kv_table_t * t , const char * key );

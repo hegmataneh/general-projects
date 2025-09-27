@@ -54,3 +54,17 @@ enum
 #define EACH_SECOND_in_nano_Sec 1000000000
 
 #define AUTO_MODERATE_BUFFER_CAPACITY 10 /*simple array that must realloc x more room if size reach capacity*/
+
+
+#define DEFAULT_BT_BUF_SZ 16 /*basic type size scale*/
+#define DEFAULT_SFS_BUF_SZ 64 /*small formatted string size scale*/
+#define DEFAULT_MFS_BUF_SZ 256 /*medium formatted string size scale*/
+#define DEFAULT_LFS_BUF_SZ 1024 /*large formatted string size scale*/
+
+typedef enum
+{
+	
+	head_2_tail ,
+	tail_2_head ,
+	e_dir_default = head_2_tail
+} e_direction;

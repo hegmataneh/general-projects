@@ -18,7 +18,7 @@
 status array_init( dyn_arr * arr , size_t item_size , size_t init_capacity , size_t growStep , size_t init_occopied_count )
 {
 	INIT_BREAKABLE_FXN();
-	if ( !arr || item_size == 0 || growStep == 0 || init_capacity < 1 || init_occopied_count > init_capacity ) return errArg;
+	if ( !arr || item_size == 0 || growStep == 0 || init_capacity < 1 || init_occopied_count > init_capacity || growStep < 1 ) return errArg;
 	
 	MEMSET_ZERO_O( arr );
 
@@ -60,15 +60,21 @@ void array_free( dyn_arr * arr )
 
 status array_resize( dyn_arr * arr , size_t new_capacity , size_t new_used_count /*=0 to just reserve expand reserve capacity*/ )
 {
+	if ( new_used_count == 0 ) new_used_count = arr->count;
 	if ( !arr || new_capacity == 0 ) return errArg;
 	if ( new_capacity <= arr->count ) return errArg; // can't downsized
-	if ( new_used_count > ( new_capacity - arr->count ) ) return errArg; // just allow use maximum to new items
+	if ( new_capacity <= arr->count ) return errArg; // can't downsized
+	if ( new_used_count > new_capacity ) return errArg; // just allow use maximum to new items
+	if ( new_used_count < arr->count )
+	{
+		return errArg;
+	}
 	void * new_data = REALLOC( arr->data , arr->item_size * new_capacity );
 	if ( !new_data ) return errMemoryLow;
 	MEMSET( new_data + arr->count * arr->item_size , 0 , ( new_capacity - arr->count ) * arr->item_size ); // zero expanded slot
 	arr->data = new_data;
 	arr->capacity = new_capacity;
-	arr->count += new_used_count;
+	arr->count = new_used_count;
 	return errOK;
 }
 
@@ -86,7 +92,7 @@ status array_add( dyn_arr * arr , void * item )
 	return errOK;
 }
 
-status array_get_one_available_unoccopied_item( dyn_arr * arr , void ** item )
+_MEMMOVE_UNSAFE_FXN status array_get_one_available_unoccopied_item( dyn_arr * arr , void ** item /*add you struct pointer*/ )
 {
 	status d_error = errOK;
 	if ( !arr || !item ) return errArg;
@@ -125,13 +131,13 @@ size_t array_get_count( dyn_arr * arr )
 /// <summary>
 /// if array is allocated pointer kkeper the value of item should not be freed
 /// </summary>
-void * array_get( dyn_arr * arr , size_t index )
+_MEMMOVE_UNSAFE_FXN void * array_get( dyn_arr * arr , size_t index )
 {
 	if ( !arr || index >= arr->count ) return NULL;
 	return ( void * )BLOCK_INDEX_ADD( index );
 }
 
-status array_get_s( dyn_arr * arr , size_t index , void ** pitem )
+_MEMMOVE_UNSAFE_FXN status array_get_s( dyn_arr * arr , size_t index , void ** pitem )
 {
 	if ( !array_idx_exist( arr , index ) ) return errNotFound;
 	return ( *pitem = array_get( arr , index ) ) ? errOK : errNotFound;

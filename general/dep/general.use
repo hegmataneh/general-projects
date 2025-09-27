@@ -374,12 +374,17 @@
 
 
 #ifdef Uses_nncursor
+	#define Uses_dyn_arr
 	#define Uses_locale
 	#define Uses_notcurses
-	#define Uses_dyn_arr
+	#define Uses_dyn_mms_arr
 	#define __INC_nncursor
 #endif
 
 #ifdef Uses_nnc_req
 	#define Uses_nncursor
+#endif
+
+#ifdef Uses_dyn_mms_arr
+	#define __INC_dyn_mem_mv_sf_arr
 #endif

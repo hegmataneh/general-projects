@@ -2,6 +2,10 @@
 
 #if defined Uses_dyn_arr || !defined __COMPILING
 
+// prevent memory fragment
+// Memory move unsafe
+// Warning . After realloc, the memory block may move, so any previously stored pointer to its data becomes invalid
+
 typedef struct
 {
 	void * data;        // raw buffer
@@ -27,7 +31,7 @@ void array_free( dyn_arr * arr );
 status array_add( dyn_arr * arr , void * item );
 
 // just return empty item that currently could be used
-status array_get_one_available_unoccopied_item( dyn_arr * arr , void ** item );
+_MEMMOVE_UNSAFE_FXN status array_get_one_available_unoccopied_item( dyn_arr * arr , void ** item );
 
 // Delete item at index (shift remaining)
 status array_delete( dyn_arr * arr , size_t index );
@@ -41,10 +45,10 @@ size_t array_get_count( dyn_arr * arr );
 Boolean array_idx_exist( dyn_arr * arr , size_t idx );
 
 // Get pointer to item at index (NULL if out of range)
-void * array_get( dyn_arr * arr , size_t index );
+_MEMMOVE_UNSAFE_FXN void * array_get( dyn_arr * arr , size_t index );
 
 // securly Get pointer to item at index
-status array_get_s( dyn_arr * arr , size_t index , void ** pitem );
+_MEMMOVE_UNSAFE_FXN status array_get_s( dyn_arr * arr , size_t index , void ** pitem );
 
 // Set item at index (returns -1 if out of range)
 status array_set( dyn_arr * arr , size_t index , void * item );

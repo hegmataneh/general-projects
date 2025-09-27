@@ -15,26 +15,21 @@
 
 typedef struct
 {
-	DATAB tmp[64];
-
-	union
+	struct
 	{
-		int i;
-		//double d;
-		//long l;
-		PASSED_CSTR pass_str; // passed and shouldnt freed
-		//INNER_STR in_str; // must freed
+		DATAB tmpbuf[DEFAULT_SFS_BUF_SZ];
 
-	} val;
+		union
+		{
+			int i;
+			//double d;
+			//long l;
+			PASSED_CSTR pass_str; // passed and shouldnt freed
+			//INNER_STR in_str; // must freed
+			pass_p pass_data;
 
-	//union
-	//{
-	//	PASSED_STR outer_conversion_low_buffer;
-	//	PASSED_STR outer_conversion_mid_buffer;
-	//	PASSED_STR outer_conversion_high_buffer;
-	//	PASSED_STR outer_buf;
-
-	//} buf;
+		} bt; // basic type
+	} storage;
 
 	callback_t6 conversion_fxn; // convert any type value into sring
 	callback_t1 clean_fxn; /*if not NULL called*/
@@ -42,7 +37,7 @@ typedef struct
 
 	bool refresh_cell;
 
-	typedef struct
+	struct
 	{
 		int y , x;
 		size_t width;
@@ -60,9 +55,10 @@ typedef struct
 } nnc_cell_container;
 
 /*some default conversion fxn*/
-//PASSED_CSTR d_as_MB( pass_p pcell );
-PASSED_CSTR i_as_str_pass( pass_p pcell );
-PASSED_CSTR data_segment_str_pass( pass_p pcell );
+//_CALLBACK_FXN PASSED_CSTR d_as_MB( pass_p pcell );
+_CALLBACK_FXN PASSED_CSTR i_as_str_pass( pass_p pcell );
+_CALLBACK_FXN PASSED_CSTR data_segment_str_pass( pass_p pcell );
+//_CALLBACK_FXN PASSED_CSTR tmp_str_pass( pass_p pcell );
 
 typedef struct
 {
@@ -86,24 +82,25 @@ typedef struct
 {
 	INNER_STR tabname;
 
-	dyn_arr cols; // nnc_column
-	dyn_arr rows; // nnc_row
+	dyn_mms_arr cols; // nnc_column
+	dyn_mms_arr rows; // nnc_row
 
 	bool refresh_partial_table;
 	bool refresh_table;
 
+	void_p pnnc;
 } nnc_table;
 
 typedef struct
 {
-	size_t x0 , x1; /*boundries of tab title*/
+	size_t x0 , x1; /*boundaries of tab title*/
 
 } nnc_tabHit;
 
 
 typedef struct nncursor_requirement
 {
-	dyn_arr tables;
+	dyn_mms_arr tables;
 
 	size_t active;
 	dyn_arr tabHit_arr;
@@ -121,7 +118,6 @@ typedef struct nncursor_requirement
 
 
 status nnc_begin_init_mode( nnc_req * nnc );
-void nnc_begin_render_mode( nnc_req * nnc );
 Boolean couninue_loop_callback( nnc_req * nnc );
 void nnc_destroy( nnc_req * nnc );
 
@@ -129,10 +125,16 @@ status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable 
 status nnc_add_column( nnc_table * tbl , PASSED_CSTR src_hdr , PASSED_CSTR src_subhdr , size_t src_minw );
 status nnc_add_empty_row( nnc_table * tbl , nnc_row ** prow );
 
+// just show string from input
 status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_CSTR static_text );
+
+// set inner cell content provider . so provide data is caller responsibility
 status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_content * pouter_cell );
 
-void nnc_set_int_cell( nnc_cell_content * pcell , int src_i ); // use this function instead of assigning directly
+// use this function instead of assigning directly
+void nnc_cell_triggered( nnc_cell_content * pcell );
+void nnc_set_int_cell( nnc_cell_content * pcell , int src_i );
+void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str );
 
 //status nnc_get_emptied_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_content * * pcell );
 

@@ -131,8 +131,12 @@ do \
 
 #endif // #if !defined( __ENGINE )
 
+#ifndef BREAK_POINT_AT_APP_SPACE /*in app space we can define this macro and catch break in any function*/
+#define BREAK_POINT_AT_APP_SPACE while(0) {} /*_Breaked*/
+#endif
+
 #define BGR_DUMMY_WHILE  while( 0 ) { if ( _ErrLvl ) goto __ret; } /*just to ignore warning*/
-#define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: while(0) {}; status ___localError=d_error
+#define BGR_BEFORE_ACTION_PART  BGR_DUMMY_WHILE;  __ret: BREAK_POINT_AT_APP_SPACE; status ___localError=d_error
 
 // begin ret and series
 //#define BEGIN_RET_CLOCK d_error=errOK;

@@ -102,6 +102,7 @@
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
     <ClCompile Include="src\nncursor.c" />
     <ClCompile Include="src\pub_sub.c" />
+    <ClCompile Include="src\dyn_mem_mv_sf_arr.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_cl.c" />
     <ClCompile Include="src\TokenRing_p.c" />
@@ -148,6 +149,7 @@
     <ClInclude Include="header\dict_s_i.h" />
     <ClInclude Include="header\dict_s_o.h" />
     <ClInclude Include="header\dyn_arr.h" />
+    <ClInclude Include="header\dyn_mem_mv_sf_arr.h" />
     <ClInclude Include="header\g_brk.h" />
     <ClInclude Include="header\g_consts.h" />
     <ClInclude Include="header\g_funcs.h" />

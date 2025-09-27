@@ -109,7 +109,12 @@
 	#include <dict_fst.h>
 #endif
 
+
+#ifdef __INC_dyn_mem_mv_sf_arr
+	#include <dyn_mem_mv_sf_arr.h>
+#endif
+
+
 #ifdef __INC_nncursor
 	#include <nncursor.h>
 #endif
-

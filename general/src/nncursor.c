@@ -5,7 +5,7 @@
 #define Uses_nncursor
 #include <general.dep>
 
-static size_t slen( PASSED_CSTR s )
+_PRIVATE_FXN size_t slen( PASSED_CSTR s )
 {
 	return s ? strlen( s ) : ( size_t )0;
 }
@@ -38,7 +38,7 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	nnc->cmd_plane = ncplane_create( nnc->std , &copts );
 	N_BREAK_IF( !nnc->cmd_plane , errCreation , 0 );
 
-	BREAK_STAT( array_init( &nnc->tables , sizeof( nnc_table ) , 1 , 1 , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &nnc->tables , sizeof( nnc_table ) , 1 , 1 , 0 ) , 0 );
 
 	BREAK_STAT( array_init( &nnc->tabHit_arr , sizeof( nnc_tabHit ) , 1 , 1 , 0 ) , 0 );
 
@@ -52,13 +52,18 @@ status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable 
 {
 	INIT_BREAKABLE_FXN();
 
-	BREAK_STAT( array_get_one_available_unoccopied_item( &nnc->tables , ( void ** )ptable ) , 0 );
+	BREAK_STAT( mms_array_get_one_available_unoccopied_item( &nnc->tables , ( void ** )ptable ) , 0 );
 	BREAK_IF( !( (*ptable)->tabname = strdup( tabname ) ) , errMemoryLow , 0 );
 	
-	BREAK_STAT( array_init( &(*ptable)->cols , sizeof( nnc_column ) , 1 , 1 , 0 ) , 0 );
-	BREAK_STAT( array_init( &(*ptable)->rows , sizeof( nnc_row ) , 1 , 1 , 0 ) , 0 );
+	(*ptable)->pnnc = nnc;
+
+	BREAK_STAT( mms_array_init( &(*ptable)->cols , sizeof( nnc_column ) , 1 , 1 , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &(*ptable)->rows , sizeof( nnc_row ) , 1 , 1 , 0 ) , 0 );
 	
-	(*ptable)->refresh_table = true;
+	BREAK_STAT( array_resize( &nnc->tabHit_arr , nnc->tables.count , nnc->tables.count ) , 0 );
+
+	( *ptable )->refresh_table = true;
+	nnc->refresh_tabs = true;
 
 	// TODO . be aware of memory leak
 
@@ -69,8 +74,9 @@ status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable 
 status nnc_add_column( nnc_table * ptbl , PASSED_CSTR src_hdr , PASSED_CSTR src_subhdr , size_t src_minw )
 {
 	INIT_BREAKABLE_FXN();
+
 	nnc_column * pcol = NULL;
-	BREAK_STAT( array_get_one_available_unoccopied_item( &ptbl->cols , ( void ** )&pcol ) , 0 );
+	BREAK_STAT( mms_array_get_one_available_unoccopied_item( &ptbl->cols , ( void ** )&pcol ) , 0 );
 	BREAK_IF( !( pcol->hdr = strdup( src_hdr ) ) , errMemoryLow , 0 );
 	BREAK_IF( !( pcol->subhdr = strdup( src_subhdr ) ) , errMemoryLow , 0 );
 	pcol->minw = src_minw;
@@ -90,8 +96,8 @@ status nnc_add_empty_row( nnc_table * tbl , nnc_row ** prow )
 		prow = &tmp_row;
 	}
 
-	BREAK_STAT( array_get_one_available_unoccopied_item( &tbl->rows , ( void ** )prow ) , 0 );
-	size_t col_size = array_get_count( &tbl->cols );
+	BREAK_STAT( mms_array_get_one_available_unoccopied_item( &tbl->rows , ( void ** )prow ) , 0 );
+	size_t col_size = mms_array_get_count( &tbl->cols );
 	BREAK_STAT( array_init( &(*prow)->cell_containers , sizeof( nnc_cell_container ) , col_size , 1 , col_size ) , 0 );
 
 	( *prow )->ptbl = tbl;
@@ -100,7 +106,7 @@ status nnc_add_empty_row( nnc_table * tbl , nnc_row ** prow )
 	END_RET
 }
 
-void nnc_clean_prev_cell_content( nnc_cell_container * pcell_container )
+_PRIVATE_FXN void nnc_clean_prev_cell_content( nnc_cell_container * pcell_container )
 {
 	if ( pcell_container )
 	{
@@ -112,7 +118,7 @@ void nnc_clean_prev_cell_content( nnc_cell_container * pcell_container )
 	}
 }
 
-void clean_cell_container( void_p src_cell_container )
+_CALLBACK_FXN void clean_cell_container( void_p src_cell_container )
 {
 	nnc_cell_container * pcell_container = ( nnc_cell_container * )src_cell_container;
 	if ( pcell_container && pcell_container->pcell )
@@ -126,12 +132,12 @@ status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_C
 	INIT_BREAKABLE_FXN();
 
 	if ( row < 0 ) return errOverflow;
-	if ( !array_idx_exist( &tbl->rows , row ) ) return errOverflow;
+	if ( !mms_array_idx_exist( &tbl->rows , row ) ) return errOverflow;
 	if ( col < 0 )  return errOverflow;
-	if ( !array_idx_exist( &tbl->cols , col ) ) return errOverflow;
+	if ( !mms_array_idx_exist( &tbl->cols , col ) ) return errOverflow;
 
 	nnc_row * prow = NULL;
-	BREAK_STAT( array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
+	BREAK_STAT( mms_array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
 	
 	nnc_cell_container * pcell_container = NULL;
 	BREAK_STAT( array_get_s( &prow->cell_containers , col , ( void ** )&pcell_container ) , 0 );
@@ -141,7 +147,7 @@ status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_C
 	BREAK_IF( !( pcell_container->pcell = CALLOC_ONE( pcell_container->pcell ) ) , errMemoryLow , 0 );
 
 	pcell_container->pcell->prow = NULL;
-	pcell_container->pcell->val.pass_str = static_text;
+	pcell_container->pcell->storage.bt.pass_str = static_text;
 	pcell_container->pcell->clean_fxn = clean_cell_container;
 	pcell_container->pcell->conversion_fxn = data_segment_str_pass;
 	pcell_container->pcell->propagate_changes = NULL; // no changes acceptable for static cell
@@ -152,7 +158,7 @@ status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_C
 	END_RET
 }
 
-void propagate_cell_changes( void_p src_cell_container )
+_CALLBACK_FXN void propagate_cell_changes( void_p src_cell_container )
 {
 	nnc_cell_container * pcell_container = ( nnc_cell_container * )src_cell_container;
 	if ( pcell_container && pcell_container->pcell )
@@ -170,12 +176,12 @@ status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_
 	INIT_BREAKABLE_FXN();
 
 	if ( row < 0 ) return errOverflow;
-	if ( !array_idx_exist( &tbl->rows , row ) ) return errOverflow;
+	if ( !mms_array_idx_exist( &tbl->rows , row ) ) return errOverflow;
 	if ( col < 0 )  return errOverflow;
-	if ( !array_idx_exist( &tbl->cols , col ) ) return errOverflow;
+	if ( !mms_array_idx_exist( &tbl->cols , col ) ) return errOverflow;
 
 	nnc_row * prow = NULL;
-	BREAK_STAT( array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
+	BREAK_STAT( mms_array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
 
 	nnc_cell_container * pcell_container = NULL;
 	BREAK_STAT( array_get_s( &prow->cell_containers , col , ( void ** )&pcell_container ) , 0 );
@@ -197,13 +203,25 @@ status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_
 	END_RET
 }
 
-void nnc_set_int_cell( nnc_cell_content * pcell , int src_i )
+void nnc_cell_triggered( nnc_cell_content * pcell )
 {
-	pcell->val.i = src_i;
-	if ( pcell->propagate_changes )
+	if ( pcell && pcell->propagate_changes )
 	{
 		pcell->propagate_changes( pcell->pcell_container );
 	}
+}
+
+void nnc_set_int_cell( nnc_cell_content * pcell , int src_i )
+{
+	pcell->storage.bt.i = src_i;
+	nnc_cell_triggered( pcell );
+}
+
+void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str )
+{
+	WARNING( strlen(str) <= DEFAULT_SFS_BUF_SZ );
+	strcpy( pcell->storage.tmpbuf , str );
+	nnc_cell_triggered( pcell );
 }
 
 //status nnc_get_emptied_cell( nnc_table * ptbl , size_t row , size_t col , nnc_cell_content * * ppcell )
@@ -229,29 +247,29 @@ void nnc_destroy( nnc_req * nnc )
 {
 	notcurses_stop( nnc->nc );
 
-	size_t tbl_cnt = array_get_count( &nnc->tables );
+	size_t tbl_cnt = mms_array_get_count( &nnc->tables );
 	for ( size_t itbl = 0; itbl < tbl_cnt; itbl++ )
 	{
 		nnc_table * ptbl = NULL;
-		if ( array_get_s( &nnc->tables , itbl , ( void ** )&ptbl ) == errOK )
+		if ( mms_array_get_s( &nnc->tables , itbl , ( void ** )&ptbl ) == errOK )
 		{
-			size_t col_cnt = array_get_count( &ptbl->cols );
+			size_t col_cnt = mms_array_get_count( &ptbl->cols );
 			for ( size_t icl = 0; icl < col_cnt; icl++ )
 			{
 				nnc_column * pcol = NULL;
-				if ( array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+				if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 				{
 					DAC( pcol->hdr );
 					DAC( pcol->subhdr );
 				}
 			}
-			array_free( &ptbl->cols );
+			mms_array_free( &ptbl->cols );
 
-			size_t rw_cnt = array_get_count( &ptbl->rows );
+			size_t rw_cnt = mms_array_get_count( &ptbl->rows );
 			for ( size_t irw = 0; irw < rw_cnt; irw++ )
 			{
 				nnc_row * prow = NULL;
-				if ( array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
+				if ( mms_array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
 				{
 					size_t cel_sz = array_get_count( &prow->cell_containers );
 					for ( size_t cel = 0; cel < cel_sz; cel++ )
@@ -265,24 +283,24 @@ void nnc_destroy( nnc_req * nnc )
 					array_free( &prow->cell_containers );
 				}
 			}
-			array_free( &ptbl->rows );
+			mms_array_free( &ptbl->rows );
 
 			DAC( ptbl->tabname );
 		}
 	}
-	array_free( &nnc->tables );
+	mms_array_free( &nnc->tables );
 	array_free( &nnc->tabHit_arr );
 }
 
 // Compute column widths (fit to contents)
-static void compute_widths( nnc_table * ptbl , size_t screen_w , size_t * arr_col_sz )
+_PRIVATE_FXN void compute_widths( nnc_table * ptbl , size_t screen_w , size_t * arr_col_sz )
 {
-	size_t col_cnt = array_get_count( &ptbl->cols );
+	size_t col_cnt = mms_array_get_count( &ptbl->cols );
 	MEMSET_ZERO( arr_col_sz , col_cnt );
 	for ( size_t icl = 0; icl < col_cnt; icl++ ) // iterate throw columns
 	{
 		nnc_column * pcol = NULL;
-		if ( array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+		if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 		{
 			arr_col_sz[ icl ] = slen( pcol->hdr );
 			size_t subhdr_sz = slen( pcol->subhdr );
@@ -290,14 +308,14 @@ static void compute_widths( nnc_table * ptbl , size_t screen_w , size_t * arr_co
 			if ( arr_col_sz[ icl ] < pcol->minw ) arr_col_sz[ icl ] = pcol->minw;
 		}
 
-		size_t rw_cnt = array_get_count( &ptbl->rows );
+		size_t rw_cnt = mms_array_get_count( &ptbl->rows );
 		for ( size_t irw = 0; irw < rw_cnt; irw++ )
 		{
 			nnc_row * prow = NULL;
-			if ( array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
+			if ( mms_array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
 			{
 				nnc_cell_container * pcell_container = NULL;
-				if ( array_get_s( &prow->cell_containers , icl , ( void ** )&pcell_container ) == errOK && pcell_container && pcell_container->pcell->conversion_fxn )
+				if ( array_get_s( &prow->cell_containers , icl , ( void ** )&pcell_container ) == errOK && pcell_container && pcell_container->pcell && pcell_container->pcell->conversion_fxn )
 				{
 					size_t content_sz = slen( pcell_container->pcell->conversion_fxn( pcell_container->pcell ) );
 					if ( arr_col_sz[ icl ] < content_sz ) arr_col_sz[ icl ] = content_sz;
@@ -330,7 +348,7 @@ static void compute_widths( nnc_table * ptbl , size_t screen_w , size_t * arr_co
 	}
 }
 
-static void put_clipped( struct ncplane * plane , int y , int x , PASSED_CSTR s /*=NULL if cell arrive*/ , nnc_cell_content * pcell /*=NULL if constant cell arrive*/ , size_t w )
+_PRIVATE_FXN void put_clipped( struct ncplane * plane , int y , int x , PASSED_CSTR s /*=NULL if cell arrive*/ , nnc_cell_content * pcell /*=NULL if constant cell arrive*/ , size_t w )
 {
 	if ( !s && pcell && pcell->conversion_fxn ) s = pcell->conversion_fxn( pcell );
 	if ( !s ) s = "";
@@ -366,15 +384,15 @@ static void put_clipped( struct ncplane * plane , int y , int x , PASSED_CSTR s 
 	}
 }
 
-static void draw_tabs( nnc_req * nnc , _RET_VAL_P nnc_tabHit * hits )
+_PRIVATE_FXN void draw_tabs( nnc_req * nnc , _RET_VAL_P nnc_tabHit * hits )
 {
 	ncplane_erase( nnc->tabs_plane );
 	size_t x = 1;
-	size_t tabs_cnt = array_get_count( &nnc->tables );
+	size_t tabs_cnt = mms_array_get_count( &nnc->tables );
 	for ( size_t itb = 0; itb < tabs_cnt; itb++ )
 	{
 		nnc_table * ptbl = NULL;
-		if ( array_get_s( &nnc->tables , itb , ( void ** )&ptbl ) == errOK )
+		if ( mms_array_get_s( &nnc->tables , itb , ( void ** )&ptbl ) == errOK )
 		{
 			size_t w = slen( ptbl->tabname ) + 2;
 			if ( itb == nnc->active )
@@ -408,13 +426,13 @@ static void draw_tabs( nnc_req * nnc , _RET_VAL_P nnc_tabHit * hits )
 	nnc->refresh_tabs = false;
 }
 
-static void draw_table( nnc_req * nnc , nnc_table * ptbl )
+_PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 {
 	INIT_BREAKABLE_FXN();
 
 	ncplane_erase( nnc->body_plane );
 	
-	size_t col_cnt = array_get_count( &ptbl->cols );
+	size_t col_cnt = mms_array_get_count( &ptbl->cols );
 	dyn_arr int_arr;
 	BREAK_STAT( array_init( &int_arr , sizeof( size_t ) , col_cnt , 1 , col_cnt ) , 0 );
 	
@@ -438,7 +456,7 @@ static void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	for ( size_t icl = 0; icl < col_cnt; icl++ )
 	{
 		nnc_column * pcol = NULL;
-		if ( array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+		if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 		{
 			ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
 			ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
@@ -464,7 +482,7 @@ static void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	for ( size_t icl = 0; icl < col_cnt; icl++ )
 	{
 		nnc_column * pcol = NULL;
-		if ( array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+		if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 		{
 			ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
 			//ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
@@ -488,7 +506,7 @@ static void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	}
 	
 	// rows
-	size_t row_cnt = array_get_count( &ptbl->rows );
+	size_t row_cnt = mms_array_get_count( &ptbl->rows );
 	for ( size_t irw = 0; irw < row_cnt; irw++ )
 	{
 		x = 0;
@@ -507,7 +525,7 @@ static void draw_table( nnc_req * nnc , nnc_table * ptbl )
 		for ( size_t icl = 0; icl < col_cnt; icl++ )
 		{
 			nnc_row * prow = NULL;
-			if ( array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
+			if ( mms_array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK )
 			{
 				nnc_cell_container * pcell_container = NULL;
 				if ( array_get_s( &prow->cell_containers , icl , ( void ** )&pcell_container ) == errOK && pcell_container && pcell_container->pcell )
@@ -545,16 +563,15 @@ static void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	V_END_RET
 }
 
-
-static void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
+_PRIVATE_FXN void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 {
-	INIT_BREAKABLE_FXN();
+	//INIT_BREAKABLE_FXN();
 
-	size_t rw_cnt = array_get_count( &ptbl->rows );
+	size_t rw_cnt = mms_array_get_count( &ptbl->rows );
 	for ( size_t irw = 0; irw < rw_cnt; irw++ )
 	{
 		nnc_row * prow = NULL;
-		if ( array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK && prow->refresh_partial_row )
+		if ( mms_array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK && prow->refresh_partial_row )
 		{
 			size_t cel_sz = array_get_count( &prow->cell_containers );
 			for ( size_t cel = 0; cel < cel_sz; cel++ )
@@ -564,8 +581,8 @@ static void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 				{
 					nnc_cell_content * pcell = pcell_container->pcell;
 
-					ncplane_erase_region( nnc->body_plane , pcell->y , pcell->x , 1 , ( int )pcell->paint_s.width );
-					put_clipped( nnc->body_plane , pcell->y , pcell->x , NULL , pcell , pcell->width );
+					ncplane_erase_region( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , 1 , ( int )pcell->paint_s.width );
+					put_clipped( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , NULL , pcell , pcell->paint_s.width );
 				}
 			}
 			prow->refresh_partial_row = false;
@@ -574,12 +591,12 @@ static void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 
 	ptbl->refresh_partial_table = false;
 
-	BEGIN_RET
-	V_END_RET
+	//BEGIN_RET
+	//V_END_RET
 }
 
 // Draw command box
-static void draw_cmdbox( struct ncplane * cmd , const char * buf )
+_PRIVATE_FXN void draw_cmdbox( struct ncplane * cmd , const char * buf )
 {
 	ncplane_erase( cmd );
 	int w , h; ncplane_dim_yx( cmd , &h , &w );
@@ -590,7 +607,7 @@ static void draw_cmdbox( struct ncplane * cmd , const char * buf )
 	ncplane_set_styles( cmd , NCSTYLE_NONE ); ncplane_set_fg_default( cmd ); ncplane_set_bg_default( cmd );
 }
 
-static void draw( nnc_req * nnc )
+_PRIVATE_FXN void draw( nnc_req * nnc )
 {
 	if ( nnc->refresh_tabs )
 	{
@@ -598,7 +615,7 @@ static void draw( nnc_req * nnc )
 	}
 
 	nnc_table * ptbl = NULL;
-	if ( array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
+	if ( mms_array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
 	{
 		if ( ptbl->refresh_table )
 		{
@@ -618,6 +635,7 @@ static void draw( nnc_req * nnc )
 
 Boolean couninue_loop_callback( nnc_req * nnc )
 {
+	// act by events
 	struct ncinput ni;
 	uint32_t id = notcurses_get_nblock( nnc->nc , &ni );
 	if ( id == 'q' ) return False;
@@ -625,7 +643,7 @@ Boolean couninue_loop_callback( nnc_req * nnc )
 	{
 		nnc->refresh_tabs = true;
 		nnc_table * ptbl = NULL;
-		if ( array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
+		if ( mms_array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
 		{
 			ptbl->refresh_table = true;
 		}
@@ -634,8 +652,8 @@ Boolean couninue_loop_callback( nnc_req * nnc )
 		ncplane_resize_simple( nnc->tabs_plane , ( unsigned int )TAB_BAR_HEIGHT , ( unsigned int )nnc->termw );
 		ncplane_move_yx( nnc->body_plane , TAB_BAR_HEIGHT , 0 );
 		ncplane_resize_simple( nnc->body_plane , ( unsigned int )( nnc->termh - TAB_BAR_HEIGHT ) , ( unsigned int )nnc->termw );
-		draw( nnc );
-		return True;
+		//draw( nnc );
+		//return True;
 	}
 	if ( ni.evtype == NCTYPE_PRESS && id == NCKEY_BUTTON1 )
 	{
@@ -650,7 +668,7 @@ Boolean couninue_loop_callback( nnc_req * nnc )
 
 					nnc->refresh_tabs = true;
 					nnc_table * ptbl = NULL;
-					if ( array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
+					if ( mms_array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
 					{
 						ptbl->refresh_table = true;
 					}
@@ -661,10 +679,12 @@ Boolean couninue_loop_callback( nnc_req * nnc )
 			}
 		}
 	}
+	
+	// iterativly refresh table
 	nnc_table * ptbl = NULL;
-	if ( array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
+	if ( mms_array_get_s( &nnc->tables , nnc->active , ( void ** )&ptbl ) == errOK )
 	{
-		if ( ptbl->refresh_table || ptbl->refresh_partial_table )
+		if ( ptbl->refresh_table || ptbl->refresh_partial_table || nnc->refresh_tabs )
 		{
 			draw( nnc );
 		}
@@ -673,29 +693,21 @@ Boolean couninue_loop_callback( nnc_req * nnc )
 	return True;
 }
 
-void nnc_begin_render_mode( nnc_req * nnc )
-{
-	INIT_BREAKABLE_FXN();
-
-	// before you call run you should finalyze col and items . for now
-	// TODO . implement dynamic tables later
-	
-	BREAK_STAT( array_resize( &nnc->tabHit_arr , nnc->tables.count , nnc->tables.count ) , 0 );
-	draw( nnc );
-
-	BEGIN_RET
-	V_END_RET
-}
-
-PASSED_CSTR data_segment_str_pass( pass_p src_pcell )
+_CALLBACK_FXN PASSED_CSTR data_segment_str_pass( pass_p src_pcell )
 {
 	nnc_cell_content * pcell = ( nnc_cell_content * )src_pcell;
-	return pcell->val.pass_str;
+	return pcell->storage.bt.pass_str;
 }
 
-PASSED_CSTR i_as_str_pass( pass_p src_pcell )
+//_CALLBACK_FXN PASSED_CSTR tmp_str_pass( pass_p pcell )
+//{
+//	nnc_cell_content * pcell = ( nnc_cell_content * )src_pcell;
+//	return ( PASSED_CSTR )pcell->storage.tmpbuf;
+//}
+
+_CALLBACK_FXN PASSED_CSTR i_as_str_pass( pass_p src_pcell )
 {
 	nnc_cell_content * pcell = ( nnc_cell_content * )src_pcell;
-	sprintf( pcell->tmp , "%d" , pcell->val.i );
-	return ( PASSED_CSTR )pcell->tmp;
+	sprintf( pcell->storage.tmpbuf , "%d" , pcell->storage.bt.i );
+	return ( PASSED_CSTR )pcell->storage.tmpbuf;
 }

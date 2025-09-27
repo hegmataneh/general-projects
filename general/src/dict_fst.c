@@ -130,7 +130,7 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
  Returns 0 and sets *out if found, -1 if not found.
  This is safe for concurrent readers (acquires bucket read lock).
 */
-status dict_fst_get_bykey( kv_table_t * t , const char * key , int * int_out , void_p * p_out )
+status dict_fst_get_bykey( kv_table_t * t , _IN const char * key , _RET_VAL_P int * int_out , _RET_VAL_P void_p * p_out )
 {
 	uint64 h = hash64_fnv1a_avalanche( key );
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
