@@ -489,6 +489,57 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud )
 	return errOK;
 }
 
+/**
+ * @brief Checks the first item in the active segment using a user-supplied callback.
+ *
+ * If callback returns true:
+ *   - The segment is marked as filled (even if not physically full).
+ *   - It is pushed into the filled queue.
+ *   - The manager switches to the next available segment.
+ *
+ * This allows user to "expire" an active segment early.
+ */
+void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) )
+{
+	pthread_mutex_lock( &mgr->lock );
+
+	ci_sgm_t * sactive = mgr->active;
+	if ( !sactive || !sactive->itm_count || !sactive->sizes || !sactive->sizes[ 0 ] )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+		return; /* no active segment or empty segment */
+	}
+
+	/* Call user callback with buffer */
+	if ( callback( sactive->buf , sactive->sizes[ 0 ] ) )
+	{
+		filled_queue_push( mgr , sactive );
+
+		/* Try to find next empty or create */
+		ci_sgm_t * next_empty = NULL;
+		ci_sgm_t * pnext = sactive->next;
+		if ( pnext && mgr->ring )
+		{
+			do
+			{
+				if ( pnext->itm_count == 0 && !pnext->in_filled_queue )
+				{
+					next_empty = pnext;
+					break;
+				}
+				pnext = pnext->next;
+			} while ( pnext != mgr->ring );
+		}
+		if ( !next_empty && mgr->allow_grow )
+		{
+			next_empty = segmgr_new_segment_locked( mgr );
+		}
+		segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
+	}
+
+	pthread_mutex_unlock( &mgr->lock );
+}
+
 /* Destroy manager and free all segments. Caller must ensure no producers/consumers running. */
 void segmgr_destroy( ci_sgmgr_t * mgr )
 {

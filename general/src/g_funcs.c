@@ -54,6 +54,16 @@ const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft term
 const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
 const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 
+const unsigned char MSB_MARKERS[8] = {
+	0x3C,  /* M0 */
+	0xC3,  /* M1 */
+	0x5A,  /* M2 */
+	0xA5,  /* M3 */
+	0x96,  /* M4 */
+	0x69,  /* M5 */
+	0xF0,  /* M6 */
+	0x0F   /* M7 */
+};
 
 
 _EXPORT status internalErrorVal(LPCSTR errStr)
@@ -362,14 +372,14 @@ void format_elapsed_time( time_t start , time_t end , LPSTR  buffer , size_t buf
 //	return ( long long )( end->tv_sec - start->tv_sec ) * 1000000000LL
 //		+ ( end->tv_nsec - start->tv_nsec );
 //}
-//
-//// difference in milliseconds
-//double timespec_diff_ms( struct timespec * start , struct timespec * end )
-//{
-//	return ( end->tv_sec - start->tv_sec ) * 1000.0
-//		+ ( end->tv_nsec - start->tv_nsec ) / 1000000.0;
-//}
-//
+
+// difference in milliseconds
+double timespec_diff_ms( struct timespec * start , struct timespec * end )
+{
+	return ( double )( end->tv_sec - start->tv_sec ) * 1000.0
+		+ ( double )( end->tv_nsec - start->tv_nsec ) / 1000000.0;
+}
+
 //// difference in seconds
 //double timespec_diff_sec( struct timespec * start , struct timespec * end )
 //{

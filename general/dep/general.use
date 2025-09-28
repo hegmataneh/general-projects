@@ -333,6 +333,7 @@
 #endif
 
 #ifdef Uses_cirbuf_infinite
+	#define Uses_bool
 	#define __INC_cirbuf_infinite
 #endif
 

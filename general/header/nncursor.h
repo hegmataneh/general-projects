@@ -118,7 +118,7 @@ typedef struct nncursor_requirement
 
 
 status nnc_begin_init_mode( nnc_req * nnc );
-Boolean couninue_loop_callback( nnc_req * nnc );
+Boolean continue_loop_callback( nnc_req * nnc );
 void nnc_destroy( nnc_req * nnc );
 
 status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable );

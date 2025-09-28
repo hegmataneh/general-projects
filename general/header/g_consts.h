@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 //-------------------------------------------------------------------------
 extern const char EOS; // 0
@@ -68,3 +68,28 @@ typedef enum
 	tail_2_head ,
 	e_dir_default = head_2_tail
 } e_direction;
+
+// --------------------
+
+/*
+High entropy( not all 0s or all 1s )
+Not printable ASCII
+Not common control codes( 0x00–0x1F )
+Not typical alignment / filler( 0xFF )
+mutual Hamming distance greater than 4
+| Marker | Hex  | Binary     | Bit Count |
+| M0     | 0x3C | `00111100` | 4         |
+| M1     | 0xC3 | `11000011` | 4         |
+| M2     | 0x5A | `01011010` | used indbg|
+| M3     | 0xA5 | `10100101` | 4         |
+| M4     | 0x96 | `10010110` | 4         |
+| M5     | 0x69 | `01101001` | 4         |
+| M6     | 0xF0 | `11110000` | 4         |
+| M7     | 0x0F | `00001111` | 4         |
+maximally separated and rare bytes
+*/
+
+extern const unsigned char MSB_MARKERS[8];
+
+// --------------------
+

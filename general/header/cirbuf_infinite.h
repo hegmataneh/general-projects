@@ -15,6 +15,8 @@
  * 
  * and also make filled as stack so its like double linked list
  * totally this struct implement two double linked list inside each other
+ * 
+ * i assume each segment just keep complete item bytes. so items not fragment into some segment
  */
 
 #if defined Uses_cirbuf_infinite || !defined __COMPILING
@@ -41,7 +43,7 @@ typedef struct cirbuf_inf_segment
 	struct cirbuf_inf_segment * queue_next;       /* filled queue link */
 	struct cirbuf_inf_segment * queue_prev;       /* filled queue prev */
 
-	/* Data buffer */
+	/* segment is buffer and filled with variable length items*/
 	buffer buf;				/* start of data buffer */
 	size_t buf_capacity;	/* buf total capacity (bytes) */
 	size_t buf_used;		/* bytes used */
@@ -100,6 +102,9 @@ void segmgr_destroy( ci_sgmgr_t * mgr );
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv ); // pop filled segment
 status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud ); // iterate through items
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
+
+// presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm
+void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) );
 
 #endif
 

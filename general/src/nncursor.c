@@ -633,7 +633,7 @@ _PRIVATE_FXN void draw( nnc_req * nnc )
 	notcurses_render( nnc->nc );
 }
 
-Boolean couninue_loop_callback( nnc_req * nnc )
+Boolean continue_loop_callback( nnc_req * nnc )
 {
 	// act by events
 	struct ncinput ni;
