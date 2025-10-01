@@ -145,13 +145,9 @@
 	#define __INC_vcbuf_popblk
 #endif
 
-#ifdef Uses_vcbuf_nb
-	#define Uses_vcbuf_nonblk
-#endif
-
-#ifdef Uses_vcbuf_nonblk
+#ifdef Uses_cbuf_unpk
 	#define Uses_sem_t
-	#define __INC_vcbuf_nonblk
+	#define __INC_cbuf_unpk
 #endif
 
 #ifdef Uses_pub_sub
@@ -388,4 +384,9 @@
 
 #ifdef Uses_dyn_mms_arr
 	#define __INC_dyn_mem_mv_sf_arr
+#endif
+
+#ifdef Uses_cbuf_pked
+	#define Uses_sem_t
+	#define __INC_cbuf_pked
 #endif

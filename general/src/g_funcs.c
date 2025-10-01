@@ -425,6 +425,11 @@ long long timeval_diff_nsec( struct timeval * start , struct timeval * end )
 	return res;
 }
 
+double timeval_diff_ms( struct timeval * start , struct timeval * end )
+{
+	return ( double )timeval_diff_nsec( start , end ) / 1000000.0;
+}
+
 void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR  buffer , size_t buf_size , int type /*=0*/ )
 {
 	if ( !buffer || buf_size == 0 ) return;

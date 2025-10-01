@@ -58,42 +58,42 @@
 //----- string macro --------------------------------------------------------------------
 #if defined Uses_STR_funcs || !defined __COMPILING
 
-#if defined Uses_strcasecmp || !defined __COMPILING
+	#if defined Uses_strcasecmp || !defined __COMPILING
 
-#define stricmp			_stricmp
-#define _stricmp		strcasecmp
+		#define stricmp			_stricmp
+		#define _stricmp		strcasecmp
 
-#define STRICMP			stricmp
+		#define STRICMP			stricmp
 
-#endif
+	#endif
 
-#define STRINGIFY(x)	#x
-#define TOSTRING(x)		STRINGIFY(x)
+	#define STRINGIFY(x)	#x
+	#define TOSTRING(x)		STRINGIFY(x)
 
 
-#define STRCMP(s1,s2)	strcmp(s1,s2)
-//#define STRCMP(s1,s2)	strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
+	#define STRCMP(s1,s2)	strcmp(s1,s2)
+	//#define STRCMP(s1,s2)	strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
 
-#define STRCPY(dst,src)\
-	do {\
-	strncpy_s(dst,src,sizeof(dst)-1);\
-	dst[sizeof(dst)-1]=EOS;\
-	delBlanks_s(dst,sizeof(dst));\
-	} while(0)
+	#define STRCPY(dst,src)\
+		do {\
+		strncpy_s(dst,src,sizeof(dst)-1);\
+		dst[sizeof(dst)-1]=EOS;\
+		delBlanks_s(dst,sizeof(dst));\
+		} while(0)
 
-#define STRNCPY(s1,s2,n)\
-	do {\
-	strncpy_s(s1,s2,n-1);\
-	s1[n-1]=EOS;\
-	} while(0)
+	#define STRNCPY(s1,s2,n)\
+		do {\
+		strncpy_s(s1,s2,n-1);\
+		s1[n-1]=EOS;\
+		} while(0)
 
-#define STR_SAME( a , b )	( strcmp( a , b ) == 0 )
-#define STR_DIFF( a , b )	( strcmp( a , b ) != 0 )
+	#define STR_SAME( a , b )	( strcmp( a , b ) == 0 )
+	#define STR_DIFF( a , b )	( strcmp( a , b ) != 0 )
 
-#define iSTR_SAME( a , b )	( stricmp( a , b ) == 0 )
-#define iSTR_DIFF( a , b )	( stricmp( a , b ) != 0 )
+	#define iSTR_SAME( a , b )	( stricmp( a , b ) == 0 )
+	#define iSTR_DIFF( a , b )	( stricmp( a , b ) != 0 )
 
-#define DELSTR(str)			do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
+	#define DELSTR(str)			do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 
 #endif
 
@@ -102,55 +102,55 @@
 //-------------------------------------------------------------------------
 #if defined Uses_memory_funcs || !defined __COMPILING
 
-#define MALLOC( size )					malloc( size ) /*allocate and left uninitialized. so faster*/
-#define MALLOC_ONE( ptr )				MALLOC_AR( ptr , 1 )
-#define MALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )malloc( ( size_t )( count ) * sizeof( *(ptr) ) ) )
+	#define MALLOC( size )					malloc( size ) /*allocate and left uninitialized. so faster*/
+	#define MALLOC_ONE( ptr )				MALLOC_AR( ptr , 1 )
+	#define MALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )malloc( ( size_t )( count ) * sizeof( *(ptr) ) ) )
 
-#define REALLOC( ptr , size )			realloc( ptr , size )
-#define REALLOC_ONE( ptr )				REALLOC_AR( ptr , 1 )
-#define REALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) )
-#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *(ptr) ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
+	#define REALLOC( ptr , size )			realloc( ptr , size )
+	#define REALLOC_ONE( ptr )				REALLOC_AR( ptr , 1 )
+	#define REALLOC_AR( ptr , count )		( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) )
+	#define REALLOC_AR_SAFE( ptr , count )	do { __typeof__( *(ptr) ) * __tmp_ = ptr; if ( !( ptr = ( ( __typeof__( *(ptr) ) * )realloc( ptr , ( size_t )( count ) * sizeof( *(ptr) ) ) ) ) ) { ptr = __tmp_; } } while(0) /*safe reallocation*/
 
-#define CALLOC( count , elem_size )		calloc( ( count ) , ( elem_size ) ) /*allocate and memset with zero. so slower*/
-#define CALLOC_ONE( ptr )				CALLOC( 1 , sizeof( *(ptr) ) )
-#define CALLOC_AR( ptr , count )		CALLOC( ( count ) , sizeof( *(ptr) ) )
+	#define CALLOC( count , elem_size )		calloc( ( count ) , ( elem_size ) ) /*allocate and memset with zero. so slower*/
+	#define CALLOC_ONE( ptr )				CALLOC( 1 , sizeof( *(ptr) ) )
+	#define CALLOC_AR( ptr , count )		CALLOC( ( count ) , sizeof( *(ptr) ) )
 
-//#define NEWBUF( type , n )			( type * )MALLOC( sizeof( type ) * ( n ) )
-//#define NEW( type )					( ( type * )MALLOC( sizeof( type ) ) )
+	//#define NEWBUF( type , n )			( type * )MALLOC( sizeof( type ) * ( n ) )
+	//#define NEW( type )					( ( type * )MALLOC( sizeof( type ) ) )
 
-#define MEMSET( ptr , chr , sz )		memset( ptr , chr , sz )
+	#define MEMSET( ptr , chr , sz )		memset( ptr , chr , sz )
 
-#define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )( n ) )
-#define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )( n ) * sizeof( *(ptr) ) )
-#define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *(ptr) ) )
+	#define MEMSET_ZERO_T( ptr , type , n )	memset( ptr , 0 , sizeof( type ) * ( size_t )( n ) )
+	#define MEMSET_ZERO( ptr , n )			memset( (ptr) , 0 , ( size_t )( n ) * sizeof( *(ptr) ) )
+	#define MEMSET_ZERO_O( ptr )			memset( ptr , 0 , sizeof( *(ptr) ) )
 
-#define MEMCPY_ORIGINAL( dst , src , size )	memcpy( dst , src , size )
-#define MEMCPY_OR( dst , src , size )		MEMCPY_ORIGINAL( dst , src , size )
-#define MEMCPY( dst , src )					MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) )
-#define MEMCPY_AR( dst , src , count )		MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) * ( size_t )( count ) )
+	#define MEMCPY_ORIGINAL( dst , src , size )	memcpy( dst , src , size )
+	#define MEMCPY_OR( dst , src , size )		MEMCPY_ORIGINAL( dst , src , size )
+	#define MEMCPY( dst , src )					MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) )
+	#define MEMCPY_AR( dst , src , count )		MEMCPY_ORIGINAL( dst , src , sizeof( *dst ) * ( size_t )( count ) )
 
-#define MEMCMP_T( a , b , type )		memcmp( a , b , sizeof type )
-#define MEMCMP( a , b )					memcmp( a , b , sizeof *a )
+	#define MEMCMP_T( a , b , type )		memcmp( a , b , sizeof type )
+	#define MEMCMP( a , b )					memcmp( a , b , sizeof *a )
 
-//#define DEL( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
-//#define DEL_AR( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
+	//#define DEL( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
+	//#define DEL_AR( ptr )					FREE( ptr ) // 14040616 . do not uncomment this
 
-#define FREE( ptr )						FREE_PTR( ptr )
-#define FREE_PTR( ptr )					free( ( void_p )ptr )
-#define FREE_PPTR( pptr , count )		do { for ( int ___i = 0 ; ___i < ( count ) ; ___i++ ) { FREE_PTR( pptr[ ___i ] ); } FREE_PTR( pptr ); } while( 0 )
+	#define FREE( ptr )						FREE_PTR( ptr )
+	#define FREE_PTR( ptr )					free( ( void_p )ptr )
+	#define FREE_PPTR( pptr , count )		do { for ( int ___i = 0 ; ___i < ( count ) ; ___i++ ) { FREE_PTR( pptr[ ___i ] ); } FREE_PTR( pptr ); } while( 0 )
 
-#define FREE_PLAIN_PTR( ptr )			FREE_PTR( ptr )
-#define FREE_DOUBLE_PTR( pptr , count )	FREE_PPTR( pptr , count )
+	#define FREE_PLAIN_PTR( ptr )			FREE_PTR( ptr )
+	#define FREE_DOUBLE_PTR( pptr , count )	FREE_PPTR( pptr , count )
 
-#define DAC( ptr )						DAC_PTR( ptr )
-#define DAC_PTR( ptr )					do { if( ptr ) { FREE( ptr ); ptr = NULL; } } while( 0 )
-#define DAC_PPTR( pptr , count )		do { if( pptr ) { FREE_PPTR( pptr , count ); pptr = NULL; } } while( 0 )
+	#define DAC( ptr )						DAC_PTR( ptr )
+	#define DAC_PTR( ptr )					do { if( ptr ) { FREE( ptr ); ptr = NULL; } } while( 0 )
+	#define DAC_PPTR( pptr , count )		do { if( pptr ) { FREE_PPTR( pptr , count ); pptr = NULL; } } while( 0 )
 
-#define MEMMOVE( dest , src , len )		memmove( dest , src , len )
+	#define MEMMOVE( dest , src , len )		memmove( dest , src , len )
 
-#define MEMCHR( s , c , n )				memchr( s , c , n )
+	#define MEMCHR( s , c , n )				memchr( s , c , n )
 
-#define STRLEN( s ) strlen( s )
+	#define STRLEN( s ) strlen( s )
 
 #endif // Uses_memory_funcs
 
@@ -213,8 +213,8 @@
 #define ROUND_UP( i , x )	( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
 #ifndef ISNULL
-#define ISNULL( a , b ) ( (a) ? (a) : (b) )
-//#define COALESCE()
+	#define ISNULL( a , b ) ( (a) ? (a) : (b) )
+	//#define COALESCE()
 #endif
 
 #define DO_WHILE(x) do { x; } while(0)
@@ -240,35 +240,35 @@
 
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
 
-// INIT_BREAKABLE_FXN()
+	// INIT_BREAKABLE_FXN()
 
-//#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
+	//#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
 
-//#define _DETAIL_ERROR( user_friendly_msg ) do 
-// { 
-// perror(_MSG(user_friendly_msg)); 
-// perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) );
-// } while(0);
+	//#define _DETAIL_ERROR( user_friendly_msg ) do 
+	// { 
+	// perror(_MSG(user_friendly_msg)); 
+	// perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) );
+	// } while(0);
 
-#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
+	#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
 
-#define SET_STDERR(s) do { perror(s); } while(0)
+	#define SET_STDERR(s) do { perror(s); } while(0)
 
-#define _ECHO(s,...) do { SET_STDERR(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0)
+	#define _ECHO(s,...) do { SET_STDERR(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0)
 
-#if defined DIRECT_ECHO_BUF || !defined __COMPILING
-	#define _DIRECT_ECHO(s,...) do { __snprintf(DIRECT_ECHO_BUF , sizeof(DIRECT_ECHO_BUF),s,##__VA_ARGS__); } while(0)
-	//#define DIRECT_ECHO_BUF _g->stat.last_command // add this just before include dep
-#endif
+	#if defined DIRECT_ECHO_BUF || !defined __COMPILING
+		#define _DIRECT_ECHO(s,...) do { __snprintf(DIRECT_ECHO_BUF , sizeof(DIRECT_ECHO_BUF),s,##__VA_ARGS__); } while(0)
+		//#define DIRECT_ECHO_BUF _g->stat.last_command // add this just before include dep
+	#endif
 
-#define _VERBOSE_ECHO(msg,...) do {\
-	SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
+	#define _VERBOSE_ECHO(msg,...) do {\
+		SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
 
-//#define ERR_RET( user_friendly_msg , RET ) 
-//	do {
-//	_DETAIL_ERROR( user_friendly_msg );
-//	return RET; } while(0);
+	//#define ERR_RET( user_friendly_msg , RET ) 
+	//	do {
+	//	_DETAIL_ERROR( user_friendly_msg );
+	//	return RET; } while(0);
 
 #endif // #if defined Uses_ERROR_SECTION
 
@@ -310,21 +310,23 @@
 #define PRE_MAIN_INITIALIZATION __attribute__( ( constructor ) ) /*put it before global fxn then system call it before main in gcc*/
 
 
+#define GLOBAL_VAR /*variable on global namespace*/
+
 
 #ifdef _DEBUG
-#define CHK_WARN( expr )	if (!(expr)) {\
-					fprintf( stderr , "Assertion failed: %s, file %s, line %d\n" ,\
-						#expr , __FILE__ , __LINE__ );\
-					}
-#define WARNING( expr ) CHK_WARN( expr )
+	#define CHK_WARN( expr )	if (!(expr)) {\
+						fprintf( stderr , "Assertion failed: %s, file %s, line %d\n" ,\
+							#expr , __FILE__ , __LINE__ );\
+						}
+	#define WARNING( expr ) CHK_WARN( expr )
 #else
-#define WARNING( expr )
+	#define WARNING( expr )
 #endif
 
 
 //-----  color part --------------------------------------------------------------------
 #ifndef _MSC_VER
-#define RGB(r,g,b) (((((b)<<8)|(g))<<8)|(r))
+	#define RGB(r,g,b) (((((b)<<8)|(g))<<8)|(r))
 #endif
 #define RGBColor(r,g,b) ((((((ulong)(b))<<8)|((ulong)(g)))<<8)|((ulong)(r)))
 

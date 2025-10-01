@@ -85,6 +85,7 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="src\cbuf_pked.c" />
     <ClCompile Include="src\cirbuf_infinite.c" />
     <ClCompile Include="src\cirbuf_lockfree.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
@@ -106,7 +107,7 @@
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_cl.c" />
     <ClCompile Include="src\TokenRing_p.c" />
-    <ClCompile Include="src\vcbuf_nonblk.c" />
+    <ClCompile Include="src\cbuf_unpk.c" />
     <ClCompile Include="src\vcbuf_popblk.c" />
   </ItemGroup>
   <ItemGroup>
@@ -139,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
+    <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
     <ClInclude Include="header\cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />
@@ -167,7 +169,7 @@
     <ClInclude Include="header\struct.h" />
     <ClInclude Include="header\TokenRing_cl.h" />
     <ClInclude Include="header\TokenRing_p.h" />
-    <ClInclude Include="header\vcbuf_nonblk.h" />
+    <ClInclude Include="header\cbuf_unpk.h" />
     <ClInclude Include="header\vcbuf_popblk.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

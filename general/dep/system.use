@@ -1,3 +1,7 @@
+#ifdef Uses_ether_header
+	#define __INC_net_ethernet
+#endif
+
 #ifdef Uses_locale
 	#define __INC_locale
 #endif

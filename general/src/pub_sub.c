@@ -467,3 +467,18 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 	}
 	return errNoPeer;
 }
+
+status distributor_publish_onedirectcall_3voidp( distributor_t * dis , void_p ptr1 , void_p ptr2 , void_p ptr3 )
+{
+	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
+	{
+		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		{
+			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_3VOIDP )
+			{
+				return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_3voidp_cb( ptr1 , ptr2 , ptr3 );
+			}
+		}
+	}
+	return errNoPeer;
+}

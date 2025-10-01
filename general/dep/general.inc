@@ -69,8 +69,8 @@
 	#include <vcbuf_popblk.h>
 #endif
 
-#ifdef __INC_vcbuf_nonblk
-	#include <vcbuf_nonblk.h>
+#ifdef __INC_cbuf_unpk
+	#include <cbuf_unpk.h>
 #endif
 
 #ifdef __INC_pub_sub
@@ -117,4 +117,8 @@
 
 #ifdef __INC_nncursor
 	#include <nncursor.h>
+#endif
+
+#ifdef __INC_cbuf_pked
+	#include <cbuf_pked.h>
 #endif

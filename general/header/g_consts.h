@@ -46,7 +46,16 @@ enum
 //-------------------------------------------------------------------------
 //extern uchar _ErrLvl; // does not dependable in multi thread app
 
-#define MAX_PACKET_SIZE 6000
+#define ETHERNET_MTU 1500
+#define MAX_NFUDP_PAYLOAD 1472
+#define MAX_UDP_PAYLOAD 65527
+#define MAX_PAYLOAD_PER_FRAGMENT 1480
+
+#define SIZE_ETHERNET 14 // Ethernet header is always 14 bytes (for non-VLAN frames)
+
+#define UDP_LAYER_HDR_SZ 8
+
+#define MAX_PACKET_SIZE 2000
 
 
 #define SEND_1470_Byte_IN_UDP_in_nanosec 12300

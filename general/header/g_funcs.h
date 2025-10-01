@@ -20,6 +20,7 @@ double timespec_diff_ms( struct timespec * start , struct timespec * end ); // d
 //struct timespec timespec_sub( struct timespec start , struct timespec end );
 //struct timespec timeval_diff_timespec( struct timeval start , struct timeval end );
 long long timeval_diff_nsec( struct timeval * start , struct timeval * end );
+double timeval_diff_ms( struct timeval * start , struct timeval * end );
 
 //----file functions------------------------------------------------------
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );

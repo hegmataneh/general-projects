@@ -140,3 +140,7 @@
 #ifdef __INC_locale
 	#include <locale.h>
 #endif
+
+#ifdef __INC_net_ethernet
+	#include <net/ethernet.h>
+#endif

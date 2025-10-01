@@ -1,12 +1,14 @@
 #pragma once
 
-#if defined Uses_vcbuf_nonblk || !defined __COMPILING
+#if defined Uses_cbuf_unpk || !defined __COMPILING
 
 // TODO . implement fast push with False sharing and lignment
 
 // variable circular buffer not block on push and pop . but used as one to one
+// unpacked with fixed room
+// non blockable
 //_FALSE_SHARE_SAFE
-typedef struct vcbuf_nonblk // conveys synchronized one producer one consumer
+typedef struct unpack_cbuf_NB // conveys synchronized one producer one consumer
 {
 	buffer buf;			// raw memory for all rooms
 	size_t room_size;	// size of each room
@@ -16,18 +18,18 @@ typedef struct vcbuf_nonblk // conveys synchronized one producer one consumer
 	size_t err_full;
 
 	sem_t gateway;
-} vcbuf_nb;
+} cbuf_unpk;
 
 // Initialize the queue
-status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size );
+status cbuf_unpk_init( cbuf_unpk * vc , size_t capacity , size_t room_size );
 
 // Destroy the queue
-void vcbuf_nb_destroy( vcbuf_nb * vc );
+void cbuf_unpk_destroy( cbuf_unpk * vc );
 
 // overwrite oldest one if full
-status vcbuf_nb_push( vcbuf_nb * vc , const buffer buf , size_t len );
+status cbuf_unpk_push( cbuf_unpk * vc , const buffer buf , size_t len );
 
 // Blocking pop: waits if empty
-status vcbuf_nb_pop( vcbuf_nb * vc , buffer out_buf , size_t * out_len , long timeout_sec /*=-1*/ );
+status cbuf_unpk_pop( cbuf_unpk * vc , buffer out_buf , size_t * out_len , long timeout_sec /*=-1*/ );
 
 #endif

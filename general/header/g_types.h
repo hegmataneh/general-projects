@@ -68,6 +68,8 @@ typedef char CHAR;				/*in ubuntu gcc -> 1 bytes*/
 
 typedef unsigned char uint8;
 
+typedef unsigned short uint16;
+
 typedef __int64 bigint;			/*in ubuntu gcc -> 8 bytes*/
 typedef __int64 int64;			/*in ubuntu gcc -> 8 bytes*/
 

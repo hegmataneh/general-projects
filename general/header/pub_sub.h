@@ -18,7 +18,8 @@ typedef enum
 	SUB_STRING_DOUBLE ,
 	SUB_DIRECT_ONE_CALL_BUFFER_INT ,
 	SUB_DIRECT_MULTICAST_CALL_BUFFER_INT ,
-	SUB_DIRECT_ONE_CALL_VOIDP
+	SUB_DIRECT_ONE_CALL_VOIDP ,
+	SUB_DIRECT_ONE_CALL_3VOIDP
 } sub_type_t;
 
 // Different callback signatures
@@ -31,19 +32,21 @@ typedef void ( *sub_string_double_t )( pass_p data , LPCSTR i , double d );
 typedef status ( *sub_direct_one_call_buffer_int_t )( pass_p data , buffer buf , int i );
 typedef status ( *sub_multicast_call_buffer_int_t )( pass_p data , buffer buf , int i );
 typedef status ( *sub_direct_one_call_voidp_t )( pass_p data , void_p ptr );
+typedef status ( *sub_direct_one_call_3voidp_t )( void_p ptr1 , void_p ptr2 , void_p ptr3 );
 
 // Union to hold any kind of callback
 typedef union
 {
-	sub_void_t							void_cb;
-	sub_string_t						str_cb;
-	sub_int_t							int_cb;
-	sub_double_t						dbl_cb;
-	sub_int_double_t					int_dbl_cb;
-	sub_string_double_t					str_dbl_cb;
-	sub_direct_one_call_buffer_int_t	direct_one_call_bfr_int_cb;
-	sub_multicast_call_buffer_int_t		multicast_call_buffer_int_cb;
-	sub_direct_one_call_voidp_t			direct_one_call_voidp_cb;
+	sub_void_t								void_cb;
+	sub_string_t							str_cb;
+	sub_int_t								int_cb;
+	sub_double_t							dbl_cb;
+	sub_int_double_t						int_dbl_cb;
+	sub_string_double_t						str_dbl_cb;
+	sub_direct_one_call_buffer_int_t		direct_one_call_bfr_int_cb;
+	sub_multicast_call_buffer_int_t			multicast_call_buffer_int_cb;
+	sub_direct_one_call_voidp_t				direct_one_call_voidp_cb;
+	sub_direct_one_call_3voidp_t			direct_one_call_3voidp_cb;
 } sub_func_t;
 
 #define SUB_FXN( fxn ) ( sub_func_t )fxn
@@ -56,7 +59,7 @@ typedef struct
 	pass_p		data;
 	void_p		token;
 
-	void_p tring_p_t;
+	void_p tring_p_t; // used in round robin
 
 } subscriber_t , *alloc_sub_t , **ar_alloc_sub_t;
 
@@ -94,6 +97,8 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ );
+
+status distributor_publish_onedirectcall_3voidp( distributor_t * dis , void_p ptr1 , void_p ptr2 , void_p ptr3 );
 
 status distributor_get_data( distributor_t * dis , pass_p * pdata );
 

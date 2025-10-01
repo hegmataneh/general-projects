@@ -1,7 +1,7 @@
 #define Uses_ETIMEDOUT
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
-#define Uses_vcbuf_nonblk
+#define Uses_cbuf_unpk
 #include <general.dep>
 
 #define HDR_TYPE ushort
@@ -9,9 +9,7 @@
 #define ROOM_SIZE(s) (s + HDR_SIZE)
 #define HDR( p )  ( *( ( HDR_TYPE * )( p ) ) )
 
-size_t * perr_full = NULL;
-
-status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size )
+status cbuf_unpk_init( cbuf_unpk * vc , size_t capacity , size_t room_size )
 {
 	if ( !vc ) return errArg;
 	//if ( ( capacity & ( capacity - 1 ) ) != 0 )
@@ -36,12 +34,12 @@ status vcbuf_nb_init( vcbuf_nb * vc , size_t capacity , size_t room_size )
 	vc->tail = 0;
 	sem_init( &vc->gateway , 0 , 0 );
 
-	perr_full = &vc->err_full;
+	//perr_full = &vc->err_full;
 
 	return errOK;
 }
 
-void vcbuf_nb_destroy( vcbuf_nb * vc )
+void cbuf_unpk_destroy( cbuf_unpk * vc )
 {
 	if ( !vc ) return;
 
@@ -54,7 +52,7 @@ void vcbuf_nb_destroy( vcbuf_nb * vc )
 	}
 }
 
-status vcbuf_nb_push( vcbuf_nb * vc , const buffer buf , size_t len )
+status cbuf_unpk_push( cbuf_unpk * vc , const buffer buf , size_t len )
 {
 	WARNING( len <= vc->room_size );
 
@@ -74,7 +72,7 @@ status vcbuf_nb_push( vcbuf_nb * vc , const buffer buf , size_t len )
 	return errOK;
 }
 
-status vcbuf_nb_pop( vcbuf_nb * vc , buffer out_buf , size_t * out_len , long timeout_sec )
+status cbuf_unpk_pop( cbuf_unpk * vc , buffer out_buf , size_t * out_len , long timeout_sec )
 {
 	struct timespec ts;
 	clock_gettime( CLOCK_REALTIME , &ts );

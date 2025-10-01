@@ -40,7 +40,7 @@
     <ClCompile Include="src\TokenRing_p.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\vcbuf_nonblk.c">
+    <ClCompile Include="src\cbuf_unpk.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\vcbuf_popblk.c">
@@ -68,6 +68,9 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dyn_mem_mv_sf_arr.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\cbuf_pked.c">
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
@@ -151,7 +154,7 @@
     <ClInclude Include="header\vcbuf_popblk.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\vcbuf_nonblk.h">
+    <ClInclude Include="header\cbuf_unpk.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\pub_sub.h">
@@ -191,6 +194,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\dyn_mem_mv_sf_arr.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cbuf_pked.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>
