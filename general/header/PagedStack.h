@@ -71,6 +71,7 @@ typedef enum
 {
 	pgstk_not_send__stop_sending ,
 	pgstk_not_send__continue_sending ,
+	pgstk_not_send__continue_sending_with_delay ,
 	pgstk_sended__continue_sending ,
 	pgstk_sended__stop_sending
 } pgstk_cmd;

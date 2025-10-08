@@ -48,6 +48,7 @@ status dict_fst_get_bykey( kv_table_t * t , const char * key , _RET_VAL_P int * 
 status dict_fst_get_faster_by_hash_id( kv_table_t * t , uint64 key_hash , uint64 uniq_id , int * out , void_p * p_out );
 
 status dict_fst_get_hash_id_bykey( kv_table_t * t , const char * key , _RET_VAL_P uint64 * key_hash /*=NULL*/ , _RET_VAL_P uint64 * uniq_id /*=NULL*/ );
+status dict_forcibly_get_hash_id_bykey( kv_table_t * t , const char * key , int ival , void_p pval , _RET_VAL_P uint64 * key_hash /*=NULL*/ , _RET_VAL_P uint64 * uniq_id /*=NULL*/ );
 
 status dict_fst_delete( kv_table_t * t , const char * key );
 int dict_fst_lock_key( kv_table_t * t , const char * key );

@@ -69,6 +69,7 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
 	// allocate new entry first (optimistic): reduces time bucket is locked
+	// TODO . later if we have repelase  least used item is good idea
 	kv_entry_t * newe = malloc( sizeof( *newe ) );
 	if ( !newe ) return errMemoryLow;
 	newe->key = strdup( key );
@@ -219,6 +220,14 @@ status dict_fst_get_hash_id_bykey( kv_table_t * t , const char * key , _RET_VAL_
 	}
 	pthread_rwlock_unlock( &b->rwlock );
 	return errNotFound;
+}
+
+status dict_forcibly_get_hash_id_bykey( kv_table_t * t , const char * key , int ival , void_p pval , _RET_VAL_P uint64 * key_hash /*=NULL*/ , _RET_VAL_P uint64 * uniq_id /*=NULL*/ )
+{
+	status ret = dict_fst_get_hash_id_bykey( t , key , key_hash , uniq_id );
+	if ( ret == errOK ) return ret;
+	dict_fst_put( t , key , ival , pval , NULL , NULL , NULL );
+	return dict_fst_get_hash_id_bykey( t , key , key_hash , uniq_id );
 }
 
 /*

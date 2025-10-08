@@ -40,7 +40,8 @@ const char * get_filename( const char * path );
 
 //----socket functions------------------------------------------------------
 void _close_socket( sockfd * socket_id );
-status sendall( sockfd socketfd , buffer buf , size_t * len );
+//status sendall( sockfd socketfd , buffer buf , size_t * len );
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms );
 int peerTcpClosed( sockfd socketfd );
 
 

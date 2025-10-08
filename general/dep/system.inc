@@ -152,3 +152,7 @@
 #ifdef __INC_sys_stat
 	 #include <sys/stat.h>
 #endif
+
+#ifdef __INC_poll
+	 #include <poll.h>
+#endif

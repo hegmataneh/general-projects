@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_pollfd
 #define Uses_STRICMP
 #define Uses_STRCMP
 #define Uses_WARNING
@@ -34,7 +35,7 @@
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty"};
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -971,26 +972,131 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 	return stristr( str , head ) == str ? str : NULL;
 }
 
-status sendall( sockfd socketfd , buffer buf , size_t * len ) // as beej book says
-{
-	size_t total = 0; // how many bytes we've snt
-	size_t byteleft = *len; // how many we have left to send
-	ssize_t send_ret;
+//status sendall( sockfd socketfd , buffer buf , size_t * len ) // as beej book says
+//{
+//	size_t total = 0; // how many bytes we've snt
+//	size_t byteleft = *len; // how many we have left to send
+//	ssize_t send_ret;
+//
+//	while ( total < *len )
+//	{
+//		send_ret = send( socketfd , buf + total , byteleft , MSG_NOSIGNAL );
+//		if ( send_ret == EPIPE )
+//		{
+//			return errPeerClosed;
+//		}
+//		if ( send_ret == -1 ) { break; }
+//		total += ( size_t )send_ret;
+//		byteleft -= ( size_t )send_ret;
+//	}
+//	*len  = total; // return number actually sent
+//	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
+//}
 
-	while ( total < *len )
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms )
+{
+	const unsigned char * p = ( const unsigned char * )buf;
+	size_t remaining = len;
+	size_t total_sent = 0;
+
+	/* Add MSG_NOSIGNAL if available to avoid SIGPIPE. */
+#ifdef MSG_NOSIGNAL
+	int send_flags = flags | MSG_NOSIGNAL;
+#else
+	int send_flags = flags;
+#endif
+
+	while ( remaining > 0 )
 	{
-		send_ret = send( socketfd , buf + total , byteleft , MSG_NOSIGNAL );
-		if ( send_ret == EPIPE )
+		ssize_t n = send( fd , p , remaining , send_flags );
+		if ( n > 0 )
+		{
+			/* Successfully sent n bytes; advance pointer and continue. */
+			p += n;
+			remaining -= ( size_t )n;
+			total_sent += n;
+			continue;
+		}
+
+		if ( n == 0 )
+		{
+			/*
+			 * send() returning 0 on a TCP socket is unusual. Treat as error:
+			 * peer likely closed or OS-level oddity. Set errno to ECONNRESET.
+			 */
+			errno = ECONNRESET;
+			return errPeerClosed;
+		}
+
+		/* n < 0: error occurred */
+		int saved_errno = errno;
+
+		if ( saved_errno == EINTR )
+		{
+			/* Interrupted by signal; retry immediately. */
+			continue;
+		}
+
+		if ( saved_errno == EAGAIN || saved_errno == EWOULDBLOCK )
+		{
+			/* Socket would block. Wait for it to become writable using poll(). */
+			struct pollfd pfd;
+			pfd.fd = fd;
+			pfd.events = POLLOUT;
+			pfd.revents = 0;
+
+			int poll_timeout = timeout_ms; /* in milliseconds; negative => infinite */
+			int poll_ret;
+
+			if ( poll_timeout < 0 )
+			{
+				/* Wait indefinitely. */
+				poll_ret = poll( &pfd , 1 , -1 );
+			}
+			else
+			{
+				poll_ret = poll( &pfd , 1 , poll_timeout );
+			}
+
+			if ( poll_ret > 0 )
+			{
+				/* Check for errors on socket */
+				if ( pfd.revents & ( POLLERR | POLLHUP | POLLNVAL ) )
+				{
+					/* Peer closed or error on socket. We surface as ECONNRESET. */
+					errno = ECONNRESET;
+					return errPeerClosed;
+				}
+				/* Writable: loop will retry send() */
+				continue;
+			}
+			else if ( poll_ret == 0 )
+			{
+				/* Timeout */
+				errno = ETIMEDOUT;
+				return errTimeout;
+			}
+			else
+			{
+				/* poll() itself failed */
+				return errSocket; /* errno set by poll */
+			}
+		}
+
+		if ( saved_errno == EPIPE )
 		{
 			return errPeerClosed;
 		}
-		if ( send_ret == -1 ) { break; }
-		total += ( size_t )send_ret;
-		byteleft -= ( size_t )send_ret;
+
+		/* For other errno values (EPIPE, ECONNRESET, etc.) return error. */
+		/* If EPIPE occurs, MSG_NOSIGNAL prevents SIGPIPE; caller gets EPIPE. */
+		errno = saved_errno;
+		return errGeneral;
 	}
-	*len  = total; // return number actually sent
-	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
+
+	return total_sent == len ? errOK : errGeneral; /* should equal len */
 }
+
 
 status string_to_int( LPCSTR str , int * out )
 {

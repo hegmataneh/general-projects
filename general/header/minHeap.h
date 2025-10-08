@@ -29,7 +29,7 @@ status mh_insert( mh_t * h , long key , void * data_key , OUTcpy mh_HeapNode ** 
 status mh_min( mh_t * h , OUTcpy mh_HeapNode ** out_p );
 
 // Extract min
-status mh_extract_min( mh_t * h , OUTcpy mh_HeapNode ** out_p /*caller frees it*/ );
+status mh_extract_min( mh_t * h , OUTcpy mh_HeapNode ** out_p /*caller frees it*/ , size_t min_remain /*no pop every item*/ );
 
 // Remove arbitrary node (O(n) to find, O(log n) to fix)
 status mh_remove( mh_t * h , void * data_key /*caller data addr*/ );

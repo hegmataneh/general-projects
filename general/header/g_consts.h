@@ -21,7 +21,8 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -23,
+	NEXT_GENERAL_ERROR_VALUE = -24,
+	errTooManyAttempt = -23,
 	errEmpty = -22,
 	errRetry = -21,
 	errPath = -20,
@@ -74,6 +75,8 @@ enum
 #define DEFAULT_SFS_BUF_SZ 64 /*small formatted string size scale*/
 #define DEFAULT_MFS_BUF_SZ 256 /*medium formatted string size scale*/
 #define DEFAULT_LFS_BUF_SZ 1024 /*large formatted string size scale*/
+
+#define INVALID_FD (-1)
 
 typedef enum
 {

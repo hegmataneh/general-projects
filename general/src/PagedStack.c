@@ -141,6 +141,11 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int cr
 		msync( mf->map , MEMFILE_HEADER_SIZE , MS_SYNC );
 		fsync( mf->fd );
 	}
+	else
+	{
+		// TODO . for now
+		pthread_mutex_init( &mf->hdr->stack.lock , NULL );
+	}
 	if ( out_mf ) *out_mf = mf;
 	
 	BEGIN_RET
@@ -455,6 +460,7 @@ status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 	/* try append */
 	if ( ( d_error = pg_stk_append_record( cur , buf , len ) ) == errOK )
 	{
+		// GOOD
 		pthread_mutex_unlock( &mm->lock );
 		return d_error;
 	}
@@ -486,6 +492,7 @@ status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_gette
 	void_p out_item;
 	size_t out_sz;
 	bool bcontinue_stack = true , bcontinue_heap = true;
+	//bool bdelayed = false;
 	status ret_heap , ret_stack;
 	pgstk_cmd ret_stack_cmd;
 
@@ -521,6 +528,10 @@ status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_gette
 							bcontinue_heap = true;
 							break;
 						}
+						case pgstk_not_send__continue_sending_with_delay: // this segment has Head-of-line blocking
+						{
+							BREAK( errTooManyAttempt , 0 );
+						}
 						case pgstk_sended__continue_sending:
 						{
 							vstack_pop( &pmemfile->hdr->stack , NULL , NULL ); // pop stack
@@ -540,9 +551,10 @@ status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_gette
 				case errEmpty: // stack is empty
 				{
 					// try prev memmap and continue and closr current
-					ret_heap = mh_extract_min( &mm->files_order , NULL /*because we use memory from another list and this heap just sort them*/ );
+					ret_heap = mh_extract_min( &mm->files_order , NULL /*because we use memory from another list and this heap just sort them*/ , 1 /*at least one page most be kept*/ );
 					bcontinue_stack = false; // stack is empty so pop it and get next based on order
 					bcontinue_heap = ( ret_heap == errOK ); // later poor guy most deal with broken heap
+					if ( ret_heap == errEmpty ) BREAK( ret_heap , 0 );
 					break;
 				}
 				default:

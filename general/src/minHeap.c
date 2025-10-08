@@ -113,7 +113,7 @@ status mh_min( mh_t * h , OUTcpy mh_HeapNode ** out_p )
 }
 
 // Extract min
-status mh_extract_min( mh_t * h , OUTcpy mh_HeapNode ** out_p /*caller frees it*/ )
+status mh_extract_min( mh_t * h , OUTcpy mh_HeapNode ** out_p /*caller frees it*/ , size_t min_remain )
 {
 	status d_error = errOK;
 	mh_HeapNode ** pmin = NULL;
@@ -125,8 +125,12 @@ status mh_extract_min( mh_t * h , OUTcpy mh_HeapNode ** out_p /*caller frees it*
 	if ( ( d_error = mms_array_get_us( &h->arr , h->arr.count - 1 , ( void *** )&ptail ) ) ) return d_error;
 	
 	*pmin = *ptail;
-	h->arr.count--;
-	return mh_heapify_down( h , 0 );
+	if ( h->arr.count > min_remain )
+	{
+		h->arr.count--;
+		return mh_heapify_down( h , 0 );
+	}
+	return errEmpty;
 }
 
 // Remove arbitrary node (O(n) to find, O(log n) to fix)

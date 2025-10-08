@@ -1,3 +1,7 @@
+#ifdef Uses_pollfd
+	#define __INC_poll
+#endif
+
 #ifdef Uses_stat
 	#define __INC_sys_stat
 #endif

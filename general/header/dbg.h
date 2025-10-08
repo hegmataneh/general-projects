@@ -11,7 +11,7 @@
 #define MAX_TU_LINES 500
 #define BACKTRACK_COUNT 10 // first for hit count and last alwayz zero
 
-/*private*/
+/* **** private **** */
 #ifndef IN_DGB_H // in other source they prepare prerequisit
 #define __GLOBAL_COUNTER extern int __tu_global_counter;
 extern int __pc;
@@ -30,9 +30,10 @@ extern LPCSTR __map_c2idx[MAX_TU];
 								__map_c2idx[ __tu_local_counter ] = get_filename(__FILE__);\
 								__tu_global_counter++;\
 							}
-/*~private*/
+/* ~~~~ private **** */
 
-/*public*/
+
+/* **** public **** */
 
 /*at the begin of source code that you want to dbg*/
 #define CODE_DBG_TOOLS() __GLOBAL_COUNTER __LOCAL_COUNTER __CODE_DBG_TOOLS_INIT
@@ -45,7 +46,8 @@ extern LPCSTR __map_c2idx[MAX_TU];
 	static int pc = 0; /*each line hit*/\
 	__FXN_HIT[ __tu_local_counter ][ __function_line ][ 1 + pc++ ] = __pc++; pc %= ( BACKTRACK_COUNT - 1 );\
 	} while ( 0 )
-/*~public*/
+
+/* ~~~~ public **** */
 
 #endif
 
