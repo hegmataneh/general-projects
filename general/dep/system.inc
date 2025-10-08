@@ -144,3 +144,11 @@
 #ifdef __INC_net_ethernet
 	#include <net/ethernet.h>
 #endif
+
+#ifdef __INC_sys_mman
+	 #include <sys/mman.h>
+#endif
+
+#ifdef __INC_sys_stat
+	 #include <sys/stat.h>
+#endif

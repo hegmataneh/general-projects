@@ -58,12 +58,15 @@
 //----- string macro --------------------------------------------------------------------
 #if defined Uses_STR_funcs || !defined __COMPILING
 
-	#if defined Uses_strcasecmp || !defined __COMPILING
+	#if defined Uses_strcasecmp || defined Uses_iSTR_SAME || defined Uses_iSTR_DIFF || !defined __COMPILING
 
 		#define stricmp			_stricmp
 		#define _stricmp		strcasecmp
 
 		#define STRICMP			stricmp
+
+		#define iSTR_SAME( a , b )	( STRICMP( a , b ) == 0 )
+		#define iSTR_DIFF( a , b )	( STRICMP( a , b ) != 0 )
 
 	#endif
 
@@ -89,10 +92,7 @@
 
 	#define STR_SAME( a , b )	( strcmp( a , b ) == 0 )
 	#define STR_DIFF( a , b )	( strcmp( a , b ) != 0 )
-
-	#define iSTR_SAME( a , b )	( stricmp( a , b ) == 0 )
-	#define iSTR_DIFF( a , b )	( stricmp( a , b ) != 0 )
-
+	
 	#define DELSTR(str)			do { if(str[0]!=EOS) { FREE(str); str=""; } } while(0)
 
 #endif
@@ -214,15 +214,23 @@
 
 #ifndef ISNULL
 	#define ISNULL( a , b ) ( (a) ? (a) : (b) )
-	//#define COALESCE()
+	#define COALESCE( a , b , c ) ( (a) ? (a) : (b) ? (b) : (c) )
+	#define COALESCE4( a , b , c , d ) ( (a) ? (a) : (b) ? (b) : (c) ? (c) : (d) )
 #endif
 
 #define DO_WHILE(x) do { x; } while(0)
 
-#ifdef _IN
+#ifdef _INx
 #error
 #endif
+#define _INx /*input argument that stored*/
+
 #define _IN /*input argument*/
+
+#ifdef HDLR
+#error
+#endif
+#define HDLR /*handler of module*/
 
 //#define _OUT /*output argument*/
 
@@ -236,6 +244,24 @@
 #endif
 #define _RET_VAL_P /*output argument that just filled and mng by caller*/
 
+#ifdef _CPY_VAL_P
+#error
+#endif
+#define _CPY_VAL_P /*output argument that just filled and mng by caller*/
+
+#ifdef OUTalc
+#error
+#endif
+#ifdef OUTx
+#error
+#endif
+#ifdef OUTcpy
+#error
+#endif
+
+#define OUTalc	_NEW_OUT_P /*allocate new*/
+#define OUTx	_RET_VAL_P /*assign*/
+#define OUTcpy	_CPY_VAL_P /*copy content*/
 
 
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
@@ -314,11 +340,13 @@
 
 
 #ifdef _DEBUG
-	#define CHK_WARN( expr )	if (!(expr)) {\
-						fprintf( stderr , "Assertion failed: %s, file %s, line %d\n" ,\
-							#expr , __FILE__ , __LINE__ );\
-						}
-	#define WARNING( expr ) CHK_WARN( expr )
+	#if defined Uses_WARNING || !defined __COMPILING
+		#define CHK_WARN( expr )	if (!(expr)) {\
+							fprintf( stderr , "Assertion failed: %s, file %s, line %d\n" ,\
+								#expr , __FILE__ , __LINE__ );\
+							}
+		#define WARNING( expr ) CHK_WARN( expr )
+	#endif
 #else
 	#define WARNING( expr )
 #endif

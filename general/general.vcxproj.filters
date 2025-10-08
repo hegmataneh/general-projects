@@ -73,6 +73,18 @@
     <ClCompile Include="src\cbuf_pked.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\vstack.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\memmap.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PagedStack.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\minHeap.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -197,6 +209,18 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\cbuf_pked.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\vstack.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\memmap.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\PagedStack.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\minHeap.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

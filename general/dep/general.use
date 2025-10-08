@@ -1,8 +1,66 @@
-#define Uses_stricmp
-#define Uses_timespec
-#define Uses_size_t
-#define Uses_FILE
-#define Uses_timeval
+#ifdef Uses_CALLOC_ONE
+	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses_timeval_diff_ms
+	#define Uses_timeval
+#endif
+
+#ifdef Uses_format_clock_time
+	#define Uses_timespec
+#endif
+
+#ifdef Uses_round_up_to_next_interval
+	#define Uses_timespec
+#endif
+
+#ifdef Uses_format_elapsed_time
+	#define Uses_time_t
+#endif
+
+#ifdef Uses_format_elapsed_time_with_millis
+	#define Uses_timeval
+#endif
+
+#ifdef Uses_timespec_diff_ms
+	#define Uses_timespec
+#endif
+
+#ifdef Uses_timeval_diff_nsec
+	#define Uses_timeval
+#endif
+
+#ifdef Uses_create_unique_file
+	#define Uses_timeval
+#endif
+
+#ifdef Uses_create_unique_file
+	#define Uses_FILE
+#endif
+
+#ifdef Uses_STR_DIFF
+	#define Uses_STR_funcs
+#endif
+
+#ifdef Uses_iSTR_SAME
+	#define Uses_STR_funcs
+#endif
+
+#ifdef Uses_STRICMP
+	#define Uses_strcasecmp
+#endif
+
+#ifdef Uses_STRCMP
+	#define Uses_STR_funcs
+#endif
+
+#ifdef Uses_STR_SAME
+	#define Uses_STR_funcs
+#endif
+
+#ifdef Uses_WARNING
+	#define Uses_fprintf
+#endif
 
 #ifdef __ENGINE
 	#define Uses_M_showMsg
@@ -154,7 +212,6 @@
 	#define __INC_pub_sub
 #endif
 
-
 #ifdef Uses__VERBOSE_ECHO
 	#define Uses_ERROR_SECTION
 	#define Uses_memory_funcs
@@ -197,8 +254,6 @@
 #ifdef Uses__ECHO
 	#define Uses_ERROR_SECTION
 #endif
-
-
 
 #ifdef Uses_MEMSET_ZERO_T
 	#define Uses_memset
@@ -268,7 +323,6 @@
 	#define __INC_TokenRing_cl
 #endif
 
-
 #ifdef Uses_token_item_p_t
 	#define Uses_TokenRing_p
 #endif
@@ -333,7 +387,6 @@
 	#define __INC_cirbuf_infinite
 #endif
 
-
 #ifdef Uses_ci_sgm_t
 	#define Uses_cirbuf_infinite
 #endif
@@ -369,7 +422,6 @@
 	#define Uses_dict_fst
 #endif
 
-
 #ifdef Uses_nncursor
 	#define Uses_dyn_arr
 	#define Uses_locale
@@ -389,4 +441,39 @@
 #ifdef Uses_cbuf_pked
 	#define Uses_sem_t
 	#define __INC_cbuf_pked
+#endif
+
+#ifdef Uses_VStack
+	#define Uses_pthread_mutex_t
+	#define __INC_VStack
+#endif
+
+#ifdef Uses_memmap
+	#define Uses_dyn_mms_arr
+	#define Uses_pthread_mutex_t
+	#define Uses_uint32_t
+	#define __INC_memmap
+#endif
+
+#ifdef Uses_PagedStack
+	#define Uses_bool
+	#define Uses_mh_t
+	#define Uses_VStack
+	#define Uses_dyn_mms_arr
+	#define Uses_pthread_mutex_t
+	#define Uses_uint32_t
+	#define __INC_PagedStack
+#endif
+
+#ifdef Uses_minHeap
+	#define Uses_dyn_mms_arr
+	#define __INC_minHeap
+#endif
+
+#ifdef Uses_mh_t
+	#define Uses_minHeap
+#endif
+
+#ifdef Uses_page_stack_t
+	#define Uses_PagedStack
 #endif

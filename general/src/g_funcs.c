@@ -10,6 +10,9 @@
 		for number of errors anymore
 */
 
+#define Uses_STRICMP
+#define Uses_STRCMP
+#define Uses_WARNING
 #define Uses_isprint
 #define Uses_INT_MAX
 #define Uses_send
@@ -21,7 +24,6 @@
 #define Uses_time_t
 #define Uses_wchar_t
 #define Uses_sprintf_s
-#define Uses_sprintf_s
 #define Uses_strcpy_s
 #define Uses_errno
 #define Uses_size_t
@@ -32,7 +34,7 @@
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow"};
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -174,9 +176,9 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 	fseek( file , 0 , SEEK_END );
 	long len = ftell( file );
 	fseek( file , 0 , SEEK_SET );
-	LPSTR  buffer = pInBuffer ? pInBuffer : MALLOC( (size_t)(len + 1) );
+	LPSTR buf = pInBuffer ? pInBuffer : ( LPSTR )MALLOC( (size_t)(len + 1) );
 
-	if ( buffer == NULL )
+	if ( buf == NULL )
 	{
 		fprintf( stderr , "Unable to allocate memory for file" );
 		fclose( file );
@@ -184,14 +186,14 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 	}
 
 	#pragma GCC diagnostic ignored "-Wunused-result"
-	fread( buffer , 1 , (size_t)len , file );
+	fread( buf , 1 , (size_t)len , file );
 	#pragma GCC diagnostic pop
-	buffer[ len ] = EOS;
+	buf[ len ] = EOS;
 
 	fclose( file );
 	file = NULL;
 
-	return ( LPCSTR )buffer;
+	return ( LPCSTR )buf;
 }
 
 LPCSTR trim_trailing_zeros(LPSTR s) {
@@ -1030,7 +1032,7 @@ void buff_fill_seq( buffer buf , size_t size )
 	int num = 1;
 	for ( size_t i = 0; i < size; i++ )
 	{
-		buf[ i ] = ( char )( '0' + num );   // store as character '1'..'9'
+		buf[ i ] = ( uchar )( '0' + num );   // store as character '1'..'9'
 		num++;
 		if ( num > 9 ) num = 1; // wrap back to 1
 	}
@@ -1078,7 +1080,6 @@ int peerTcpClosed( sockfd socketfd )
 	return 0;
 }
 
-
 int strsstr( LPCSTR * strs , int strs_count , LPCSTR target )
 {
 	for ( int i = 0; i < strs_count; i++ )
@@ -1090,6 +1091,8 @@ int strsstr( LPCSTR * strs , int strs_count , LPCSTR target )
 	}
 	return -1;  // not found
 }
+
+
 
 int strsistr( LPCSTR * strs , int strs_count , LPCSTR target )
 {
@@ -1157,3 +1160,4 @@ const char * get_filename( const char * path )
 		return slash + 1;  // return part after last '/'
 	return path;  // no '/' found, whole string is filename
 }
+ 

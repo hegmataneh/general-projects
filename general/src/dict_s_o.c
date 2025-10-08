@@ -1,3 +1,4 @@
+#define Uses_STR_SAME
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
 #define Uses_dict_s_o

@@ -1,3 +1,4 @@
+#define Uses_WARNING
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
 #define Uses_cirbuf_lockfree

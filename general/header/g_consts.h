@@ -21,7 +21,12 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -18,
+	NEXT_GENERAL_ERROR_VALUE = -23,
+	errEmpty = -22,
+	errRetry = -21,
+	errPath = -20,
+	errResource = -19,
+	errCorrupted = -18,
 	errOverflow = -17, // if cannot fit and grow not allowed
 	one_time_echo_err = -16, // origin -> this err just use for condition where at app level one M_V_END_RET show err msg and outer caller should ignore it
 	errCreation = -15,

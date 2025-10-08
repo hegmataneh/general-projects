@@ -1,3 +1,4 @@
+#define Uses_STRCMP
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init

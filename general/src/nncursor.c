@@ -1,5 +1,6 @@
 ﻿#define _XOPEN_SOURCE 700
 
+#define Uses_WARNING
 #define Uses_MEMSET_ZERO_O
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_nncursor
@@ -132,9 +133,9 @@ status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_C
 	INIT_BREAKABLE_FXN();
 
 	if ( row < 0 ) return errOverflow;
-	if ( !mms_array_idx_exist( &tbl->rows , row ) ) return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->rows , row ) ) ) return d_error;
 	if ( col < 0 )  return errOverflow;
-	if ( !mms_array_idx_exist( &tbl->cols , col ) ) return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->cols , col ) ) ) return d_error;
 
 	nnc_row * prow = NULL;
 	BREAK_STAT( mms_array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
@@ -176,9 +177,9 @@ status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_
 	INIT_BREAKABLE_FXN();
 
 	if ( row < 0 ) return errOverflow;
-	if ( !mms_array_idx_exist( &tbl->rows , row ) ) return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->rows , row ) ) ) return d_error;
 	if ( col < 0 )  return errOverflow;
-	if ( !mms_array_idx_exist( &tbl->cols , col ) ) return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->cols , col ) ) ) return d_error;
 
 	nnc_row * prow = NULL;
 	BREAK_STAT( mms_array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );

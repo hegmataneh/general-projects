@@ -1,3 +1,4 @@
+#define Uses_WARNING
 #define Uses_ETIMEDOUT
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init

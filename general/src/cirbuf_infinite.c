@@ -1,3 +1,4 @@
+#define Uses_WARNING
 #define Uses_pthread_mutex_t
 #define Uses_MEMSET_ZERO
 #define Uses_cirbuf_infinite
@@ -447,7 +448,7 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	mgr->total_items -= s->itm_count;
 	/* subtract bytes */
 	size_t bytes = s->buf_used;
-	if (mgr->total_bytes >= bytes) mgr->total_bytes -= bytes;
+	if (mgr->total_bytes >= bytes) mgr->total_bytes -= bytes; else mgr->total_bytes = 0;
 	s->buf_used = 0;
 	s->itm_count = 0;
 	//s->filled = False;
@@ -476,17 +477,25 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 //}
 
 /* Optional utility: iterate items sequentially in a segment with a callback */
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud )
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ )
 {
 	if ( !s || !cb ) return errArg;
+	status totally = errOK;
 	for ( size_t i = 0; i < s->itm_count; ++i )
 	{
 		buffer ptr = s->buf + s->offsets[ i ];
 		size_t len = s->sizes[ i ];
-		status rc = cb( ptr , len , ud );
-		if ( rc != 0 ) return rc;
+		status tmp_ret = cb( ptr , len , ud );
+		if ( try_all )
+		{
+			if ( tmp_ret != errOK ) totally = tmp_ret;
+		}
+		else
+		{
+			if ( tmp_ret != errOK ) return tmp_ret;
+		}
 	}
-	return errOK;
+	return totally;
 }
 
 /**

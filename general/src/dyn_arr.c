@@ -1,3 +1,4 @@
+#define Uses_WARNING
 #define Uses_MEMSET_ZERO_O
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_dyn_arr

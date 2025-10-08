@@ -122,3 +122,21 @@
 #ifdef __INC_cbuf_pked
 	#include <cbuf_pked.h>
 #endif
+
+#ifdef __INC_VStack
+	#include <vstack.h>
+#endif
+
+#ifdef __INC_memmap
+	#include <memmap.h>
+#endif
+
+#ifdef __INC_minHeap
+	#include <minHeap.h>
+#endif
+
+
+#ifdef __INC_PagedStack
+	#include <PagedStack.h>
+#endif
+

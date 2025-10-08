@@ -375,7 +375,7 @@ void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , doub
 	}
 }
 
-status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , int src_i , pass_p data /*=NULL if subscriber precede*/ )
+status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , size_t src_sz , pass_p data /*=NULL if subscriber precede*/ )
 {
 	status aggr_ret = errOK;
 	int any_call_happend = 0;
@@ -397,7 +397,7 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 		}
 		for ( int isub = start ; isub != end ; isub += step )
 		{
-			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_BUFFER_INT )
+			if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_BUFFER_SIZE )
 			{
 				if ( dis->subs_grp[ igrp ][ isub ]->tring_p_t )
 				{
@@ -410,16 +410,16 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
+							return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_size_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_sz );
 						}
 					}
 				}
 				else
 				{
-					return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
+					return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_bfr_size_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_sz );
 				}
 			}
-			else if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_MULTICAST_CALL_BUFFER_INT )
+			else if ( dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE )
 			{
 				if ( dis->subs_grp[ igrp ][ isub ]->tring_p_t )
 				{
@@ -433,14 +433,14 @@ status distributor_publish_buffer_int( distributor_t * dis , buffer src_buf , in
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
 							any_call_happend = 1;
-							aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
+							aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_size_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_sz );
 						}
 					}
 				}
 				else
 				{
 					any_call_happend = 1;
-					aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_int_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_i );
+					aggr_ret |= dis->subs_grp[ igrp ][ isub ]->func.multicast_call_buffer_size_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , src_buf , src_sz );
 				}
 			}
 		}
@@ -459,6 +459,24 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 			(
 				dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_VOIDP &&
 				dis->subs_grp[ igrp ][ isub ]->token == token
+			)
+			{
+				return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_voidp_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , ptr );
+			}
+		}
+	}
+	return errNoPeer;
+}
+
+status distributor_publish_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ )
+{
+	for ( int igrp = 0; igrp < dis->grp_count ; igrp++ )
+	{
+		for ( int isub = 0 ; isub < dis->subs_grp_subd[ igrp ] ; isub++ )
+		{
+			if
+			(
+				dis->subs_grp[ igrp ][ isub ]->type == SUB_DIRECT_ONE_CALL_VOIDP
 			)
 			{
 				return dis->subs_grp[ igrp ][ isub ]->func.direct_one_call_voidp_cb( ISNULL( data , dis->subs_grp[ igrp ][ isub ]->data ) , ptr );

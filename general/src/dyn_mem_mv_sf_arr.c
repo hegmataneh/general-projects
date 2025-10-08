@@ -1,3 +1,4 @@
+#define Uses_WARNING
 #define Uses_MEMSET_ZERO_O
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_dyn_mms_arr
@@ -97,9 +98,28 @@ status mms_array_get_one_available_unoccopied_item( dyn_mms_arr * arr , _NEW_OUT
 	return errOK;
 }
 
+// pointer to container keep data. it used to assign manual allocated unit to keep in arr
+// so dangerius fxn
+status mms_array_get_one_available_unoccopied_item_holder( dyn_mms_arr * arr , _NEW_OUT_P void *** item /*add you struct pointer*/ )
+{
+	status d_error = errOK;
+	if ( !arr || !item ) return errArg;
+	if ( arr->count >= arr->capacity )
+	{
+		if ( ( d_error = mms_array_resize( arr , arr->capacity + arr->growStep , 0 ) ) != errOK )
+			return d_error;
+	}
+	//if ( !( arr->data[ arr->count ] = CALLOC_AR( ( ( char * )arr->data[ arr->count ] ) , arr->item_size ) ) )
+	//	return errMemoryLow;
+	*item = &arr->data[ arr->count ];
+	arr->count++;
+	return errOK;
+}
+
 status mms_array_delete( dyn_mms_arr * arr , size_t index )
 {
-	if ( !arr || index >= arr->count ) return errArg;
+	status d_error = errOK;
+	if ( ( d_error = mms_array_idx_exist_s( arr , index ) ) ) return d_error;
 	//char * base = ( char * )arr->data;
 	void * target = arr->data + index;
 	void * next = arr->data + index + 1;
@@ -130,8 +150,18 @@ _MEMMOVE_UNSAFE_FXN void * mms_array_get( dyn_mms_arr * arr , size_t index )
 
 _MEMMOVE_UNSAFE_FXN status mms_array_get_s( dyn_mms_arr * arr , size_t index , void ** pitem )
 {
-	if ( !mms_array_idx_exist( arr , index ) ) return errNotFound;
+	status d_error = errOK;
+	if ( ( d_error = mms_array_idx_exist_s( arr , index ) ) ) return d_error;
 	return ( *pitem = mms_array_get( arr , index ) ) ? errOK : errNotFound;
+}
+
+// just could use temporarily . get unsafe pointer so be careful
+_MEMMOVE_UNSAFE_FXN status mms_array_get_us( dyn_mms_arr * arr , size_t index , void *** ppitem )
+{
+	status d_error = errOK;
+	if ( ( d_error = mms_array_idx_exist_s( arr , index ) ) ) return d_error;
+	*ppitem = &arr->data[ index ];
+	return errOK;
 }
 
 status mms_array_set( dyn_mms_arr * arr , size_t index , void * item )
@@ -145,9 +175,15 @@ status mms_array_set( dyn_mms_arr * arr , size_t index , void * item )
 	return errOK;
 }
 
-Boolean mms_array_idx_exist( dyn_mms_arr * arr , size_t idx )
+status mms_array_idx_exist_s( dyn_mms_arr * arr , size_t idx )
 {
-	if ( !arr ) return False;
-	if ( idx < 0 ) return False;
-	return ToBoolean( idx < arr->count );
+	if ( !arr ) return errArg;
+	if ( !arr->count ) return errEmpty;
+	if ( idx >= arr->count ) return errOverflow;
+	return errOK;
+}
+
+Boolean mms_array_idx_exist_b( dyn_mms_arr * arr , size_t idx )
+{
+	return ToBoolean( mms_array_idx_exist_s( arr , idx ) == errOK );
 }

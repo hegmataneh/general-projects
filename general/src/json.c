@@ -1,3 +1,4 @@
+#define Uses_STRCMP
 #define Uses_memory_funcs
 #define Uses_printf
 #define Uses_errno

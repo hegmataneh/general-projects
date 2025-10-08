@@ -101,7 +101,10 @@
     <ClCompile Include="src\id_dict.c" />
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\LamportBakeryAlgorithm.c" />
+    <ClCompile Include="src\memmap.c" />
+    <ClCompile Include="src\minHeap.c" />
     <ClCompile Include="src\nncursor.c" />
+    <ClCompile Include="src\PagedStack.c" />
     <ClCompile Include="src\pub_sub.c" />
     <ClCompile Include="src\dyn_mem_mv_sf_arr.c" />
     <ClCompile Include="src\str.c" />
@@ -109,6 +112,7 @@
     <ClCompile Include="src\TokenRing_p.c" />
     <ClCompile Include="src\cbuf_unpk.c" />
     <ClCompile Include="src\vcbuf_popblk.c" />
+    <ClCompile Include="src\vstack.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="dep\general.dep">
@@ -163,7 +167,10 @@
     <ClInclude Include="header\json.h" />
     <ClInclude Include="header\LamportBakeryAlgorithm.h" />
     <ClInclude Include="header\cirbuf_packet_sync.h" />
+    <ClInclude Include="header\memmap.h" />
+    <ClInclude Include="header\minHeap.h" />
     <ClInclude Include="header\nncursor.h" />
+    <ClInclude Include="header\PagedStack.h" />
     <ClInclude Include="header\pub_sub.h" />
     <ClInclude Include="header\str.h" />
     <ClInclude Include="header\struct.h" />
@@ -171,6 +178,7 @@
     <ClInclude Include="header\TokenRing_p.h" />
     <ClInclude Include="header\cbuf_unpk.h" />
     <ClInclude Include="header\vcbuf_popblk.h" />
+    <ClInclude Include="header\vstack.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

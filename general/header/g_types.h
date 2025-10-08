@@ -100,13 +100,13 @@ typedef const char * * strings; // array of string. pay attention to free inner 
 
 // for when a char * is treated as a buffer, usually non-null terminated
 // variables of this type may be null
-typedef char * buffer;
+typedef unsigned char * buffer;
 
 typedef void * void_p;
 
 typedef void * pass_p; // pass data pointer
 
-typedef char   DATAB; // data block / byte
+typedef unsigned char   DATAB; // data block / byte
 
 //-------------------------------------------------------------------------
 

@@ -94,13 +94,14 @@ typedef enum seg_trv
 	seg_trv_LIFO
 } seg_trv;
 
+// default_seg_capacity = each sausage byte size , default_offsets_capacity = max item add of each sausage
 status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t default_offsets_capacity , Boolean allow_grow );
 status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len );
 //status ci_sgm_get_item( ci_sgm_t * s , size_t idx , const void ** out_ptr , size_t * out_len );
 void segmgr_destroy( ci_sgmgr_t * mgr );
 
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv ); // pop filled segment
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud ); // iterate through items
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ ); // iterate through items
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
 
 // presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm

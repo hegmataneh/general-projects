@@ -9,22 +9,33 @@ LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float
 
 
 //----time functions------------------------------------------------------
-void format_clock_time( const struct timespec * ts , LPSTR buffer , size_t buf_size );
-void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
-void format_elapsed_time( time_t start , time_t end , LPSTR buffer , size_t buf_size );
-void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
-
-//long long timespec_diff_nsec( struct timespec * start , struct timespec * end ); // difference in nanoseconds
-double timespec_diff_ms( struct timespec * start , struct timespec * end ); // difference in milliseconds
-//double timespec_diff_sec( struct timespec * start , struct timespec * end ); // difference in seconds
-//struct timespec timespec_sub( struct timespec start , struct timespec end );
-//struct timespec timeval_diff_timespec( struct timeval start , struct timeval end );
-long long timeval_diff_nsec( struct timeval * start , struct timeval * end );
-double timeval_diff_ms( struct timeval * start , struct timeval * end );
+#if defined Uses_timespec || !defined __COMPILING
+	void format_clock_time( const struct timespec * ts , LPSTR buffer , size_t buf_size );
+	void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
+#endif
+#if defined Uses_time_t || !defined __COMPILING
+	void format_elapsed_time( time_t start , time_t end , LPSTR buffer , size_t buf_size );
+#endif
+#if defined Uses_timeval || !defined __COMPILING
+	void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
+#endif
+#if defined Uses_timespec || !defined __COMPILING
+	//long long timespec_diff_nsec( struct timespec * start , struct timespec * end ); // difference in nanoseconds
+	double timespec_diff_ms( struct timespec * start , struct timespec * end ); // difference in milliseconds
+	//double timespec_diff_sec( struct timespec * start , struct timespec * end ); // difference in seconds
+	//struct timespec timespec_sub( struct timespec start , struct timespec end );
+#endif
+#if defined Uses_timeval || !defined __COMPILING
+	//struct timespec timeval_diff_timespec( struct timeval start , struct timeval end );
+	long long timeval_diff_nsec( struct timeval * start , struct timeval * end );
+	double timeval_diff_ms( struct timeval * start , struct timeval * end );
+#endif
 
 //----file functions------------------------------------------------------
+#if defined Uses_FILE || !defined __COMPILING
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
-LPCSTR read_file( LPCSTR path , buffer pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
+#endif
+LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
 const char * get_filename( const char * path );
 
 //----socket functions------------------------------------------------------
