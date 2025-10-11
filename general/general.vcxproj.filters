@@ -4,13 +4,7 @@
     <ClCompile Include="src\dyn_arr.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\cirbuf_lockfree.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\cirbuf_metric.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cirbuf_packet_sync.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dict.c">
@@ -22,28 +16,13 @@
     <ClCompile Include="src\g_funcs.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\id_dict.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\json.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\LamportBakeryAlgorithm.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\pub_sub.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\TokenRing_cl.c">
-      <Filter>src</Filter>
-    </ClCompile>
     <ClCompile Include="src\TokenRing_p.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\cbuf_unpk.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\vcbuf_popblk.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\dict_s_i.c">
@@ -74,9 +53,6 @@
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\vstack.c">
-      <Filter>src</Filter>
-    </ClCompile>
-    <ClCompile Include="src\memmap.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\PagedStack.c">
@@ -145,34 +121,28 @@
     <ClInclude Include="header\struct.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\LamportBakeryAlgorithm.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="header\dict.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\id_dict.h">
+    <ClInclude Include="header\z___id_dict.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\cirbuf_lockfree.h">
+    <ClInclude Include="header\z___cirbuf_lockfree.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\cirbuf_packet_sync.h">
+    <ClInclude Include="header\z___cirbuf_packet_sync.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\cirbuf_metric.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\vcbuf_popblk.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="header\cbuf_unpk.h">
+    <ClInclude Include="header\z___cbuf_unpk.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\pub_sub.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\TokenRing_cl.h">
+    <ClInclude Include="header\z___TokenRing_cl.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\TokenRing_p.h">
@@ -214,13 +184,22 @@
     <ClInclude Include="header\vstack.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\memmap.h">
-      <Filter>header</Filter>
-    </ClInclude>
     <ClInclude Include="header\PagedStack.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\minHeap.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\z___LamportBakeryAlgorithm.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\z___memmap.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\z___StablePointerCache.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\z___vcbuf_popblk.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

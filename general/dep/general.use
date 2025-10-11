@@ -1,3 +1,8 @@
+#ifdef Uses_FREE_PTR
+	#define Uses_memory_funcs
+#endif
+
+
 #ifdef Uses_CALLOC_ONE
 	#define Uses_memory_funcs
 #endif

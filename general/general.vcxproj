@@ -87,9 +87,7 @@
   <ItemGroup>
     <ClCompile Include="src\cbuf_pked.c" />
     <ClCompile Include="src\cirbuf_infinite.c" />
-    <ClCompile Include="src\cirbuf_lockfree.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
-    <ClCompile Include="src\cirbuf_packet_sync.c" />
     <ClCompile Include="src\dbg.c" />
     <ClCompile Include="src\dict.c" />
     <ClCompile Include="src\dict_fst.c" />
@@ -98,20 +96,14 @@
     <ClCompile Include="src\dict_s_o.c" />
     <ClCompile Include="src\dyn_arr.c" />
     <ClCompile Include="src\g_funcs.c" />
-    <ClCompile Include="src\id_dict.c" />
     <ClCompile Include="src\json.c" />
-    <ClCompile Include="src\LamportBakeryAlgorithm.c" />
-    <ClCompile Include="src\memmap.c" />
     <ClCompile Include="src\minHeap.c" />
     <ClCompile Include="src\nncursor.c" />
     <ClCompile Include="src\PagedStack.c" />
     <ClCompile Include="src\pub_sub.c" />
     <ClCompile Include="src\dyn_mem_mv_sf_arr.c" />
     <ClCompile Include="src\str.c" />
-    <ClCompile Include="src\TokenRing_cl.c" />
     <ClCompile Include="src\TokenRing_p.c" />
-    <ClCompile Include="src\cbuf_unpk.c" />
-    <ClCompile Include="src\vcbuf_popblk.c" />
     <ClCompile Include="src\vstack.c" />
   </ItemGroup>
   <ItemGroup>
@@ -146,7 +138,7 @@
     <ClInclude Include="dep\general.h" />
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
-    <ClInclude Include="header\cirbuf_lockfree.h" />
+    <ClInclude Include="header\z___cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />
     <ClInclude Include="header\dbg.h" />
     <ClInclude Include="header\dict.h" />
@@ -162,22 +154,23 @@
     <ClInclude Include="header\g_macros.h" />
     <ClInclude Include="header\g_sys.h" />
     <ClInclude Include="header\g_types.h" />
-    <ClInclude Include="header\id_dict.h" />
+    <ClInclude Include="header\z___id_dict.h" />
     <ClInclude Include="header\IntellisenseAssist.h" />
     <ClInclude Include="header\json.h" />
-    <ClInclude Include="header\LamportBakeryAlgorithm.h" />
-    <ClInclude Include="header\cirbuf_packet_sync.h" />
-    <ClInclude Include="header\memmap.h" />
+    <ClInclude Include="header\z___cirbuf_packet_sync.h" />
+    <ClInclude Include="header\z___LamportBakeryAlgorithm.h" />
+    <ClInclude Include="header\z___memmap.h" />
     <ClInclude Include="header\minHeap.h" />
     <ClInclude Include="header\nncursor.h" />
     <ClInclude Include="header\PagedStack.h" />
     <ClInclude Include="header\pub_sub.h" />
+    <ClInclude Include="header\z___StablePointerCache.h" />
     <ClInclude Include="header\str.h" />
     <ClInclude Include="header\struct.h" />
-    <ClInclude Include="header\TokenRing_cl.h" />
+    <ClInclude Include="header\z___TokenRing_cl.h" />
     <ClInclude Include="header\TokenRing_p.h" />
-    <ClInclude Include="header\cbuf_unpk.h" />
-    <ClInclude Include="header\vcbuf_popblk.h" />
+    <ClInclude Include="header\z___cbuf_unpk.h" />
+    <ClInclude Include="header\z___vcbuf_popblk.h" />
     <ClInclude Include="header\vstack.h" />
   </ItemGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
