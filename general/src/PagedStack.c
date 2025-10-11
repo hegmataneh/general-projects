@@ -14,16 +14,11 @@
 /* ----------------- Config ----------------- */
 #define MEMFILE_SIZE ((size_t)64 * 1024 * 1024) /* 64 MiB */
 #define MEMFILE_HEADER_MAGIC 0x4D4D4654 /* "MMFT" */
-//#define MEMFILE_VERSION 1
 
 #define METADATA_FILENAME "pg_stk_chain.meta"
 #define HOTSPARE_NAME "pg_stk_hotspare"
 
-#define MEMFILE_HEADER_SIZE (sizeof(pg_stk_page_hdr_t))
-//#define REC_HEADER_SIZE (sizeof(pg_stk_rec_header_t))
-//#define REC_FOOTER_SIZE (sizeof(uint32_t))
-//#define REC_MAGIC 0x52454331 /* "REC1" */
-//#define REC_VERSION 1
+#define MEMFILE_PAGEHEADER_SZ (sizeof(pg_stk_page_hdr_t))
 
 /* ----------------- Utilities ----------------- */
 
@@ -85,15 +80,15 @@ _PRIVATE_FXN int pg_stk_atomic_write_and_rename( const char * dir , const char *
 /* ----------------- Memfile helpers ----------------- */
 
 /* create or open memfile path, ensure size, mmap it */
-_PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int create_new , pg_stk_memfile_t ** out_mf )
+_PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , int create_new , pg_stk_memfile_t ** out_mf )
 {
 	INIT_BREAKABLE_FXN();
 
 	pg_stk_memfile_t * mf = CALLOC_ONE( mf );
 	BREAK_IF( !mf , errMemoryLow , 0 );
 	strncpy( mf->path , path , sizeof( mf->path ) - 1 );
-	mf->size = size;
-	mf->decrease_time = 10 * 60;
+	mf->memmap_size = mem_size;
+	mf->decrease_time = 10 * 60; // 10 min
 	//BREAK_IF( !pthread_mutex_init( &mf->lock , NULL ) , errResource , 1 );
 
 	int flags = O_RDWR;
@@ -105,9 +100,9 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int cr
 #ifdef __linux__
 	/* try fallocate for speed if available (best-effort) */
 	off_t cur = lseek( fd , 0 , SEEK_END );
-	if ( ( size_t )cur < size )
+	if ( ( size_t )cur < mem_size )
 	{
-		BREAK_IF( ftruncate( fd , ( __off_t )size ) != 0 , errResource , 3 );
+		BREAK_IF( ftruncate( fd , ( __off_t )mem_size ) != 0 , errResource , 3 );
 	}
 #else
 	#error // TOCHECK
@@ -117,7 +112,7 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int cr
 	}
 #endif
 
-	void_p map = mmap( NULL , size , PROT_READ | PROT_WRITE , MAP_SHARED , fd , 0 );
+	void_p map = mmap( NULL , mem_size , PROT_READ | PROT_WRITE , MAP_SHARED , fd , 0 );
 	BREAK_IF( map == MAP_FAILED , errResource , 3 );
 	
 	mf->fd = fd;
@@ -128,23 +123,19 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int cr
 	if ( mf->hdr->magic != MEMFILE_HEADER_MAGIC )
 	{
 		/* consider this file fresh: zero then write header */
-		memset( mf->map , 0 , mf->size );
+		memset( mf->map , 0 , mf->memmap_size );
 		mf->hdr->magic = MEMFILE_HEADER_MAGIC;
-		//mf->hdr->version = MEMFILE_VERSION;
-		//mf->hdr->write_offset = MEMFILE_HEADER_SIZE;
-		//mf->hdr->seq_counter = 1;
 		//mf->hdr->LIFO_due = time(NULL); // add when be applicable and in minHeap . it is come from minHeap
 
-		vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_HEADER_SIZE , size - MEMFILE_HEADER_SIZE ); // create stack on the buf
+		vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , true ); // create stack on the buf
 
 		/* persist header */
-		msync( mf->map , MEMFILE_HEADER_SIZE , MS_SYNC );
+		msync( mf->map , MEMFILE_PAGEHEADER_SZ , MS_SYNC );
 		fsync( mf->fd );
 	}
 	else
 	{
-		// TODO . for now
-		pthread_mutex_init( &mf->hdr->stack.lock , NULL );
+		vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , false ); // create stack on the buf
 	}
 	if ( out_mf ) *out_mf = mf;
 	
@@ -164,20 +155,11 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t size , int cr
 	N_END_RET
 }
 
-/* sync header to disk */
-_PRIVATE_FXN int pg_stk_sync_header( pg_stk_memfile_t * mf )
-{
-	if ( !mf ) return -1;
-	if ( msync( mf->map , MEMFILE_HEADER_SIZE , MS_SYNC ) != 0 ) return -1;
-	if ( fsync( mf->fd ) != 0 ) return -1;
-	return 0;
-}
-
 /* close memfile */
 _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 {
 	if ( !mf ) return;
-	munmap( mf->map , mf->size );
+	munmap( mf->map , mf->memmap_size );
 	close( mf->fd );
 	vstack_destroy( &mf->hdr->stack );
 	//pthread_mutex_destroy( &mf->lock );
@@ -190,51 +172,6 @@ _PRIVATE_FXN status pg_stk_append_record( pg_stk_memfile_t * mf , const void_p b
 	return vstack_push( &mf->hdr->stack , buf , len );
 }
 
-/* pop last record: copies into buf (up to buf_len). returns size written or -1 on empty/error.
-   Caller must free returned pointer if ret > 0 and pointer is returned. Here we copy to user buffer. */
-//_PRIVATE_FXN ssize_t pg_stk_pop_last( pg_stk_memfile_t * mf , void * buf , size_t buf_len , uint64_t * out_seq )
-//{
-//	pthread_mutex_lock( &mf->lock );
-//	uint64_t write_off = mf->hdr->write_offset;
-//	if ( write_off <= MEMFILE_HEADER_SIZE )
-//	{
-//		pthread_mutex_unlock( &mf->lock );
-//		return -1; /* empty */
-//	}
-//	size_t pos = ( size_t )write_off;
-//	/* read footer */
-//	if ( pos < REC_FOOTER_SIZE + REC_HEADER_SIZE )
-//	{
-//		pthread_mutex_unlock( &mf->lock );
-//		return -1;
-//	}
-//	uint32_t footer_val;
-//	memcpy( &footer_val , ( char * )mf->map + ( pos - REC_FOOTER_SIZE ) , REC_FOOTER_SIZE );
-//	uint32_t data_len = footer_val;
-//	if ( pos < REC_FOOTER_SIZE + data_len + REC_HEADER_SIZE )
-//	{
-//		pthread_mutex_unlock( &mf->lock );
-//		return -1;
-//	}
-//	size_t rec_start = pos - REC_FOOTER_SIZE - data_len - REC_HEADER_SIZE;
-//	pg_stk_rec_header_t rh;
-//	memcpy( &rh , ( char * )mf->map + rec_start , REC_HEADER_SIZE );
-//	if ( rh.rec_magic != REC_MAGIC || rh.rec_version != REC_VERSION || rh.data_len != data_len )
-//	{
-//		pthread_mutex_unlock( &mf->lock );
-//		return -1;
-//	}
-//	/* copy data */
-//	size_t tocopy = ( data_len < buf_len ) ? data_len : buf_len;
-//	memcpy( buf , ( char * )mf->map + rec_start + REC_HEADER_SIZE , tocopy );
-//	/* truncate file logically by moving write_offset back */
-//	mf->hdr->write_offset = rec_start;
-//	memfile_sync_header( mf );
-//	if ( out_seq ) *out_seq = rh.seq;
-//	pthread_mutex_unlock( &mf->lock );
-//	return ( ssize_t )tocopy;
-//}
-
 /* ----------------- Manager logic ----------------- */
 
 _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
@@ -246,7 +183,11 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	BREAK_STAT( mms_array_init( &mm->files , sizeof( pg_stk_memfile_t ) , 1 , 10 , 0 ) , 0 );
 	BREAK_STAT( mh_create( &mm->files_order , 1 , 10 , HEAP_MAX ) , 0 );
 
+	//pthread_mutexattr_t attr;
+	//pthread_mutexattr_init( &attr );
+	//pthread_mutexattr_settype( &attr , PTHREAD_MUTEX_RECURSIVE ); // make it double locked
 	pthread_mutex_init( &mm->lock , NULL );
+
 	mm->current = NULL;
 	mm->hot_spare = NULL;
 	/* ensure metadata file exists or create empty */
@@ -313,8 +254,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 		if ( L && ( line[ L - 1 ] == '\n' || line[ L - 1 ] == '\r' ) ) line[ --L ] = '\0';
 		pg_stk_memfile_t * mf = NULL;
 		if ( pg_stk_open_create( line , MEMFILE_SIZE , 0 , &mf ) != errOK && !mf ) continue;
-		
-		// TODO . add time to it
+		if ( mf->hdr->due_time == 0 ) mf->hdr->due_time = time(NULL);
 		
 		pg_stk_memfile_t ** ppfile = NULL;
 		if ( mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) == errOK )
@@ -322,7 +262,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 			*ppfile = mf;
 
 			mh_HeapNode * porder_node = NULL;
-			BREAK_STAT( mh_insert( &mm->files_order , time(NULL) , mf , &porder_node ) , 0 );
+			BREAK_STAT( mh_insert( &mm->files_order , mf->hdr->due_time , mf , &porder_node ) , 0 );
 			mf->hdr->LIFO_due = ( time_t * )&porder_node->key;
 		}
 	}
@@ -340,10 +280,10 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 /* ensure there is a hot spare (pessimistically allocate) */
 _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 {
-	pthread_mutex_lock( &mm->lock );
+	//pthread_mutex_lock( &mm->lock );
 	if ( mm->hot_spare )
 	{
-		pthread_mutex_unlock( &mm->lock );
+		//pthread_mutex_unlock( &mm->lock );
 		return errOK;
 	}
 	//size_t idx = mm->nfiles + 1;
@@ -357,11 +297,11 @@ _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 	status d_error = errOK;
 	if ( ( d_error = pg_stk_open_create( path , MEMFILE_SIZE , 1 , &mf ) ) )
 	{
-		pthread_mutex_unlock( &mm->lock );
+		//pthread_mutex_unlock( &mm->lock );
 		return d_error;
 	}
 	mm->hot_spare = mf;
-	pthread_mutex_unlock( &mm->lock );
+	//pthread_mutex_unlock( &mm->lock );
 	return d_error;
 }
 
@@ -369,16 +309,17 @@ _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 {
 	INIT_BREAKABLE_FXN();
-	pthread_mutex_lock( &mm->lock );
+	//pthread_mutex_lock( &mm->lock );
 	if ( !mm->hot_spare )
 	{
-		pthread_mutex_unlock( &mm->lock );
+		//pthread_mutex_unlock( &mm->lock );
 		return errNotFound;
 	}
 	/* rename hot_spare file to canonical memfile_N name */
 	char newpath[ MAX_PATH ];
 	char newname[ 128 ];
-	snprintf( newname , sizeof( newname ) , "pg_stk_%zu.dat" , ( unsigned )time( NULL ) ); // add time to name
+	time_t tnow = time( NULL );
+	snprintf( newname , sizeof( newname ) , "pg_stk_%zu.dat" , ( unsigned )tnow ); // add time to name
 	pg_stk_build_path( newpath , sizeof( newpath ) , mm->base_dir , newname );
 	/* atomic rename */
 	if ( !rename( mm->hot_spare->path , newpath ) )
@@ -392,11 +333,16 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	{
 		*ppfile = mm->hot_spare;
 
+		( *ppfile )->hdr->due_time = tnow;
+
 		mh_HeapNode * porder_node = NULL;
-		BREAK_STAT( mh_insert( &mm->files_order , time( NULL ) , *ppfile , &porder_node ) , 0 );
+		BREAK_STAT( mh_insert( &mm->files_order , tnow , *ppfile , &porder_node ) , 0 );
 		
 		(*ppfile)->hdr->LIFO_due = ( time_t * )&porder_node->key;
-		*mm->hot_spare->hdr->LIFO_due = time( NULL );
+
+		/* persist header */
+		msync( ( *ppfile )->map , MEMFILE_PAGEHEADER_SZ , MS_SYNC );
+		fsync( ( *ppfile )->fd );
 	}
 	else
 	{
@@ -407,7 +353,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	/* persist chain metadata */
 	pg_stk_persist_chain( mm );
 	/* create new hot spare in background (pessimistically) */
-	pthread_mutex_unlock( &mm->lock );
+	//pthread_mutex_unlock( &mm->lock );
 	pg_stk_ensure_hot_spare( mm );
 	
 	BEGIN_RET
@@ -417,7 +363,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 ////////////////////////////////////////
 
 /* expose API: init manager (create base dir if needed), load existing chain, ensure hot spare */
-status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom_data )
+_PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom_data )
 {
 	INIT_BREAKABLE_FXN();
 	/* create dir if not exists */
@@ -441,7 +387,7 @@ status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom_data )
 }
 
 /* store buffer into manager: returns seq (non-zero) on success, 0 on failure */
-status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
+_PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 {
 	if ( !mm || !buf || !len ) return errArg;
 	pthread_mutex_lock( &mm->lock );
@@ -449,12 +395,13 @@ status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 	status d_error = errOK;
 	if ( !cur )
 	{
-		pthread_mutex_unlock( &mm->lock );
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
 			pg_stk_store( mm , buf , len );
+			pthread_mutex_unlock( &mm->lock );
 			return errRetry;
 		}
+		pthread_mutex_unlock( &mm->lock );
 		return d_error;
 	}
 	/* try append */
@@ -463,6 +410,15 @@ status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 		// GOOD
 		pthread_mutex_unlock( &mm->lock );
 		return d_error;
+	}
+	switch ( d_error )
+	{
+		case errOverflow:
+		{
+			msync( cur->map , cur->memmap_size , MS_SYNC );
+			//madvise( cur->map , cur->memmap_size , MADV_DONTNEED );
+			break;
+		}
 	}
 	/* not enough space: seal current, activate hot spare, then append to new current */
 	//pg_stk_seal( cur );
@@ -473,7 +429,7 @@ status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 		pthread_mutex_unlock( &mm->lock );
 		return errMemoryLow;
 	}
-	/* try append again */
+	/* retry append again */
 	d_error = pg_stk_append_record( newcur , buf , len );
 	pthread_mutex_unlock( &mm->lock );
 	return d_error;
@@ -482,7 +438,7 @@ status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 /* pop latest record from manager chain (LIFO across files) - copies into user buffer */
 // Call by packet mngr to retrieve ready packet
 // can use callback to continue send data or check getter buffer that is ready to get data( with empty arg )
-status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_getter )
+_PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_getter )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -505,7 +461,7 @@ status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_gette
 			case errOK: { break; } // continue
 			default: BREAK( errNotFound , 0 );
 		}
-		pg_stk_memfile_t * pmemfile = ( ( pg_stk_memfile_t * )pnode->data_key );
+		pg_stk_memfile_t * pmemfile = ( ( pg_stk_memfile_t * )pnode->data_key ); // can iterate backward
 
 		do
 		{

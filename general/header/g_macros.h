@@ -310,6 +310,7 @@
 #define _REGULAR_FXN
 
 #define _PRIVATE_FXN static
+#define _PUB_FXN /*can call from another lib*/
 
 #define _FALSE_SHARE_SAFE /*speed up memory access*/
 #define _ALIGNED(date) /*speed up struct member access*/

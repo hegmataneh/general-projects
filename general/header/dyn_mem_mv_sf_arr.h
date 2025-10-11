@@ -14,7 +14,7 @@ typedef struct
 	size_t growStep;
 } dyn_mms_arr; // memory move safe array
 
-// Initialize with given item_size
+// Initialize memmove safe dynamic array with given item_size
 status mms_array_init( dyn_mms_arr * arr , size_t item_size/*size of one element*/ , size_t init_capacity/*allocated slots*/ , size_t growStep , size_t init_occopied_count/*occupied count*/ );
 
 // Free resources

@@ -16,7 +16,7 @@ typedef struct
 } VStack;
 
 // init stack with user buffer
-void vstack_init( HDLR VStack * stack , _INx void_p buffer , _INx size_t capacity );
+void vstack_init( HDLR VStack * stack , _INx void_p buffer , _INx size_t capacity , bool reset /*first time initialized or bind it to existing memory*/ );
 
 // destroy stack (frees mutex)
 void vstack_destroy( HDLR VStack * stack );

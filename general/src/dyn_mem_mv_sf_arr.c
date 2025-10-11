@@ -4,23 +4,12 @@
 #define Uses_dyn_mms_arr
 #include <general.dep>
 
-//#ifdef NESTED_AR
-//#undef NESTED_AR
-//#endif
-//#define NESTED_AR ( ( void ** )arr->data )
-
 #ifdef BLOCK_SIZE
 #undef BLOCK_SIZE
 #endif
 #define BLOCK_SIZE ( sizeof( void * ) )
-//
-//#ifdef SEEK_NESTED_AR
-//#undef SEEK_NESTED_AR
-//#endif
-//#define SEEK_NESTED_AR( idx ) ( NESTED_AR + (( size_t )(idx)) * BLOCK_SIZE )
-//
-//#define ALLOCATED_BLOCK_PTR( idx ) ( *( ( void ** )SEEK_NESTED_AR( idx ) ) )
 
+// Initialize memmove safe dynamic array with given item_size
 status mms_array_init( dyn_mms_arr * arr , size_t item_size , size_t init_capacity , size_t growStep , size_t init_occopied_count )
 {
 	INIT_BREAKABLE_FXN();

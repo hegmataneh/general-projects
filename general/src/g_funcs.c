@@ -1014,7 +1014,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 			/* Successfully sent n bytes; advance pointer and continue. */
 			p += n;
 			remaining -= ( size_t )n;
-			total_sent += n;
+			total_sent += ( size_t )n;
 			continue;
 		}
 

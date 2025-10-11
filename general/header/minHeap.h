@@ -21,6 +21,7 @@ typedef struct
 } mh_t;
 
 
+// create min/max heap
 status mh_create( mh_t * mh , size_t init_capacity/*allocated slots*/ , size_t growStep , mh_HeapType src_type );
 
 status mh_insert( mh_t * h , long key , void * data_key , OUTcpy mh_HeapNode ** out_node /*NULL=no return*/ );

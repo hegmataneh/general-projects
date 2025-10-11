@@ -33,12 +33,12 @@
 typedef struct /*__attribute__(( packed ))*/
 {
 	uint32_t magic;
+	time_t due_time; // used to store time in file
+	time_t * LIFO_due; // used to deacrease time in heap
 	VStack stack;
-
-	time_t * LIFO_due;
+	
 	// TODO . can log retry
 
-	//uint8_t reserved[ 64 ];
 } pg_stk_page_hdr_t;
 
 
@@ -46,9 +46,9 @@ typedef struct /*__attribute__(( packed ))*/
 typedef struct
 {
 	char path[ MAX_PATH ];
-	void_p map;           /* mmap pointer */
-	size_t size; /*mem size*/
 	pg_stk_page_hdr_t * hdr; /* pointer into map */
+	void_p map;           /* mmap pointer */
+	size_t memmap_size; /*mem size*/
 	int fd;
 	int decrease_time; // sec
 	
@@ -62,8 +62,8 @@ typedef struct
 	mh_t files_order;
 	pg_stk_memfile_t * current;        /* active file for writes */
 	pg_stk_memfile_t * hot_spare;      /* preallocated unused memfile */
-	pthread_mutex_t lock;      /* protects manager's top-level state */
 	void_p custom_data; /*like g*/
+	pthread_mutex_t lock;      /* protects manager's top-level state */
 
 } page_stack_t;
 

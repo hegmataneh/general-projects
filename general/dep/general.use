@@ -444,6 +444,7 @@
 #endif
 
 #ifdef Uses_VStack
+	#define Uses_bool
 	#define Uses_pthread_mutex_t
 	#define __INC_VStack
 #endif
