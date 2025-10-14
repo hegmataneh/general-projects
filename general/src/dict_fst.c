@@ -1,4 +1,5 @@
-#define Uses_strdup
+#define Uses_FREE_PTR
+#define Uses_STRDUP
 #define Uses_dict_fst
 #include <general.dep>
 
@@ -6,7 +7,7 @@ status dict_fst_create( kv_table_t * tbl , size_t nbuckets )
 {
 	if ( nbuckets == 0 ) nbuckets = INITIAL_BUCKET_COUNT;
 
-	tbl->buckets = calloc( nbuckets , sizeof( kv_bucket_t ) );
+	tbl->buckets = CALLOC( nbuckets , sizeof( kv_bucket_t ) );
 	if ( !tbl->buckets )
 	{
 		return errMemoryLow;
@@ -45,8 +46,8 @@ void dict_fst_destroy( kv_table_t * tbl )
 		{
 			kv_entry_t * nx = e->next;
 			pthread_spin_destroy( &e->entry_lock );
-			free( e->key );
-			free( e );
+			FREE_PTR( e->key );
+			FREE_PTR( e );
 			e = nx;
 		}
 		b->head = NULL;
@@ -55,7 +56,7 @@ void dict_fst_destroy( kv_table_t * tbl )
 	}
 	pthread_mutex_destroy(&tbl->id_lock);   // init lock
 
-	free( tbl->buckets );
+	FREE_PTR( tbl->buckets );
 }
 
 /*
@@ -70,12 +71,12 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 
 	// allocate new entry first (optimistic): reduces time bucket is locked
 	// TODO . later if we have repelase  least used item is good idea
-	kv_entry_t * newe = malloc( sizeof( *newe ) );
+	kv_entry_t * newe = MALLOC( sizeof( *newe ) );
 	if ( !newe ) return errMemoryLow;
-	newe->key = strdup( key );
+	newe->key = STRDUP( key );
 	if ( !newe->key )
 	{
-		free( newe ); return errMemoryLow;
+		FREE_PTR( newe ); return errMemoryLow;
 	}
 	newe->hash = h;
 	newe->v.int_val = ival;
@@ -100,8 +101,8 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 			pthread_rwlock_unlock( &b->rwlock );
 			// free new entry we allocated but didn't use
 			pthread_spin_destroy( &newe->entry_lock );
-			free( newe->key );
-			free( newe );
+			FREE_PTR( newe->key );
+			FREE_PTR( newe );
 			if ( istat ) *istat = 1;
 			return errOK;
 		}
@@ -255,8 +256,8 @@ status dict_fst_delete( kv_table_t * t , const char * key )
 
 			pthread_spin_unlock( &cur->entry_lock );
 			pthread_spin_destroy( &cur->entry_lock );
-			free( cur->key );
-			free( cur );
+			FREE_PTR( cur->key );
+			FREE_PTR( cur );
 			atomic_fetch_sub_explicit( &t->nitems , 1 , memory_order_relaxed );
 
 			pthread_rwlock_unlock( &b->rwlock );
@@ -386,8 +387,8 @@ status dict_fst_delete_locked( kv_table_t * t , const char * key )
 
 			pthread_spin_unlock( &cur->entry_lock );
 			pthread_spin_destroy( &cur->entry_lock );
-			free( cur->key );
-			free( cur );
+			FREE_PTR( cur->key );
+			FREE_PTR( cur );
 			atomic_fetch_sub_explicit( &t->nitems , 1 , memory_order_relaxed );
 
 			pthread_rwlock_unlock( &b->rwlock );

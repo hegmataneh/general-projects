@@ -5,7 +5,7 @@
 status cbuf_m_init( cbuf_metr * buf , size_t capacity )
 {
 	if ( !buf || capacity == 0 ) return errArg;
-	buf->samples = ( uint64_t * )calloc( capacity , sizeof( uint64_t ) );
+	buf->samples = ( uint64_t * )CALLOC( capacity , sizeof( uint64_t ) );
 	if ( !buf->samples ) return errMemoryLow;
 	buf->capacity = capacity;
 	buf->head = 0;

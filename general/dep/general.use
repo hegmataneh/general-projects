@@ -1,7 +1,27 @@
+#ifdef Uses_MLEAK
+	#define Uses_stktrace_log
+#endif
+
+#ifdef Uses_stktrace_log
+	#define Uses_StackTrace
+#endif
+
+#ifdef Uses_StackTrace
+	#define __INC_StackTrace
+#endif
+
+#ifdef Uses_sem_wait_with_timeout
+	#define Uses_bool
+	#define Uses_sem_t
+#endif
+
+#ifdef Uses_STRDUP
+	#define Uses_STR_funcs
+#endif
+
 #ifdef Uses_FREE_PTR
 	#define Uses_memory_funcs
 #endif
-
 
 #ifdef Uses_CALLOC_ONE
 	#define Uses_memory_funcs
@@ -214,6 +234,8 @@
 #endif
 
 #ifdef Uses_pub_sub
+	#define Uses_dyn_mms_arr
+	#define Uses_mh_t
 	#define __INC_pub_sub
 #endif
 
@@ -401,15 +423,15 @@
 #endif
 
 #ifdef Uses_SYS_ALIVE_CHECK
-	#define Uses_DGB
+	#define Uses_DBG
 #endif
 
 #ifdef Uses_CODE_DBG_TOOLS
-	#define Uses_DGB
+	#define Uses_DBG
 #endif
 
-#ifdef Uses_DGB
-	#define __INC_DGB
+#ifdef Uses_DBG
+	#define __INC_DBG
 #endif
 
 #ifdef Uses_dict_fst
@@ -462,7 +484,7 @@
 #endif
 
 #ifdef Uses_PagedStack
-	#define Uses_bool
+	//#define Uses_bool
 	#define Uses_mh_t
 	#define Uses_VStack
 	#define Uses_dyn_mms_arr

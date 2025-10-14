@@ -63,7 +63,7 @@ status dict_s_i_put( dict_s_i_t * d , LPCSTR key , int value , int update_Value 
 	{
 		return errMemoryLow;
 	}
-	new_e->key = strdup( key );
+	new_e->key = STRDUP( key );
 	new_e->value = value;
 	new_e->next = d->buckets[ idx ];
 	d->buckets[ idx ] = new_e;

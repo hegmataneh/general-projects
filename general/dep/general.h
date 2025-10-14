@@ -8,6 +8,8 @@
 #define _DEBUG
 #endif
 
+//#define Uses_MLEAK
+
 //#ifdef _DEBUG
 //#define Uses_assert
 ////#pragma message("Debug build active")

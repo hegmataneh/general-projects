@@ -1,3 +1,11 @@
+#ifdef Uses_backtrace
+	#define __INC_backtrace
+#endif
+
+#ifdef Uses_pthread_kill
+	#define __INC_signal
+#endif
+
 #ifdef Uses_pollfd
 	#define __INC_poll
 #endif

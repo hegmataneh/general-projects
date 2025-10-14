@@ -1,6 +1,6 @@
-#define IN_DGB_H
+#define IN_DBG_H
 
-#define Uses_DGB
+#define Uses_DBG
 #include <general.dep>
 
 #if defined __USE_DBG_TOOLS || !defined __COMPILING

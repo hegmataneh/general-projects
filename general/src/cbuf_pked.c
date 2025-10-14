@@ -1,3 +1,4 @@
+#define Uses_sem_wait_with_timeout
 #define Uses_ETIMEDOUT
 #define Uses_MEMSET_ZERO
 #define Uses_pthread_mutex_init
@@ -7,13 +8,13 @@
 #define BUF_SIZE_LEN 2
 
 // helper: advance index in circular buffer
-static inline size_t advance_index( cbuf_pked * vc , size_t idx , size_t step )
+_PRIVATE_FXN inline size_t advance_index( cbuf_pked * vc , size_t idx , size_t step )
 {
 	return ( idx + step ) % vc->buf_sz;
 }
 
 // compute free space
-static size_t free_space( cbuf_pked * vc )
+_PRIVATE_FXN size_t free_space( cbuf_pked * vc )
 {
 	if ( vc->head >= vc->tail )
 		return vc->buf_sz - ( vc->head - vc->tail ) - 1/*prevent to allow head and tail overlap on each other*/;
@@ -21,7 +22,7 @@ static size_t free_space( cbuf_pked * vc )
 		return ( vc->tail - vc->head ) - 1;
 }
 
-status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz )
+status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , bool * app_closed_signal )
 {
 	if ( !vc ) return errArg;
 
@@ -36,6 +37,7 @@ status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz )
 	vc->head = 0;
 	vc->tail = 0;
 	sem_init( &vc->gateway , 0 , 0 );
+	vc->pAppShutdown = app_closed_signal;
 
 	return errOK;
 }
@@ -100,18 +102,30 @@ status cbuf_pked_push( cbuf_pked * vc , const buffer buf , size_t buf_len , size
 
 status cbuf_pked_pop( cbuf_pked * vc , void * out_buf , size_t * out_len , long timeout_sec )
 {
-	struct timespec ts;
-	clock_gettime( CLOCK_REALTIME , &ts );
-	ts.tv_sec += timeout_sec;
+	//struct timespec ts;
+	//clock_gettime( CLOCK_REALTIME , &ts );
+	//ts.tv_sec += timeout_sec;
 	
 	do
 	{
-		if ( sem_timedwait( &vc->gateway , &ts ) < 0 ) // wait for open signal . decrements the semaphore . if zero wait
+		// TOTEST more
+		status ret = sem_wait_with_timeout( &vc->gateway , timeout_sec , vc->pAppShutdown );
+		switch ( ret )
 		{
-			if ( errno == ETIMEDOUT ) return errTimeout;
-			int val = 0;
-			if ( sem_getvalue( &vc->gateway , &val ) < 0 || val < 1 ) return errGeneral;
+			case errOK:
+			{
+				break;
+			}
+			default: return ret;
 		}
+
+		//if ( sem_timedwait( &vc->gateway , &ts ) < 0 ) // wait for open signal . decrements the semaphore . if zero wait
+		//{
+		//	if ( errno == ETIMEDOUT ) return errTimeout;
+		//	int val = 0;
+		//	if ( sem_getvalue( &vc->gateway , &val ) < 0 || val < 1 ) return errGeneral;
+		//}
+
 	} while( vc->head == vc->tail );
 
 	// read size

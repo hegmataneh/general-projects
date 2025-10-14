@@ -1,0 +1,10 @@
+#define IN_MLEAK_H
+
+#define Uses_MLEAK
+#include <general.dep>
+
+#if defined TRACE_MEMORY_LEAK || !defined __COMPILING
+
+mLeak_t __alc_hit[MLK_HASH_WIDTH][EACH_ADDR_COUNT];
+
+#endif

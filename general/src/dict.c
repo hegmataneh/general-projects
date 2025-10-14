@@ -49,7 +49,7 @@ status dict_put( dict_s_s_t * d , LPCSTR key , LPCSTR value )
 		{
 			// Update existing
 			DAC( e->value );
-			e->value = strdup( value );
+			e->value = STRDUP( value );
 			return errOK;
 		}
 		e = e->next;
@@ -61,8 +61,8 @@ status dict_put( dict_s_s_t * d , LPCSTR key , LPCSTR value )
 	{
 		return errMemoryLow;
 	}
-	new_e->key = strdup( key );
-	new_e->value = strdup( value );
+	new_e->key = STRDUP( key );
+	new_e->value = STRDUP( value );
 	new_e->next = d->buckets[ idx ];
 	d->buckets[ idx ] = new_e;
 

@@ -73,6 +73,7 @@
 	#define STRINGIFY(x)	#x
 	#define TOSTRING(x)		STRINGIFY(x)
 
+	#define STRDUP( str ) strdup( str )
 
 	#define STRCMP(s1,s2)	strcmp(s1,s2)
 	//#define STRCMP(s1,s2)	strncmp_s(s1,s2,g_min(strlen(s1),strlen(s2)))
@@ -144,7 +145,7 @@
 
 	#define DAC( ptr )						DAC_PTR( ptr )
 	#define DAC_PTR( ptr )					do { if( ptr ) { FREE( ptr ); ptr = NULL; } } while( 0 )
-	#define DAC_PPTR( pptr , count )		do { if( pptr ) { FREE_PPTR( pptr , count ); pptr = NULL; } } while( 0 )
+	//#define DAC_PPTR( pptr , count )		do { if( pptr ) { FREE_PPTR( pptr , count ); pptr = NULL; } } while( 0 )
 
 	#define MEMMOVE( dest , src , len )		memmove( dest , src , len )
 
@@ -396,3 +397,9 @@
 #define BLUE_PART(rgb)  (((rgb)&0xFF0000L)>>16)
 
 #define DARKER(rgb)		(((rgb)>>1)&0x7f7f7fL)
+
+
+
+
+
+#define GROW_STEP 1

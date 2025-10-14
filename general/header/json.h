@@ -1,6 +1,6 @@
-//#pragma once
+#pragma once
 
-#include <stddef.h>
+//#include <stddef.h>
 
 /*
 * mohsen . 14040402 . very important .key value must be not empty

@@ -1,3 +1,4 @@
+#define Uses_STRDUP
 #define Uses_dict_s_s_t
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO_O
@@ -23,7 +24,7 @@ status addTo_string_ar( strings_ar * list , LPCSTR str )
 		REALLOC_AR_SAFE( list->strs , list->capacity ); 
 		N_BREAK_IF( Booleanize( list->strs ) , errMemoryLow , 1 );
 	}
-	N_BREAK_IF( !( list->strs[ list->size ] = strdup( str ) ) , errMemoryLow , 1 ); // duplicate string
+	N_BREAK_IF( !( list->strs[ list->size ] = STRDUP( str ) ) , errMemoryLow , 1 ); // duplicate string
 	list->size++;
 
 	BEGIN_SMPL

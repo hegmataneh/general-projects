@@ -47,13 +47,13 @@ status mms_array_resize( dyn_mms_arr * arr , size_t new_capacity , size_t new_us
 {
 	if ( new_used_count == 0 ) new_used_count = arr->count;
 	if ( !arr || new_capacity == 0 ) return errArg;
-	if ( new_capacity <= arr->count ) return errArg; // can't downsized
+	if ( arr->count && new_capacity <= arr->count ) return errArg; // can't downsized
 	if ( new_used_count > new_capacity ) return errArg; // just allow use maximum to new items
 	if ( new_used_count < arr->count )
 	{
 		return errArg;
 	}
-	char * new_data = REALLOC( arr->data , BLOCK_SIZE * new_capacity );
+	char * new_data = ( char * )REALLOC( arr->data , BLOCK_SIZE * new_capacity );
 	if ( !new_data ) return errMemoryLow;
 	MEMSET( new_data + arr->count * BLOCK_SIZE , 0 , ( new_capacity - arr->count ) * BLOCK_SIZE ); // zero expanded slot
 	arr->data = ( void ** )new_data;

@@ -106,6 +106,7 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back fil
 
 // presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm
 void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) );
+bool ci_sgm_is_empty( ci_sgmgr_t * mgr );
 
 #endif
 

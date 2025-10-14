@@ -549,6 +549,26 @@ void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buf
 	pthread_mutex_unlock( &mgr->lock );
 }
 
+bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
+{
+	bool bempty = true;
+	pthread_mutex_lock( &mgr->lock );
+	if ( mgr->ring )
+	{
+		ci_sgm_t * it = mgr->ring->next;
+		while ( it != mgr->ring )
+		{
+			if ( it->in_filled_queue )
+			{
+				bempty = false;
+				break;
+			}
+		}
+	}
+	pthread_mutex_unlock( &mgr->lock );
+	return bempty;
+}
+
 /* Destroy manager and free all segments. Caller must ensure no producers/consumers running. */
 void segmgr_destroy( ci_sgmgr_t * mgr )
 {

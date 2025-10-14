@@ -70,7 +70,7 @@ status array_resize( dyn_arr * arr , size_t new_capacity , size_t new_used_count
 	{
 		return errArg;
 	}
-	void * new_data = REALLOC( arr->data , arr->item_size * new_capacity );
+	uchar * new_data = ( uchar * )REALLOC( arr->data , arr->item_size * new_capacity );
 	if ( !new_data ) return errMemoryLow;
 	MEMSET( new_data + arr->count * arr->item_size , 0 , ( new_capacity - arr->count ) * arr->item_size ); // zero expanded slot
 	arr->data = new_data;
@@ -86,7 +86,9 @@ status array_add( dyn_arr * arr , void * item )
 	if ( arr->count >= arr->capacity )
 	{
 		if ( ( d_error = array_resize( arr , arr->capacity + arr->growStep , 0 ) ) != errOK )
+		{
 			return d_error;
+		}
 	}
 	MEMCPY_OR( BLOCK_INDEX_ADD( arr->count ) , item , arr->item_size );
 	arr->count++;
@@ -100,7 +102,9 @@ _MEMMOVE_UNSAFE_FXN status array_get_one_available_unoccopied_item( dyn_arr * ar
 	if ( arr->count >= arr->capacity )
 	{
 		if ( ( d_error = array_resize( arr , arr->capacity + arr->growStep , 0 ) ) != errOK )
+		{
 			return d_error;
+		}
 	}
 	*item = BLOCK_INDEX_ADD( arr->count );
 	arr->count++;

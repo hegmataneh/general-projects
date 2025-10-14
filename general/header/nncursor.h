@@ -36,6 +36,7 @@ typedef struct
 	callback_t1 propagate_changes;
 
 	bool refresh_cell;
+	uchar pad[7];
 
 	struct
 	{
@@ -74,6 +75,7 @@ typedef struct
 	dyn_arr cell_containers; // nnc_cell_container
 
 	bool refresh_partial_row;
+	uchar pad[7];
 
 	void_p ptbl;
 } nnc_row;
@@ -87,6 +89,8 @@ typedef struct
 
 	bool refresh_partial_table;
 	bool refresh_table;
+
+	uchar pad[6];
 
 	void_p pnnc;
 } nnc_table;
@@ -105,6 +109,7 @@ typedef struct nncursor_requirement
 	size_t active;
 	dyn_arr tabHit_arr;
 	bool refresh_tabs;
+	uchar pad[7];
 
 	struct notcurses_options opts;
 	struct notcurses * nc;

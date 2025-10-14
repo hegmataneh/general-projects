@@ -156,3 +156,7 @@
 #ifdef __INC_poll
 	 #include <poll.h>
 #endif
+
+#ifdef __INC_backtrace
+	 #include <backtrace.h>
+#endif

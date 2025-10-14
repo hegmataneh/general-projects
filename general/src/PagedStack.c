@@ -150,7 +150,7 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 	}
 	case 1:
 	{
-		free( mf );
+		FREE( mf );
 	}
 	N_END_RET
 }
@@ -163,7 +163,7 @@ _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 	close( mf->fd );
 	vstack_destroy( &mf->hdr->stack );
 	//pthread_mutex_destroy( &mf->lock );
-	free( mf );
+	FREE( mf );
 }
 
 /* write a record to memfile; returns seq number or 0 on failure */
@@ -180,7 +180,7 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	MEMSET_ZERO_O( mm );
 	strncpy( mm->base_dir , base_dir , sizeof( mm->base_dir ) - 1 );
 	
-	BREAK_STAT( mms_array_init( &mm->files , sizeof( pg_stk_memfile_t ) , 1 , 10 , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &mm->files , sizeof( pg_stk_memfile_t ) , 1 , GROW_STEP , 0 ) , 0 );
 	BREAK_STAT( mh_create( &mm->files_order , 1 , 10 , HEAP_MAX ) , 0 );
 
 	//pthread_mutexattr_t attr;
@@ -207,7 +207,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 {
 	/* build content */
 	size_t cap = 4096;
-	char * buf = malloc( cap );
+	char * buf = MALLOC( cap );
 	size_t used = 0;
 	for ( size_t i = 0; i < mm->files.count; i++ )
 	{
@@ -219,7 +219,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 			if ( used + need > cap )
 			{
 				cap *= 2;
-				buf = realloc( buf , cap );
+				buf = REALLOC( buf , cap );
 			}
 			memcpy( buf + used , p , strlen( p ) );
 			used += strlen( p );
@@ -228,12 +228,12 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 	}
 	if ( used == 0 )
 	{
-		free( buf );
+		FREE( buf );
 		return 0;
 	}
 	/* atomic write */
 	int r = pg_stk_atomic_write_and_rename( mm->base_dir , "tmpmeta.XXXXXX" , METADATA_FILENAME , buf , used );
-	free( buf );
+	FREE( buf );
 	return r;
 }
 

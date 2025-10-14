@@ -1,5 +1,6 @@
 ﻿#define _XOPEN_SOURCE 700
 
+//#define Uses_STRDUP
 #define Uses_WARNING
 #define Uses_MEMSET_ZERO_O
 #define Uses_INIT_BREAKABLE_FXN
@@ -39,9 +40,9 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	nnc->cmd_plane = ncplane_create( nnc->std , &copts );
 	N_BREAK_IF( !nnc->cmd_plane , errCreation , 0 );
 
-	BREAK_STAT( mms_array_init( &nnc->tables , sizeof( nnc_table ) , 1 , 1 , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &nnc->tables , sizeof( nnc_table ) , 1 , GROW_STEP , 0 ) , 0 );
 
-	BREAK_STAT( array_init( &nnc->tabHit_arr , sizeof( nnc_tabHit ) , 1 , 1 , 0 ) , 0 );
+	BREAK_STAT( array_init( &nnc->tabHit_arr , sizeof( nnc_tabHit ) , 1 , GROW_STEP , 0 ) , 0 );
 
 	nnc->refresh_tabs = true;
 
@@ -58,8 +59,8 @@ status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable 
 	
 	(*ptable)->pnnc = nnc;
 
-	BREAK_STAT( mms_array_init( &(*ptable)->cols , sizeof( nnc_column ) , 1 , 1 , 0 ) , 0 );
-	BREAK_STAT( mms_array_init( &(*ptable)->rows , sizeof( nnc_row ) , 1 , 1 , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &(*ptable)->cols , sizeof( nnc_column ) , 1 , GROW_STEP , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( &(*ptable)->rows , sizeof( nnc_row ) , 1 , GROW_STEP , 0 ) , 0 );
 	
 	BREAK_STAT( array_resize( &nnc->tabHit_arr , nnc->tables.count , nnc->tables.count ) , 0 );
 
@@ -99,7 +100,7 @@ status nnc_add_empty_row( nnc_table * tbl , nnc_row ** prow )
 
 	BREAK_STAT( mms_array_get_one_available_unoccopied_item( &tbl->rows , ( void ** )prow ) , 0 );
 	size_t col_size = mms_array_get_count( &tbl->cols );
-	BREAK_STAT( array_init( &(*prow)->cell_containers , sizeof( nnc_cell_container ) , col_size , 1 , col_size ) , 0 );
+	BREAK_STAT( array_init( &(*prow)->cell_containers , sizeof( nnc_cell_container ) , col_size , GROW_STEP , col_size ) , 0 );
 
 	( *prow )->ptbl = tbl;
 
@@ -124,7 +125,7 @@ _CALLBACK_FXN void clean_cell_container( void_p src_cell_container )
 	nnc_cell_container * pcell_container = ( nnc_cell_container * )src_cell_container;
 	if ( pcell_container && pcell_container->pcell )
 	{
-		FREE( pcell_container->pcell );
+		DAC( pcell_container->pcell );
 	}
 }
 
@@ -435,7 +436,7 @@ _PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	
 	size_t col_cnt = mms_array_get_count( &ptbl->cols );
 	dyn_arr int_arr;
-	BREAK_STAT( array_init( &int_arr , sizeof( size_t ) , col_cnt , 1 , col_cnt ) , 0 );
+	BREAK_STAT( array_init( &int_arr , sizeof( size_t ) , col_cnt , GROW_STEP , col_cnt ) , 0 );
 	
 	size_t * colw = ( size_t * )int_arr.data;
 	compute_widths( ptbl , (size_t)(nnc->termw - 2) , colw );

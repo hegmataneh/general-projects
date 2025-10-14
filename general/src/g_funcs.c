@@ -10,6 +10,8 @@
 		for number of errors anymore
 */
 
+#define Uses_bool
+#define Uses_sem_t
 #define Uses_pollfd
 #define Uses_STRICMP
 #define Uses_STRCMP
@@ -35,7 +37,7 @@
 
 static short _err = NEXT_GENERAL_ERROR_VALUE;
 static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt"};
+	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt","errShutdown"};
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -1231,6 +1233,13 @@ uint8 hash8_fnv1a_avalanche( const char * s )
 	return ( uint8 )x; // take any byte after avalanche
 }
 
+uint8 hash8_fnv1a_avalanche_l( long l )
+{
+	char ar[9] = {0};
+	*( ( long * ) ar ) = l;
+	return hash8_fnv1a_avalanche( ar );
+}
+
 uint64 hash64_fnv1a_avalanche( const char * s )
 {
 	const uint64 FNV_OFFSET_BASIS = 14695981039346656037ULL;
@@ -1266,4 +1275,56 @@ const char * get_filename( const char * path )
 		return slash + 1;  // return part after last '/'
 	return path;  // no '/' found, whole string is filename
 }
- 
+
+
+status sem_wait_with_timeout( sem_t * sem , long timeout_sec , const bool * app_closed )
+{
+	if ( !sem || timeout_sec < 0 )
+		return errArg;
+
+	struct timespec start , now;
+	if ( clock_gettime( CLOCK_MONOTONIC , &start ) != 0 )
+		return errSystem;
+
+	long elapsed = 0;
+
+	while ( elapsed < timeout_sec )
+	{
+		if ( app_closed && *app_closed )
+			return errShutdown;
+
+		// Set up 1-second absolute timeout from current time
+		struct timespec ts;
+		if ( clock_gettime( CLOCK_REALTIME , &ts ) != 0 )
+			return errSystem;
+		ts.tv_sec += 1;
+
+		int res = sem_timedwait( sem , &ts );
+
+		if ( res == 0 )
+			return errOK;
+
+		if ( errno == ETIMEDOUT )
+		{
+			// Continue if still within overall timeout
+			if ( clock_gettime( CLOCK_MONOTONIC , &now ) != 0 )
+				return errSystem;
+
+			elapsed = ( long )( now.tv_sec - start.tv_sec );
+			continue;
+		}
+		else if ( errno == EINTR )
+		{
+			// Interrupted, check again
+			continue;
+		}
+		else
+		{
+			int val = 0;
+			if ( sem_getvalue( sem , &val ) < 0 || val < 1 ) return errSystem;
+			return errGeneral;
+		}
+	}
+
+	return errTimeout;
+}

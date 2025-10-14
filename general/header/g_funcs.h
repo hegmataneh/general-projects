@@ -31,6 +31,10 @@ LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float
 	double timeval_diff_ms( struct timeval * start , struct timeval * end );
 #endif
 
+#if defined Uses_sem_wait_with_timeout || !defined __COMPILING
+	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , const bool * app_closed_signal );
+#endif
+
 //----file functions------------------------------------------------------
 #if defined Uses_FILE || !defined __COMPILING
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
@@ -122,6 +126,7 @@ IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
 uint8 hash8_fnv1a_avalanche( const char * s );
+uint8 hash8_fnv1a_avalanche_l( long l );
 uint64 hash64_fnv1a_avalanche( const char * s );
 ulong hash( LPCSTR str );
 

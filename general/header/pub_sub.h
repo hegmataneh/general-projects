@@ -12,9 +12,9 @@ typedef enum
 {
 	SUB_VOID ,
 	SUB_STRING ,
-	SUB_INT ,
+	SUB_LONG ,
 	SUB_DOUBLE ,
-	SUB_INT_DOUBLE ,
+	SUB_LONG_DOUBLE ,
 	SUB_STRING_DOUBLE ,
 	SUB_DIRECT_ONE_CALL_BUFFER_SIZE ,
 	SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE ,
@@ -25,9 +25,9 @@ typedef enum
 // Different callback signatures
 typedef void ( *sub_void_t )( pass_p data );
 typedef void ( *sub_string_t )( pass_p data , LPCSTR msg );
-typedef void ( *sub_int_t )( pass_p data , int v );
+typedef void ( *sub_long_t )( pass_p data , long v );
 typedef void ( *sub_double_t )( pass_p data , double v );
-typedef void ( *sub_int_double_t )( pass_p data , int i , double d );
+typedef void ( *sub_long_double_t )( pass_p data , long i , double d );
 typedef void ( *sub_string_double_t )( pass_p data , LPCSTR i , double d );
 typedef status ( *sub_direct_one_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
 typedef status ( *sub_multicast_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
@@ -39,9 +39,9 @@ typedef union
 {
 	sub_void_t								void_cb;
 	sub_string_t							str_cb;
-	sub_int_t								int_cb;
+	sub_long_t								long_cb;
 	sub_double_t							dbl_cb;
-	sub_int_double_t						int_dbl_cb;
+	sub_long_double_t						long_dbl_cb;
 	sub_string_double_t						str_dbl_cb;
 	sub_direct_one_call_buffer_size_t		direct_one_call_bfr_size_cb;
 	sub_multicast_call_buffer_size_t		multicast_call_buffer_size_cb;
@@ -55,44 +55,57 @@ typedef union
 typedef struct
 {
 	sub_type_t	type;
+	int pad1;
 	sub_func_t	func;
 	pass_p		data;
 	void_p		token;
 
-	void_p tring_p_t; // used in round robin
+	void_p		tring_p_t; // used in round robin
 
-} subscriber_t , *alloc_sub_t , **ar_alloc_sub_t;
+} subscriber_t;
+
+typedef struct
+{
+	dyn_mms_arr	subs; // subscriber_t
+
+} subscribers_t;
 
 // Distributor
 typedef struct
 {
-	ar_alloc_sub_t * subs_grp; // each publish distribute to all
-	// TODO . maybe it must be aligned and non False share
-	int * subs_grp_subd; // each int is subscribed item in each sub grp
-	int grp_count;
-
+	dyn_mms_arr grps; // subscribers_t
 	e_direction iteration_dir;
+	dyn_mms_arr * pheap;
 
 } distributor_t;
 
-status distributor_init( distributor_t * dis , int grp_count );
+typedef struct
+{
+	int order;
+	subscriber_t * psubscriber;
+} custome_ord_t;
+
+status distributor_init( distributor_t * dis , size_t grp_count );
+status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
 void destroy( distributor_t * dis );
 
-status distributor_subscribe_t( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , subscriber_t ** subed /*=NULL*/ );
+status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed /*=NULL*/ , int * order /*if not null then this is order*/ );
 
 status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data );
-status distributor_subscribe_ingrp( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data);
-status distributor_subscribe_with_ring( distributor_t * dis , int iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , void_p tring_p_t /*make it void_p to detach dependency*/ );
+status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data);
+status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , void_p tring_p_t /*make it void_p to detach dependency*/ );
+
+status distributor_subscribe_withOrder( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data , int order/*greater priority go first*/ );
 
 status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data ); // only callback with same token call
 
 // Publish different kinds of events
-void distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ );
-void distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL if subscriber precede*/ );
-void distributor_publish_int( distributor_t * dis , int src_v , pass_p data /*=NULL if subscriber precede*/ );
-void distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ );
-void distributor_publish_int_double( distributor_t * dis , int src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ );
-void distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_long( distributor_t * dis , long src_v , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_long_double( distributor_t * dis , long src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ );
 status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , size_t src_sz , pass_p data /*=NULL if subscriber precede*/ );
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,

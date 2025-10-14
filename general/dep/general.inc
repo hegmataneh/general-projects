@@ -9,10 +9,15 @@
 #include "../header/g_consts.h"
 #include "../header/g_sys.h" 
 #include "../header/g_funcs.h"
+
+#ifdef __INC_StackTrace
+	#include <StackTrace.h>
+#endif
+
+#include "../header/g_mlk.h" // after macros to overwrite that. after fxn to use definition
 #include "../header/g_brk.h"
 
-
-#ifdef __INC_DGB
+#ifdef __INC_DBG
 	#include <dbg.h>
 #endif
 
@@ -73,6 +78,14 @@
 //	#include <cbuf_unpk.h>
 //#endif
 
+#ifdef __INC_dyn_mem_mv_sf_arr
+	#include <dyn_mem_mv_sf_arr.h>
+#endif
+
+#ifdef __INC_minHeap
+	#include <minHeap.h>
+#endif
+
 #ifdef __INC_pub_sub
 	#include <pub_sub.h>
 #endif
@@ -110,10 +123,6 @@
 #endif
 
 
-#ifdef __INC_dyn_mem_mv_sf_arr
-	#include <dyn_mem_mv_sf_arr.h>
-#endif
-
 
 #ifdef __INC_nncursor
 	#include <nncursor.h>
@@ -130,11 +139,6 @@
 //#ifdef __INC_memmap
 //	#include <memmap.h>
 //#endif
-
-#ifdef __INC_minHeap
-	#include <minHeap.h>
-#endif
-
 
 #ifdef __INC_PagedStack
 	#include <PagedStack.h>

@@ -96,12 +96,14 @@
     <ClCompile Include="src\dict_s_o.c" />
     <ClCompile Include="src\dyn_arr.c" />
     <ClCompile Include="src\g_funcs.c" />
+    <ClCompile Include="src\g_mlk.c" />
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\minHeap.c" />
     <ClCompile Include="src\nncursor.c" />
     <ClCompile Include="src\PagedStack.c" />
     <ClCompile Include="src\pub_sub.c" />
     <ClCompile Include="src\dyn_mem_mv_sf_arr.c" />
+    <ClCompile Include="src\StackTrace.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_p.c" />
     <ClCompile Include="src\vstack.c" />
@@ -138,6 +140,8 @@
     <ClInclude Include="dep\general.h" />
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
+    <ClInclude Include="header\g_mlk.h" />
+    <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />
     <ClInclude Include="header\dbg.h" />
@@ -182,6 +186,7 @@
       <ShowIncludes>
       </ShowIncludes>
     </ClCompile>
+    <Lib />
     <Lib />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

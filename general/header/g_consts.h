@@ -21,7 +21,8 @@ extern const char _UTF32BSign[] ; // big-endian
 //-------------------------------------------------------------------------
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -24,
+	NEXT_GENERAL_ERROR_VALUE = -25,
+	errShutdown = -24,
 	errTooManyAttempt = -23,
 	errEmpty = -22,
 	errRetry = -21,
@@ -77,6 +78,8 @@ enum
 #define DEFAULT_LFS_BUF_SZ 1024 /*large formatted string size scale*/
 
 #define INVALID_FD (-1)
+
+#define CALLSTACK_LOG_LENGH 128
 
 typedef enum
 {
