@@ -63,7 +63,7 @@ typedef struct
 	pg_stk_memfile_t * current;        /* active file for writes */
 	pg_stk_memfile_t * hot_spare;      /* preallocated unused memfile */
 	void_p custom_data; /*like g*/
-	pthread_mutex_t lock;      /* protects manager's top-level state */
+	pthread_mutex_t ps_lock;      /* protects manager's top-level state */
 
 } page_stack_t;
 

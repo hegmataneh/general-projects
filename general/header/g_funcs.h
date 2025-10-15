@@ -1,4 +1,4 @@
-//#pragma once
+#pragma once
 
 //----T2T functions------------------------------------------------------
 status string_to_int( LPCSTR str , int * out );
@@ -32,7 +32,7 @@ LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float
 #endif
 
 #if defined Uses_sem_wait_with_timeout || !defined __COMPILING
-	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , const bool * app_closed_signal );
+	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed_signal );
 #endif
 
 //----file functions------------------------------------------------------

@@ -1277,7 +1277,7 @@ const char * get_filename( const char * path )
 }
 
 
-status sem_wait_with_timeout( sem_t * sem , long timeout_sec , const bool * app_closed )
+status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed )
 {
 	if ( !sem || timeout_sec < 0 )
 		return errArg;

@@ -249,6 +249,8 @@
 #endif
 
 #ifdef Uses_memory_funcs
+	#define Uses_free
+	#define Uses_calloc
 	#define Uses_memset
 	#define __INC_macros
 #endif

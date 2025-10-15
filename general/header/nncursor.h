@@ -104,7 +104,7 @@ typedef struct
 
 typedef struct nncursor_requirement
 {
-	dyn_mms_arr tables;
+	dyn_mms_arr tables; // nnc_table
 
 	size_t active;
 	dyn_arr tabHit_arr;

@@ -8,7 +8,11 @@
 #define _DEBUG
 #endif
 
+
+
 //#define Uses_MLEAK
+//#define TRACE_MEMORY_LEAK
+
 
 //#ifdef _DEBUG
 //#define Uses_assert
@@ -18,8 +22,6 @@
 #ifdef NDEBUG
 //#pragma message("Release build active")
 #endif
-
-#define Uses_free
 
 #include "general.use"
 #include "general.use"

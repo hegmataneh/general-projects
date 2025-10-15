@@ -12,7 +12,7 @@
 #include <general.dep>
 
 /* ----------------- Config ----------------- */
-#define MEMFILE_SIZE ((size_t)64 * 1024 * 1024) /* 64 MiB */
+#define MEMFILE_SIZE ((size_t)128 * 1024 * 1024) /* 64 MiB */
 #define MEMFILE_HEADER_MAGIC 0x4D4D4654 /* "MMFT" */
 
 #define METADATA_FILENAME "pg_stk_chain.meta"
@@ -159,11 +159,11 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 {
 	if ( !mf ) return;
+	vstack_destroy( &mf->hdr->stack );
 	munmap( mf->map , mf->memmap_size );
 	close( mf->fd );
-	vstack_destroy( &mf->hdr->stack );
 	//pthread_mutex_destroy( &mf->lock );
-	FREE( mf );
+	// FREE( mf );
 }
 
 /* write a record to memfile; returns seq number or 0 on failure */
@@ -186,7 +186,7 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	//pthread_mutexattr_t attr;
 	//pthread_mutexattr_init( &attr );
 	//pthread_mutexattr_settype( &attr , PTHREAD_MUTEX_RECURSIVE ); // make it double locked
-	pthread_mutex_init( &mm->lock , NULL );
+	pthread_mutex_init( &mm->ps_lock , NULL );
 
 	mm->current = NULL;
 	mm->hot_spare = NULL;
@@ -390,7 +390,7 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 {
 	if ( !mm || !buf || !len ) return errArg;
-	pthread_mutex_lock( &mm->lock );
+	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_memfile_t * cur = mm->current;
 	status d_error = errOK;
 	if ( !cur )
@@ -398,17 +398,17 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
 			pg_stk_store( mm , buf , len );
-			pthread_mutex_unlock( &mm->lock );
+			pthread_mutex_unlock( &mm->ps_lock );
 			return errRetry;
 		}
-		pthread_mutex_unlock( &mm->lock );
+		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;
 	}
 	/* try append */
 	if ( ( d_error = pg_stk_append_record( cur , buf , len ) ) == errOK )
 	{
 		// GOOD
-		pthread_mutex_unlock( &mm->lock );
+		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;
 	}
 	switch ( d_error )
@@ -426,12 +426,12 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	pg_stk_memfile_t * newcur = mm->current;
 	if ( !newcur )
 	{
-		pthread_mutex_unlock( &mm->lock );
+		pthread_mutex_unlock( &mm->ps_lock );
 		return errMemoryLow;
 	}
 	/* retry append again */
 	d_error = pg_stk_append_record( newcur , buf , len );
-	pthread_mutex_unlock( &mm->lock );
+	pthread_mutex_unlock( &mm->ps_lock );
 	return d_error;
 }
 
@@ -442,7 +442,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 {
 	INIT_BREAKABLE_FXN();
 
-	pthread_mutex_lock( &mm->lock );
+	pthread_mutex_lock( &mm->ps_lock );
 	
 	mh_HeapNode * pnode = NULL;
 	void_p out_item;
@@ -537,7 +537,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 	BEGIN_SMPL
 	N_V_END_RET
 
-	pthread_mutex_unlock( &mm->lock );
+	pthread_mutex_unlock( &mm->ps_lock );
 	return d_error;
 }
 
@@ -545,7 +545,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 void pg_stk_shutdown( page_stack_t * mm )
 {
 	if ( !mm ) return;
-	pthread_mutex_lock( &mm->lock );
+	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_persist_chain( mm );
 	for ( size_t i = 0; i < mm->files.count; i++ )
 	{
@@ -557,6 +557,6 @@ void pg_stk_shutdown( page_stack_t * mm )
 	}
 	if ( mm->hot_spare ) pg_stk_close( mm->hot_spare );
 	mms_array_free( &mm->files );
-	pthread_mutex_unlock( &mm->lock );
-	pthread_mutex_destroy( &mm->lock );
+	pthread_mutex_unlock( &mm->ps_lock );
+	pthread_mutex_destroy( &mm->ps_lock );
 }

@@ -83,11 +83,11 @@ typedef struct
 {
 	int order;
 	subscriber_t * psubscriber;
-} custome_ord_t;
+} sub_custome_ord_t;
 
 status distributor_init( distributor_t * dis , size_t grp_count );
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
-void destroy( distributor_t * dis );
+void sub_destroy( distributor_t * dis );
 
 status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed /*=NULL*/ , int * order /*if not null then this is order*/ );
 

@@ -33,11 +33,11 @@ _FALSE_SHARE_SAFE typedef struct packed_cbuf_NB // conveys synchronized one prod
 	size_t err_full;
 
 	sem_t gateway;
-	bool * pAppShutdown;
+	volatile bool * pAppShutdown;
 } cbuf_pked;
 
 // Initialize the queue
-status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , bool * app_closed_signal );
+status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , volatile  bool * app_closed_signal );
 
 // Destroy the queue
 void cbuf_pked_destroy( cbuf_pked * vc );

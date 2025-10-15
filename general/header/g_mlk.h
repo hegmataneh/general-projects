@@ -1,7 +1,5 @@
 #pragma once
 
-//#define TRACE_MEMORY_LEAK
-
 #if defined Uses_MLEAK || !defined __COMPILING /*at scope of compiler each source must use it*/
 
 	//#define MALLOC( size )					// malloc( size ) /*allocate and left uninitialized. so faster*/
@@ -30,9 +28,13 @@
 		#ifdef REALLOC_AR
 		#undef REALLOC_AR
 		#endif
+		
+		//#ifdef AAAA
 		#ifdef REALLOC_AR_SAFE
 		#undef REALLOC_AR_SAFE
 		#endif
+		//#endif
+		
 		#ifdef CALLOC
 		#undef CALLOC
 		#endif
@@ -89,13 +91,16 @@
 							
 		#define REALLOC(ptr , size) ({ ushort _lline = (ushort)__LINE__; \
 							void * ptr_before = (void*)(ptr);\
-							static ulong __ulcounter=0; void *___p = realloc(ptr , size);\
+							static ulong __ulcounter=0;\
+							void *___p = realloc(ptr , size);\
+							if ( ptr_before && ___p && ptr_before != ___p)\
 							{\
 							mLeak_t *pml1 = NULL;\
 							for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
 								if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){\
 									pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
 							if ( pml1 ) pml1->counter--;}\
+							if ( !ptr_before ){\
 							mLeak_t *pml2 = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
 							__ulcounter = __ulcounter % EACH_ADDR_COUNT;\
 							pml2->caller_fxn = get_filename(__FILE__);\
@@ -103,17 +108,19 @@
 							pml2->act_fxn = "realloc";\
 							pml2->line = _lline;\
 							pml2->address = ___p;\
-							pml2->counter++;\
+							pml2->counter++;}\
 							( __typeof__( *(ptr) ) * )___p; })
 
 		#define REALLOC_AR(ptr , count) ({ ushort _lline = (ushort)__LINE__; \
 							void * ptr_before = (ptr);\
 							static ulong __ulcounter=0; void *___p = realloc(ptr , ( size_t )( count ) * sizeof( *(ptr) ));\
+							if ( ptr_before && ___p && ptr_before != ___p)\
 							{\
 							mLeak_t *pml1 = NULL;\
 							for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
 								if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){ pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
 							if ( pml1 ) pml1->counter--;}\
+							if ( !ptr_before ){\
 							mLeak_t *pml2 = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
 							__ulcounter = __ulcounter % EACH_ADDR_COUNT;\
 							pml2->caller_fxn = get_filename(__FILE__);\
@@ -121,27 +128,45 @@
 							pml2->act_fxn = "realloc";\
 							pml2->line = _lline;\
 							pml2->address = ___p;\
-							pml2->counter++;\
+							pml2->counter++;}\
 							( __typeof__( *(ptr) ) * )___p; })
 
+							
 		#define REALLOC_AR_SAFE(ptr , count) ({ ushort _lline = (ushort)__LINE__; \
 							void * ptr_before = (ptr);\
 							static ulong __ulcounter=0; void *___p = realloc(ptr , ( size_t )( count ) * sizeof( *(ptr) ));\
-							if ( !___p ) ___p = ptr_before;\
+							if ( ptr_before && ___p && ptr_before != ___p)\
 							{\
-							mLeak_t *pml1 = NULL;\
-							for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
-								if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){\
-									pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
-							if ( pml1 ) pml1->counter--;}\
-							mLeak_t *pml2 = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
-							__ulcounter = __ulcounter % EACH_ADDR_COUNT;\
-							pml2->caller_fxn = get_filename(__FILE__);\
-							stktrace_generate(&pml2->klstck);\
-							pml2->act_fxn = "realloc";\
-							pml2->line = _lline;\
-							pml2->address = ___p;\
-							pml2->counter++;\
+								mLeak_t *pml1 = NULL;\
+								for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
+									if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){\
+										pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
+								if ( pml1 ) { pml1->counter--;\
+								}\
+								mLeak_t * pml2 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ __ulcounter++ ]; \
+								__ulcounter = __ulcounter % EACH_ADDR_COUNT; \
+								pml2->caller_fxn = get_filename( __FILE__ ); \
+								stktrace_generate( &pml2->klstck ); \
+								pml2->act_fxn = "realloc"; \
+								pml2->line = _lline; \
+								pml2->address = ___p; \
+								pml2->counter++;\
+							}\
+							if ( !ptr_before && ___p )\
+							{\
+								mLeak_t * pml2 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ __ulcounter++ ]; \
+								__ulcounter = __ulcounter % EACH_ADDR_COUNT; \
+								pml2->caller_fxn = get_filename( __FILE__ ); \
+								stktrace_generate( &pml2->klstck ); \
+								pml2->act_fxn = "realloc"; \
+								pml2->line = _lline; \
+								pml2->address = ___p; \
+								pml2->counter++;\
+							}\
+							if ( !___p )\
+							{\
+								___p = ptr_before;\
+							}\
 							( __typeof__( *(ptr) ) * )___p; })
 
 

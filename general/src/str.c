@@ -22,7 +22,7 @@ status addTo_string_ar( strings_ar * list , LPCSTR str )
 	{
 		list->capacity += AUTO_MODERATE_BUFFER_CAPACITY;
 		REALLOC_AR_SAFE( list->strs , list->capacity ); 
-		N_BREAK_IF( Booleanize( list->strs ) , errMemoryLow , 1 );
+		N_BREAK_IF( !list->strs , errMemoryLow , 1 );
 	}
 	N_BREAK_IF( !( list->strs[ list->size ] = STRDUP( str ) ) , errMemoryLow , 1 ); // duplicate string
 	list->size++;

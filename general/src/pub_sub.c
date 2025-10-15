@@ -29,13 +29,13 @@ status distributor_init_withOrder( distributor_t * dis , size_t grp_count )
 	BREAK_STAT( distributor_init( dis , grp_count ) , 0 );
 	
 	N_MALLOC_ONE( dis->pheap , 0 );
-	BREAK_STAT( mms_array_init( dis->pheap , sizeof( custome_ord_t ) , 1 , GROW_STEP , 0 ) , 0 );
+	BREAK_STAT( mms_array_init( dis->pheap , sizeof( sub_custome_ord_t ) , 1 , GROW_STEP , 0 ) , 0 );
 	
 	BEGIN_SMPL
 	N_END_RET
 }
 
-void destroy( distributor_t * dis )
+void sub_destroy( distributor_t * dis )
 {
 	if ( !dis ) return;
 	for ( size_t igrp = 0 ; igrp < dis->grps.count ; igrp++ )
@@ -73,7 +73,7 @@ status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat li
 	}
 	if ( dis->pheap )
 	{
-		custome_ord_t * pord = NULL;
+		sub_custome_ord_t * pord = NULL;
 		BREAK_STAT( mms_array_get_one_available_unoccopied_item( dis->pheap , (void**)&pord ) , 0 );
 		pord->psubscriber = psubscriber;
 		pord->order = orderr ? *orderr : 0;
@@ -143,8 +143,8 @@ status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t typ
 
 _PRIVATE_FXN int compare_subscribers( const void * a , const void * b )
 {
-	custome_ord_t * arg1 = *( custome_ord_t ** )a;
-	custome_ord_t * arg2 = *( custome_ord_t ** )b;
+	sub_custome_ord_t * arg1 = *( sub_custome_ord_t ** )a;
+	sub_custome_ord_t * arg2 = *( sub_custome_ord_t ** )b;
 	if ( arg1->order < arg2->order ) return 1; // less value means low priority
 	if ( arg1->order > arg2->order ) return -1; // more value means higher order
 	return 0;
@@ -161,7 +161,7 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_VOID )
 			{
 				pord->psubscriber->func.void_cb( ISNULL( data , pord->psubscriber->data ) );
@@ -214,7 +214,7 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_STRING )
 			{
 				pord->psubscriber->func.str_cb( ISNULL( data , pord->psubscriber->data ) , src_msg );
@@ -288,7 +288,7 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_LONG )
 			{
 				pord->psubscriber->func.long_cb( ISNULL( data , pord->psubscriber->data ) , src_v );
@@ -363,7 +363,7 @@ status distributor_publish_double( distributor_t * dis , double src_v , pass_p d
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_DOUBLE )
 			{
 				pord->psubscriber->func.dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_v );
@@ -437,7 +437,7 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_LONG_DOUBLE )
 			{
 				pord->psubscriber->func.long_dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_i , src_d );
@@ -510,7 +510,7 @@ status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , do
 
 		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
 		{
-			custome_ord_t * pord = NULL;
+			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_STRING_DOUBLE )
 			{
 				pord->psubscriber->func.str_dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_str , src_d );

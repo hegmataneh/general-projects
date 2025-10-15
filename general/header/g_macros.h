@@ -335,7 +335,8 @@
 #define RANJE_ACT2( swt_var , cse1 , cse2 , true_act , false_act ) do { switch( swt_var ) { case cse1: case cse2: { true_act; break; } default: { false_act; } } } while( 0 )
 
 
-#define PRE_MAIN_INITIALIZATION __attribute__( ( constructor ) ) /*put it before global fxn then system call it before main in gcc*/
+#define PRE_MAIN_INITIALIZATION( id ) __attribute__( ( constructor( id ) ) ) /*put it before global fxn then system call it before main in gcc*/
+//#define PRE_MAIN_INITIALIZATION( id )
 
 
 #define GLOBAL_VAR /*variable on global namespace*/
@@ -397,9 +398,6 @@
 #define BLUE_PART(rgb)  (((rgb)&0xFF0000L)>>16)
 
 #define DARKER(rgb)		(((rgb)>>1)&0x7f7f7fL)
-
-
-
 
 
 #define GROW_STEP 1

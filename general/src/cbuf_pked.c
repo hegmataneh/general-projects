@@ -1,3 +1,4 @@
+#define Uses_CALLOC_AR
 #define Uses_sem_wait_with_timeout
 #define Uses_ETIMEDOUT
 #define Uses_MEMSET_ZERO
@@ -22,7 +23,7 @@ _PRIVATE_FXN size_t free_space( cbuf_pked * vc )
 		return ( vc->tail - vc->head ) - 1;
 }
 
-status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , bool * app_closed_signal )
+status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , volatile bool * app_closed_signal )
 {
 	if ( !vc ) return errArg;
 
@@ -33,11 +34,11 @@ status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , bool * app_closed_signal
 		return errMemoryLow;
 	}
 
+	vc->pAppShutdown = app_closed_signal;
 	vc->buf_sz = buf_sz;
 	vc->head = 0;
 	vc->tail = 0;
 	sem_init( &vc->gateway , 0 , 0 );
-	vc->pAppShutdown = app_closed_signal;
 
 	return errOK;
 }
