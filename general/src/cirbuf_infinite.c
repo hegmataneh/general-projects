@@ -553,18 +553,13 @@ bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 {
 	bool bempty = true;
 	pthread_mutex_lock( &mgr->lock );
-	if ( mgr->ring )
-	{
-		ci_sgm_t * it = mgr->ring->next;
-		while ( it != mgr->ring )
-		{
-			if ( it->in_filled_queue )
-			{
-				bempty = false;
-				break;
-			}
-		}
-	}
+
+	/* Check if there are any filled segments waiting */
+	if ( mgr->filled_head != NULL )
+		bempty = false;
+	else if ( mgr->active && mgr->active->itm_count > 0 )
+		bempty = false;
+
 	pthread_mutex_unlock( &mgr->lock );
 	return bempty;
 }

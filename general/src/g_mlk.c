@@ -5,6 +5,6 @@
 
 #if defined TRACE_MEMORY_LEAK || !defined __COMPILING
 
-mLeak_t __alc_hit[MLK_HASH_WIDTH][EACH_ADDR_COUNT];
+mLeak_t __alc_hit[MLK_HASH_WIDTH][EACH_ADDR_COUNT] = {0};
 
 #endif
