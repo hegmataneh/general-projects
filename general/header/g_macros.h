@@ -215,6 +215,7 @@
 
 #ifndef ISNULL
 	#define ISNULL( a , b ) ( (a) ? (a) : (b) )
+	#define COALESCE2( a , b ) ( (a) ? (a) : (b) )
 	#define COALESCE( a , b , c ) ( (a) ? (a) : (b) ? (b) : (c) )
 	#define COALESCE4( a , b , c , d ) ( (a) ? (a) : (b) ? (b) : (c) ? (c) : (d) )
 #endif

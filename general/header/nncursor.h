@@ -33,7 +33,7 @@ typedef struct
 
 	callback_t6 conversion_fxn; // convert any type value into sring
 	callback_t1 clean_fxn; /*if not NULL called*/
-	callback_t1 propagate_changes;
+	callback_t1 propagate_changes; /*arg0: void_p src_cell_container*/
 
 	bool refresh_cell;
 	uchar pad[7];
@@ -129,6 +129,8 @@ void nnc_destroy( nnc_req * nnc );
 status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable );
 status nnc_add_column( nnc_table * tbl , PASSED_CSTR src_hdr , PASSED_CSTR src_subhdr , size_t src_minw );
 status nnc_add_empty_row( nnc_table * tbl , nnc_row ** prow );
+
+status nnc_register_into_page_auto_refresh( nnc_table * ptable , distributor_t * ptor );
 
 // just show string from input
 status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_CSTR static_text );

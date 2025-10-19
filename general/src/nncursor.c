@@ -713,3 +713,31 @@ _CALLBACK_FXN PASSED_CSTR i_as_str_pass( pass_p src_pcell )
 	sprintf( pcell->storage.tmpbuf , "%d" , pcell->storage.bt.i );
 	return ( PASSED_CSTR )pcell->storage.tmpbuf;
 }
+
+_CALLBACK_FXN _PRIVATE_FXN void nnc_page_auto_refresh( void_p src_page )
+{
+	nnc_table * ptable = ( nnc_table * )src_page;
+	for ( size_t irow = 0 ; irow < ptable->rows.count ; irow++ )
+	{
+		nnc_row * prow = NULL;
+		if ( mms_array_get_s( &ptable->rows , irow , ( void ** )&prow ) == errOK )
+		{
+			for ( size_t icell = 0 ; icell < prow->cell_containers.count ; icell++ )
+			{
+				nnc_cell_container * pcell = NULL;
+				if ( array_get_s( &prow->cell_containers , icell , (void**)&pcell ) == errOK )
+				{
+					if ( pcell && pcell->pcell && pcell->pcell->propagate_changes )
+					{
+						pcell->pcell->propagate_changes( pcell );
+					}
+				}
+			}
+		}
+	}
+}
+
+status nnc_register_into_page_auto_refresh( nnc_table * ptable , distributor_t * ptor )
+{
+	return distributor_subscribe( ptor , SUB_VOID , SUB_FXN( nnc_page_auto_refresh ) , ptable );
+}

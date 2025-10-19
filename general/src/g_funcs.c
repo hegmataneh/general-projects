@@ -1328,3 +1328,38 @@ status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * a
 
 	return errTimeout;
 }
+
+
+int timeval_compare( const struct timeval * a , const struct timeval * b )
+{
+	if ( a->tv_sec < b->tv_sec )
+		return -1;
+	else if ( a->tv_sec > b->tv_sec )
+		return 1;
+	else if ( a->tv_usec < b->tv_usec )
+		return -1;
+	else if ( a->tv_usec > b->tv_usec )
+		return 1;
+	else
+		return 0;
+}
+
+int regression_slope_int( const uint64 * y , size_t n )
+{
+	double sum_x = 0 , sum_y = 0 , sum_xy = 0 , sum_x2 = 0;
+	double slope;
+
+	for ( size_t i = 0; i < n; i++ )
+	{
+		double x = (double)(i + 1); // x = 1..n
+		sum_x += (double)(x);
+		sum_y += (double)(y[ i ]);
+		sum_xy += x * (double)(y[ i ]);
+		sum_x2 += (double)(x * x);
+	}
+
+	slope = ( (double)(n) * sum_xy - sum_x * sum_y ) / ( (double)(n) * sum_x2 - sum_x * sum_x );
+
+	// Return slope as integer (rounded)
+	return ( int )( slope + ( slope >= 0 ? 0.5 : -0.5 ) );
+}

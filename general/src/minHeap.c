@@ -40,13 +40,16 @@ _PRIVATE_FXN status mh_heapify_up( mh_t * mh , size_t idx )
 		size_t parent = ( idx - 1 ) / 2;
 		
 		mh_HeapNode ** pparent = NULL;
-		status err1 = mms_array_get_us( &mh->arr , parent , ( void *** )&pparent );
+		status errparent = mms_array_get_us( &mh->arr , parent , ( void *** )&pparent );
 
 		mh_HeapNode ** pchild = NULL;
-		status err2 = mms_array_get_us( &mh->arr , idx , ( void *** )&pchild );
+		status erridx = mms_array_get_us( &mh->arr , idx , ( void *** )&pchild );
 		
-		if ( err1 || err2 ) return ISNULL( err1 , err2 );
-		
+		if ( errparent || erridx )
+		{
+			return COALESCE2( errparent , erridx );
+		}
+
 		if ( !heap_cmp( mh , (*pchild)->key , (*pparent)->key ) )
 			break;
 
@@ -66,23 +69,26 @@ _PRIVATE_FXN status mh_heapify_down( mh_t * mh , size_t idx )
 		size_t best = idx;
 
 		mh_HeapNode ** pleft = NULL;
-		status err1 = mms_array_get_us( &mh->arr , left , ( void *** )&pleft );
+		status errleft = mms_array_get_us( &mh->arr , left , ( void *** )&pleft );
 
 		mh_HeapNode ** pright = NULL;
-		status err2 = mms_array_get_us( &mh->arr , right , ( void *** )&pright );
+		status errright = mms_array_get_us( &mh->arr , right , ( void *** )&pright );
 
 		mh_HeapNode ** pbest = NULL;
-		status err3 = mms_array_get_us( &mh->arr , best , ( void *** )&pbest );
+		status errbest = mms_array_get_us( &mh->arr , best , ( void *** )&pbest );
 
 		mh_HeapNode ** pindex = NULL;
-		status err4 = mms_array_get_us( &mh->arr , idx , ( void *** )&pindex );
+		status erridx = mms_array_get_us( &mh->arr , idx , ( void *** )&pindex );
 
-		if ( err1 || err2 || err3 || err4 ) return COALESCE4( err1 , err2 , err3 , err4 );
+		if ( errbest || erridx )
+		{
+			return COALESCE2( errbest , erridx );
+		}
 
-		if ( left < mh->arr.count && heap_cmp( mh , (*pleft)->key , (*pbest)->key ) )
+		if ( left < mh->arr.count && !errbest && !errleft && heap_cmp( mh , (*pleft)->key , (*pbest)->key ) )
 			best = left;
 
-		if ( right < mh->arr.count && heap_cmp( mh , (*pright)->key , (*pbest)->key ) )
+		if ( right < mh->arr.count && !errbest && !errright && heap_cmp( mh , (*pright)->key , (*pbest)->key ) )
 			best = right;
 
 		if ( best == idx ) break;

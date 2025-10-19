@@ -28,7 +28,7 @@ status vstack_push( HDLR VStack * stack , const void_p data , size_t size );
 status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size );
 
 // pop (returns pointer and size)
-status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size );
+status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size , bool * pemptied );
 
 // clear stack
 void vstack_clear( HDLR VStack * stack );

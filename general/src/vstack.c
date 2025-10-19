@@ -65,7 +65,7 @@ status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * siz
 	return errOK;
 }
 
-status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size )
+status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size , bool * pemptied )
 {
 	pthread_mutex_lock( &stack->lock );
 
@@ -84,6 +84,7 @@ status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size
 	if ( size ) *size = tmp_sz;
 	stack->top -= tmp_sz + sizeof( size_t );
 	if ( item ) *item = ( void_p )( stack->buf + stack->top );
+	if ( pemptied ) *pemptied = ( stack->top == 0 );
 
 	pthread_mutex_unlock( &stack->lock );
 	return errOK;

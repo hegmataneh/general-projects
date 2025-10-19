@@ -1,3 +1,11 @@
+#ifdef Uses_MM_BREAK_IF
+	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses_timeval_compare
+	#define Uses_timeval
+#endif
+
 #ifdef Uses_MLEAK
 	#define Uses_stktrace_log
 #endif
@@ -412,6 +420,7 @@
 #endif
 
 #ifdef Uses_cirbuf_infinite
+	#define Uses_timeval
 	#define Uses_bool
 	#define __INC_cirbuf_infinite
 #endif
@@ -452,6 +461,7 @@
 #endif
 
 #ifdef Uses_nncursor
+	#define Uses_distributor_t
 	#define Uses_dyn_arr
 	#define Uses_locale
 	#define Uses_notcurses
@@ -487,7 +497,6 @@
 
 #ifdef Uses_PagedStack
 	//#define Uses_bool
-	#define Uses_mh_t
 	#define Uses_VStack
 	#define Uses_dyn_mms_arr
 	#define Uses_pthread_mutex_t

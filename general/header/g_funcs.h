@@ -35,6 +35,10 @@ LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float
 	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed_signal );
 #endif
 
+#if defined Uses_timeval || !defined __COMPILING
+	int timeval_compare( const struct timeval * a , const struct timeval * b );
+#endif
+
 //----file functions------------------------------------------------------
 #if defined Uses_FILE || !defined __COMPILING
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
@@ -130,3 +134,4 @@ uint8 hash8_fnv1a_avalanche_l( long l );
 uint64 hash64_fnv1a_avalanche( const char * s );
 ulong hash( LPCSTR str );
 
+int regression_slope_int( const uint64 * y , size_t n );

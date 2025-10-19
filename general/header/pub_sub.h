@@ -85,6 +85,8 @@ typedef struct
 	subscriber_t * psubscriber;
 } sub_custome_ord_t;
 
+#define SUBSCRIBER_PROVIDED NULL
+
 status distributor_init( distributor_t * dis , size_t grp_count );
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
 void sub_destroy( distributor_t * dis );

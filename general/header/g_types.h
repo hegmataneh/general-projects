@@ -164,3 +164,7 @@ typedef PASSED_CSTR ( *callback_t6 )( pass_p /*pass_data*/ );
 #define M_3_PI_2	4.71238898038468985
 
 #define PHI			1.618
+
+#ifdef Uses_timeval
+	typedef struct timeval timeval;
+#endif

@@ -1,3 +1,4 @@
+#define Uses_MM_BREAK_IF
 #define Uses_CALLOC_ONE
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_stat
@@ -17,6 +18,7 @@
 
 #define METADATA_FILENAME "pg_stk_chain.meta"
 #define HOTSPARE_NAME "pg_stk_hotspare"
+#define TMPMETA_NAME "tmpmeta.XXXXXX"
 
 #define MEMFILE_PAGEHEADER_SZ (sizeof(pg_stk_page_hdr_t))
 
@@ -166,9 +168,28 @@ _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 	// FREE( mf );
 }
 
-/* write a record to memfile; returns seq number or 0 on failure */
-_PRIVATE_FXN status pg_stk_append_record( pg_stk_memfile_t * mf , const void_p buf , size_t len )
+_PRIVATE_FXN int compare_pg_stk_memfile( const void * a , const void * b )
 {
+	pg_stk_memfile_t * arg1 = *( pg_stk_memfile_t ** )a;
+	pg_stk_memfile_t * arg2 = *( pg_stk_memfile_t ** )b;
+
+	if ( arg1->hdr->due_time < arg2->hdr->due_time ) return 1; // less value means low priority
+	if ( arg1->hdr->due_time > arg2->hdr->due_time ) return -1; // more value means higher order
+	return 0;
+}
+
+/* write a record to memfile; returns seq number or 0 on failure */
+_PRIVATE_FXN status pg_stk_append_record( page_stack_t * mm , pg_stk_memfile_t * mf , const void_p buf , size_t len )
+{
+	if ( !mf->nocked_up )
+	{
+		mf->nocked_up = true;
+		mf->hdr->due_time = time(NULL);
+		if ( mm->files.count > 1 )
+		{
+			qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+		}
+	}
 	return vstack_push( &mf->hdr->stack , buf , len );
 }
 
@@ -181,7 +202,6 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	strncpy( mm->base_dir , base_dir , sizeof( mm->base_dir ) - 1 );
 	
 	BREAK_STAT( mms_array_init( &mm->files , sizeof( pg_stk_memfile_t ) , 1 , GROW_STEP , 0 ) , 0 );
-	BREAK_STAT( mh_create( &mm->files_order , 1 , 10 , HEAP_MAX ) , 0 );
 
 	//pthread_mutexattr_t attr;
 	//pthread_mutexattr_init( &attr );
@@ -197,7 +217,7 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 }
 
 /* build file path helper */
-_PRIVATE_FXN void pg_stk_build_path( char * out , size_t outlen , const char * dir , const char * name )
+_PRIVATE_FXN void pg_stk_fill_path( char * out , size_t outlen , const char * dir , const char * name )
 {
 	snprintf( out , outlen , "%s/%s" , dir , name );
 }
@@ -212,7 +232,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 	for ( size_t i = 0; i < mm->files.count; i++ )
 	{
 		pg_stk_memfile_t * pfile = NULL;
-		if ( mms_array_get_s( &mm->files , i , ( void ** )&pfile ) == errOK )
+		if ( mms_array_get_s( &mm->files , i , ( void ** )&pfile ) == errOK && !pfile->to_be_absolete )
 		{
 			const char * p = pfile->path;
 			size_t need = strlen( p ) + 2;
@@ -232,7 +252,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 		return 0;
 	}
 	/* atomic write */
-	int r = pg_stk_atomic_write_and_rename( mm->base_dir , "tmpmeta.XXXXXX" , METADATA_FILENAME , buf , used );
+	int r = pg_stk_atomic_write_and_rename( mm->base_dir , TMPMETA_NAME , METADATA_FILENAME , buf , used );
 	FREE( buf );
 	return r;
 }
@@ -243,7 +263,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 	INIT_BREAKABLE_FXN();
 
 	char meta_path[ MAX_PATH ];
-	pg_stk_build_path( meta_path , sizeof( meta_path ) , mm->base_dir , METADATA_FILENAME );
+	pg_stk_fill_path( meta_path , sizeof( meta_path ) , mm->base_dir , METADATA_FILENAME );
 	FILE * f = fopen( meta_path , "r" );
 	BREAK_IF( !f , errNotFound , 0 );
 	char line[ MAX_PATH ];
@@ -254,19 +274,21 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 		if ( L && ( line[ L - 1 ] == '\n' || line[ L - 1 ] == '\r' ) ) line[ --L ] = '\0';
 		pg_stk_memfile_t * mf = NULL;
 		if ( pg_stk_open_create( line , MEMFILE_SIZE , 0 , &mf ) != errOK && !mf ) continue;
-		if ( mf->hdr->due_time == 0 ) mf->hdr->due_time = time(NULL);
-		
+		if ( !mf->hdr->due_time ) mf->hdr->due_time = time(NULL);
+		mf->nocked_up = true;
+
 		pg_stk_memfile_t ** ppfile = NULL;
 		if ( mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) == errOK )
 		{
 			*ppfile = mf;
-
-			mh_HeapNode * porder_node = NULL;
-			BREAK_STAT( mh_insert( &mm->files_order , mf->hdr->due_time , mf , &porder_node ) , 0 );
-			mf->hdr->LIFO_due = ( time_t * )&porder_node->key;
 		}
 	}
 	fclose( f );
+
+	if ( mm->files.count > 1 )
+	{
+		qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+	}
 	mms_array_get_s( &mm->files , mm->files.count - 1 , ( void ** )&mm->current );
 	
 	BEGIN_RET
@@ -291,7 +313,7 @@ _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 	char name[ 128 ];
 	snprintf( name , sizeof( name ) , "%s/%s_%zu" , mm->base_dir , HOTSPARE_NAME , ( unsigned )time( NULL ) );
 	/* choose deterministic path */
-	pg_stk_build_path( path , sizeof( path ) , mm->base_dir , HOTSPARE_NAME );
+	pg_stk_fill_path( path , sizeof( path ) , mm->base_dir , HOTSPARE_NAME );
 	/* create hot spare file path = base_dir/HOTSPARE_NAME */
 	pg_stk_memfile_t * mf = NULL;
 	status d_error = errOK;
@@ -320,7 +342,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	char newname[ 128 ];
 	time_t tnow = time( NULL );
 	snprintf( newname , sizeof( newname ) , "pg_stk_%zu.dat" , ( unsigned )tnow ); // add time to name
-	pg_stk_build_path( newpath , sizeof( newpath ) , mm->base_dir , newname );
+	pg_stk_fill_path( newpath , sizeof( newpath ) , mm->base_dir , newname );
 	/* atomic rename */
 	if ( !rename( mm->hot_spare->path , newpath ) )
 	{
@@ -333,12 +355,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	{
 		*ppfile = mm->hot_spare;
 
-		( *ppfile )->hdr->due_time = tnow;
-
-		mh_HeapNode * porder_node = NULL;
-		BREAK_STAT( mh_insert( &mm->files_order , tnow , *ppfile , &porder_node ) , 0 );
-		
-		(*ppfile)->hdr->LIFO_due = ( time_t * )&porder_node->key;
+		( *ppfile )->hdr->due_time = /*tnow*/0; // first it initialized to zero then when one item add to it it set to now because when hot spare placed at index 0 then it means the end of heap arrived and no more delete is valid
 
 		/* persist header */
 		msync( ( *ppfile )->map , MEMFILE_PAGEHEADER_SZ , MS_SYNC );
@@ -347,6 +364,10 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	else
 	{
 		return d_error;
+	}
+	if ( mm->files.count > 1 )
+	{
+		qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
 	}
 	mm->current = mm->hot_spare;
 	mm->hot_spare = NULL;
@@ -382,6 +403,9 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 	{
 		pg_stk_activate_hot_spare( mm );
 	}
+
+	//N_BREAK_IF( pthread_create( &mm->trd_clean_unused_memfile , NULL , cleanup_unused_memfile_proc , ( pass_p )mm ) != PTHREAD_CREATE_OK , errCreation , 0 );
+
 	BEGIN_SMPL
 	N_END_RET
 }
@@ -393,7 +417,7 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_memfile_t * cur = mm->current;
 	status d_error = errOK;
-	if ( !cur )
+	if ( !cur || cur->to_be_absolete )
 	{
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
@@ -405,9 +429,10 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 		return d_error;
 	}
 	/* try append */
-	if ( ( d_error = pg_stk_append_record( cur , buf , len ) ) == errOK )
+	if ( ( d_error = pg_stk_append_record( mm , cur , buf , len ) ) == errOK )
 	{
 		// GOOD
+		mm->item_stored++;
 		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;
 	}
@@ -422,6 +447,7 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	}
 	/* not enough space: seal current, activate hot spare, then append to new current */
 	//pg_stk_seal( cur );
+	pg_stk_memfile_t * oldcur = mm->current;
 	pg_stk_activate_hot_spare( mm );
 	pg_stk_memfile_t * newcur = mm->current;
 	if ( !newcur )
@@ -430,7 +456,10 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 		return errMemoryLow;
 	}
 	/* retry append again */
-	d_error = pg_stk_append_record( newcur , buf , len );
+	if ( ( d_error = pg_stk_append_record( mm , newcur , buf , len ) ) == errOK )
+	{
+		mm->item_stored++;
+	}
 	pthread_mutex_unlock( &mm->ps_lock );
 	return d_error;
 }
@@ -444,24 +473,45 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 
 	pthread_mutex_lock( &mm->ps_lock );
 	
-	mh_HeapNode * pnode = NULL;
 	void_p out_item;
 	size_t out_sz;
 	bool bcontinue_stack = true , bcontinue_heap = true;
-	//bool bdelayed = false;
 	status ret_heap , ret_stack;
 	pgstk_cmd ret_stack_cmd;
+	pg_stk_memfile_t * pmemfile;
 
 	do
 	{
-		ret_heap = mh_min( &mm->files_order , &pnode ); // it means max. min or max define at init time
+		ret_heap = mms_array_get_s( &mm->files , 0 , (void**)&pmemfile );
 		switch ( ret_heap )
 		{
 			case errEmpty: BREAK( ret_heap , 0 );
-			case errOK: { break; } // continue
+			case errOK: { break; /*continue*/ }
 			default: BREAK( errNotFound , 0 );
 		}
-		pg_stk_memfile_t * pmemfile = ( ( pg_stk_memfile_t * )pnode->data_key ); // can iterate backward
+		bcontinue_stack = true;
+
+		if ( pmemfile->to_be_absolete )
+		{
+			pg_stk_persist_chain( mm );
+			if ( !remove( pmemfile->path ) )
+			{
+				pg_stk_close( pmemfile );
+				ret_heap = mms_array_delete( &mm->files , 0 );
+			}
+			else
+			{
+				ret_heap = errNotFound;
+			}
+			bcontinue_stack = false; // stack is empty so pop it and get next based on order
+			if ( !mm->files.count )
+			{
+				pg_stk_activate_hot_spare( mm );
+				BREAK( errEmpty , 0 );
+			}
+			bcontinue_heap = true; // after if ( !mm->files.count ) it means there is item in it
+			continue;
+		}
 
 		do
 		{
@@ -490,15 +540,30 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_sended__continue_sending:
 						{
-							vstack_pop( &pmemfile->hdr->stack , NULL , NULL ); // pop stack
+							mm->item_stored--;
+
+							bool emptied = false;
+							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop packet from stack
 							bcontinue_stack = bcontinue_heap = true;
+							if ( emptied )
+							{
+								bcontinue_stack = false;
+								pmemfile->to_be_absolete = 1; // sended means it is full then be emptied . and this memmap is nocketup
+							}
 							break;
 						}
 						case pgstk_sended__stop_sending:
 						{
-							vstack_pop( &pmemfile->hdr->stack , NULL , NULL ); // pop stack
+							mm->item_stored--;
+
+							bool emptied = false;
+							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop stack
 							bcontinue_stack = false;
 							bcontinue_heap = false;
+							if ( emptied )
+							{
+								pmemfile->to_be_absolete = 1; // sended means it is full then be emptied . and this memmap is nocketup
+							}
 							break;
 						}
 					}
@@ -507,19 +572,32 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 				case errEmpty: // stack is empty
 				{
 					// try prev memmap and continue and closr current
-					ret_heap = mh_extract_min( &mm->files_order , NULL /*because we use memory from another list and this heap just sort them*/ , 1 /*at least one page most be kept*/ );
+					if ( pmemfile->nocked_up )
+					{
+						pmemfile->to_be_absolete = true;
+					}
+					else
+					{
+						if ( !pmemfile->hdr->due_time )
+						{
+							BREAK( errEmpty , 0 );
+						}
+					}
 					bcontinue_stack = false; // stack is empty so pop it and get next based on order
-					bcontinue_heap = ( ret_heap == errOK ); // later poor guy most deal with broken heap
-					if ( ret_heap == errEmpty ) BREAK( ret_heap , 0 );
+					bcontinue_heap = ( mm->files.count > 0 ); // later poor guy most deal with broken heap
+					if ( !mm->files.count ) BREAK( errEmpty , 0 );
 					break;
 				}
 				default:
 				{
 					// try prev memmap and continue but not close current
-					if ( pmemfile->hdr->LIFO_due )
+					if ( pmemfile->hdr->due_time > pmemfile->decrease_time )
 					{
-						*pmemfile->hdr->LIFO_due -= pmemfile->decrease_time; // it means it gain lower priority later
-						mh_heap_refresh( &mm->files_order , pmemfile );
+						pmemfile->hdr->due_time -= pmemfile->decrease_time; // it means it gain lower priority later
+						if ( mm->files.count > 1 )
+						{
+							qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+						}
 					}
 					pmemfile->decrease_time *= 2;
 					bcontinue_stack = false; // this memmap should proc later
@@ -545,6 +623,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 void pg_stk_shutdown( page_stack_t * mm )
 {
 	if ( !mm ) return;
+	//mm->close_cleaner = 1;
 	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_persist_chain( mm );
 	for ( size_t i = 0; i < mm->files.count; i++ )
@@ -560,3 +639,50 @@ void pg_stk_shutdown( page_stack_t * mm )
 	pthread_mutex_unlock( &mm->ps_lock );
 	pthread_mutex_destroy( &mm->ps_lock );
 }
+
+//_THREAD_FXN void_p cleanup_unused_memfile_proc( pass_p src_page )
+//{
+//	page_stack_t * mm = ( page_stack_t * )src_page;
+//
+//	do
+//	{
+//		if ( mm->close_cleaner ) break;
+//		if ( mm->files.count )
+//		{
+//			pthread_mutex_lock( &mm->ps_lock );
+//			for ( size_t idx = mm->files.count ; idx ; idx-- )
+//			{
+//				pg_stk_memfile_t * pfile = NULL;
+//				if ( mms_array_get_s( &mm->files , idx - 1 , ( void ** )&pfile ) == errOK )
+//				{
+//					if ( pfile->to_be_absolete )
+//					{
+//						if ( pfile != mm->current && pfile != mm->hot_spare )
+//						{
+//							pfile->absolete = 1;
+//							pfile->to_be_absolete = 0;
+//							mm->obsolete_count++;
+//						}
+//						else
+//						{
+//							pfile->to_be_absolete = 0;
+//						}
+//					}
+//					else if ( pfile->absolete )
+//					{
+//						if ( !remove(pfile->path) )
+//						{
+//							pg_stk_close( pfile );
+//							mms_array_delete( &mm->files , idx - 1 );
+//						}
+//					}
+//				}
+//			}
+//			pthread_mutex_unlock( &mm->ps_lock );
+//		}
+//
+//		sleep(5);
+//	} while ( 1 );
+//
+//	return NULL;
+//}

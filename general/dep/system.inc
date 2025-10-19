@@ -160,3 +160,7 @@
 #ifdef __INC_backtrace
 	 #include <backtrace.h>
 #endif
+
+#ifdef __INC_math
+	 #include <math.h>
+#endif

@@ -1,3 +1,7 @@
+#ifdef Uses_floorf
+	#define __INC_math
+#endif
+
 #define Uses_size_t
 
 #ifdef Uses_backtrace

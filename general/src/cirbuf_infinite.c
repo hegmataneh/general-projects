@@ -101,6 +101,7 @@ _PRIVATE_FXN void ci_sgm_insert_after( ci_sgmgr_t * mgr , ci_sgm_t * pos , ci_sg
 		pos->next = s;
 	}
 	mgr->segment_total++;
+	mgr->newed_segments++; // just statistic
 }
 
 /* Remove segment s from ring. If ring becomes empty, set mgr->ring to NULL */
@@ -119,6 +120,7 @@ _PRIVATE_FXN void ci_sgm_remove_from_ring( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	}
 	s->next = s->prev = s;
 	if ( mgr->segment_total > 0 ) mgr->segment_total--;
+	mgr->released_segments++; // just statistic
 }
 
 /* --- Filled queue ops --- */
@@ -175,6 +177,7 @@ _PRIVATE_FXN ci_sgm_t * filled_queue_pop_tail( ci_sgmgr_t * mgr )
 
 	s->queue_next = s->queue_prev = NULL;
 	s->in_filled_queue = False;
+	mgr->filled_count--;
 	return s;
 }
 
@@ -235,9 +238,11 @@ _PRIVATE_FXN void segmgr_set_active_locked( ci_sgmgr_t * mgr , ci_sgm_t * s )
  * - If no active segment, prefer any empty segment in ring (count==0).
  * - If none empty and allow_grow, create new segment.
  * - If item size > segment buffer capacity -> error (can't split items).*/
-status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
+status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool * pNewSegment )
 {
 	if ( !mgr || !data || !len ) return errArg;
+
+	//gettimeofday( &mgr->last_access , NULL );
 	pthread_mutex_lock( &mgr->lock );
 
 	ci_sgm_t * psgm_active = NULL; // s
@@ -275,6 +280,10 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 			{
 				pthread_mutex_unlock( &mgr->lock );
 				return errMemoryLow;
+			}
+			else
+			{
+				*pNewSegment = true;
 			}
 			/* If ring pointer was empty, ensure manager ring points to this new seg */
 			//if ( !mgr->ring ) mgr->ring = psgm_active;
@@ -324,6 +333,10 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 				pthread_mutex_unlock( &mgr->lock );
 				return errMemoryLow;
 			}
+			else
+			{
+				*pNewSegment = true;
+			}
 		}
 
 		if ( !next_empty )
@@ -357,6 +370,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 	psgm_active->sizes[ psgm_active->itm_count ] = len;
 	psgm_active->itm_count++;
 	psgm_active->buf_used += len;
+	psgm_active->last_used = time( NULL );
 
 	/* Update manager stats */
 	mgr->total_items++;
@@ -387,6 +401,10 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len )
 		if ( !next_empty && mgr->allow_grow )
 		{
 			next_empty = segmgr_new_segment_locked( mgr );
+			if ( next_empty )
+			{
+				*pNewSegment = true;
+			}
 		}
 		segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
 	}
@@ -477,15 +495,18 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 //}
 
 /* Optional utility: iterate items sequentially in a segment with a callback */
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ )
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ , size_t strides )
 {
-	if ( !s || !cb ) return errArg;
-	status totally = errOK;
-	for ( size_t i = 0; i < s->itm_count; ++i )
+	if ( !s || !cb || strides < 1 ) return errArg;
+	status totally = ( strides == 1 ? errOK : errRetry );
+	buffer ptr;
+	size_t len;
+	status tmp_ret;
+	for ( size_t i = 0; i < s->itm_count; i += strides )
 	{
-		buffer ptr = s->buf + s->offsets[ i ];
-		size_t len = s->sizes[ i ];
-		status tmp_ret = cb( ptr , len , ud );
+		ptr = s->buf + s->offsets[ i ];
+		len = s->sizes[ i ];
+		tmp_ret = cb( ptr , len , ud );
 		if ( try_all )
 		{
 			if ( tmp_ret != errOK ) totally = tmp_ret;
@@ -505,24 +526,26 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
  *   - The segment is marked as filled (even if not physically full).
  *   - It is pushed into the filled queue.
  *   - The manager switches to the next available segment.
- *
+ *   - return change it as filled
  * This allows user to "expire" an active segment early.
  */
-void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) )
+bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) )
 {
+	bool bret = false;
 	pthread_mutex_lock( &mgr->lock );
 
 	ci_sgm_t * sactive = mgr->active;
 	if ( !sactive || !sactive->itm_count || !sactive->sizes || !sactive->sizes[ 0 ] )
 	{
 		pthread_mutex_unlock( &mgr->lock );
-		return; /* no active segment or empty segment */
+		return bret; /* no active segment or empty segment */
 	}
 
 	/* Call user callback with buffer */
 	if ( callback( sactive->buf , sactive->sizes[ 0 ] ) )
 	{
 		filled_queue_push( mgr , sactive );
+		bret = true; // change it as filled
 
 		/* Try to find next empty or create */
 		ci_sgm_t * next_empty = NULL;
@@ -547,6 +570,7 @@ void ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buf
 	}
 
 	pthread_mutex_unlock( &mgr->lock );
+	return bret;
 }
 
 bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
@@ -562,6 +586,75 @@ bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 
 	pthread_mutex_unlock( &mgr->lock );
 	return bempty;
+}
+
+/*
+ * Remove idle segments from ring that haven't been used for idle_seconds.
+ * Keep at least one segment in ring to preserve manager integrity.
+ */
+bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
+{
+	bool bAnyDeletion = false;
+	pthread_mutex_lock( &mgr->lock );
+
+	ci_sgm_t * head = mgr->ring;
+	if ( !head )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+		return false;
+	}
+
+	ci_sgm_t * it = head;
+	time_t now = time( NULL );
+	struct timeval tnow;
+	gettimeofday( &tnow , NULL );
+	size_t total = mgr->segment_total;
+
+	/* Ensure we never remove the last segment */
+	if ( total <= 1 )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+		return false;
+	}
+
+	it = head;
+	size_t removed = 0;
+	size_t tmpcount = total - 1;
+
+	do
+	{
+		ci_sgm_t * next = it->next;
+		double diff = difftime( now , it->last_used );
+
+		bool removable =
+			( diff >= idle_seconds ) &&     /* has been idle too long */
+			( !it->in_filled_queue ) &&     /* not filled for writing */
+			( it != mgr->active ) &&        /* not active */
+			( it->buf_used == 0 );              /* empty */
+
+		if ( removable && total - removed > 1 )
+		{
+			ci_sgm_remove_from_ring( mgr , it );
+			ci_sgm_free( it );
+			removed++;
+			bAnyDeletion = true;
+		}
+		else if ( total - removed <= 1 )
+		{
+			break;
+		}
+
+		//if ( timeval_diff_ms( &mgr->last_access , &tnow ) < 1 )
+		//{
+		//	break;
+		//}
+
+		it = next;
+		tmpcount--;
+	} while ( it != head && it != NULL && tmpcount );
+
+	pthread_mutex_unlock( &mgr->lock );
+	return bAnyDeletion;
 }
 
 /* Destroy manager and free all segments. Caller must ensure no producers/consumers running. */

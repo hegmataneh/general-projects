@@ -4,7 +4,7 @@
 
 typedef struct cirbuf_metric_t
 {
-	uint64_t * samples;   // per-slot counts
+	uint64 * samples;   // per-slot counts
 	size_t capacity;     // number of time slots
 	size_t head;         // current position (circular index)
 	size_t filled;       // number of valid samples stored
@@ -20,22 +20,24 @@ void cbuf_m_free( cbuf_metr * buf );
 void cbuf_m_reset( cbuf_metr * buf );
 
 // Advance one slot (like one second passed), optionally set count
-void cbuf_m_advance( cbuf_metr * buf , uint64_t count );
+void cbuf_m_advance( cbuf_metr * buf , uint64 count );
 
 // Get last N samples (returns sum of last N if available)
-uint64_t cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n );
+uint64 cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n );
 
 // Peek most recent sample
-status cbuf_m_peek_latest( const cbuf_metr * buf , uint64_t * out_val );
+status cbuf_m_peek_latest( const cbuf_metr * buf , uint64 * out_val );
 
 // Compute mean of last N samples (returns float)
 float cbuf_m_mean_last( const cbuf_metr * buf , size_t last_n );
 
 // Compute sum of all stored samples
-uint64_t cbuf_m_sum_all( const cbuf_metr * buf );
+uint64 cbuf_m_sum_all( const cbuf_metr * buf );
 
 // Compute mean of all stored samples
 float cbuf_m_mean_all( const cbuf_metr * buf );
+
+int cbuf_m_regression_slope_all( const cbuf_metr * buf );
 
 #endif
 
