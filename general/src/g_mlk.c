@@ -1,6 +1,9 @@
 #define IN_MLEAK_H
 
-#define Uses_MLEAK
+#if defined TRACE_MEMORY_LEAK || !defined __COMPILING
+#define Uses_MemLEAK
+#endif
+
 #include <general.dep>
 
 #if defined TRACE_MEMORY_LEAK || !defined __COMPILING

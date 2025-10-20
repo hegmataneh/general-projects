@@ -6,6 +6,8 @@
 #define Uses_StackTrace
 #include <general.dep>
 
+#if defined Uses_MemLEAK || !defined __COMPILING
+
 void stktrace_init( bcktrc_t * trc , size_t count )
 {
 	MEMSET_ZERO_O( trc );
@@ -62,3 +64,5 @@ void stktrace_generate( bcktrc_t * ptrace ) // return valid stack trace
 		WARNING( n < sizeof(ptrace->temp_buf) );
 	}
 }
+
+#endif

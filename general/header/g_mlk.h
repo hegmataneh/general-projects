@@ -1,6 +1,6 @@
 #pragma once
 
-#if defined Uses_MLEAK || !defined __COMPILING /*at scope of compiler each source must use it*/
+#if defined Uses_MemLEAK || !defined __COMPILING /*at scope of compiler each source must use it*/
 
 	//#define MALLOC( size )					// malloc( size ) /*allocate and left uninitialized. so faster*/
 	//#define MALLOC_AR( ptr , count )			// ( ( __typeof__( *(ptr) ) * )malloc( ( size_t )( count ) * sizeof( *(ptr) ) ) )
@@ -29,11 +29,9 @@
 		#undef REALLOC_AR
 		#endif
 		
-		//#ifdef AAAA
 		#ifdef REALLOC_AR_SAFE
 		#undef REALLOC_AR_SAFE
 		#endif
-		//#endif
 		
 		#ifdef CALLOC
 		#undef CALLOC
@@ -270,5 +268,5 @@
 
 	#endif  // TRACE_MEMORY_LEAK
 
-#endif // Uses_MLEAK
+#endif // Uses_MemLEAK
 

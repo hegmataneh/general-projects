@@ -346,7 +346,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	/* atomic rename */
 	if ( !rename( mm->hot_spare->path , newpath ) )
 	{
-		strncpy( mm->hot_spare->path , newpath , sizeof( mm->hot_spare->path ) - 1 );
+		strncpy( mm->hot_spare->path , newpath , MAX_PATH - 1 );
 	}
 	
 	// TODO . get free space and fill it . and does not make arr too long
@@ -376,6 +376,8 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	/* create new hot spare in background (pessimistically) */
 	//pthread_mutex_unlock( &mm->lock );
 	pg_stk_ensure_hot_spare( mm );
+
+	BREAK( errOK , 0 );
 	
 	BEGIN_RET
 	N_END_RET
@@ -447,16 +449,14 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	}
 	/* not enough space: seal current, activate hot spare, then append to new current */
 	//pg_stk_seal( cur );
-	pg_stk_memfile_t * oldcur = mm->current;
 	pg_stk_activate_hot_spare( mm );
-	pg_stk_memfile_t * newcur = mm->current;
-	if ( !newcur )
+	if ( !mm->current )
 	{
 		pthread_mutex_unlock( &mm->ps_lock );
 		return errMemoryLow;
 	}
 	/* retry append again */
-	if ( ( d_error = pg_stk_append_record( mm , newcur , buf , len ) ) == errOK )
+	if ( ( d_error = pg_stk_append_record( mm , mm->current , buf , len ) ) == errOK )
 	{
 		mm->item_stored++;
 	}
