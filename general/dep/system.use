@@ -1,3 +1,9 @@
+#ifdef Uses_TCP_KEEPIDLE
+	#define __INC_sys_socket
+	#define __INC_netinet
+	#define __INC_netinet_tcp
+#endif
+
 #ifdef Uses_floorf
 	#define __INC_math
 #endif

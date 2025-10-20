@@ -495,25 +495,47 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 //}
 
 /* Optional utility: iterate items sequentially in a segment with a callback */
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ , size_t strides )
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ , size_t strides , e_direction dir )
 {
 	if ( !s || !cb || strides < 1 ) return errArg;
+	if ( !s->itm_count ) return errOK;
 	status totally = ( strides == 1 ? errOK : errRetry );
 	buffer ptr;
 	size_t len;
 	status tmp_ret;
-	for ( size_t i = 0; i < s->itm_count; i += strides )
+
+	if ( dir == head_2_tail )
 	{
-		ptr = s->buf + s->offsets[ i ];
-		len = s->sizes[ i ];
-		tmp_ret = cb( ptr , len , ud );
-		if ( try_all )
+		for ( size_t i = 0; i < s->itm_count; i += strides )
 		{
-			if ( tmp_ret != errOK ) totally = tmp_ret;
+			ptr = s->buf + s->offsets[ i ];
+			len = s->sizes[ i ];
+			tmp_ret = cb( ptr , len , ud );
+			if ( try_all )
+			{
+				if ( tmp_ret != errOK ) totally = tmp_ret;
+			}
+			else
+			{
+				if ( tmp_ret != errOK ) return tmp_ret;
+			}
 		}
-		else
+	}
+	else
+	{
+		for ( int64 i = (int64)s->itm_count - 1 ; i >= 0 ; i -= (int64)strides )
 		{
-			if ( tmp_ret != errOK ) return tmp_ret;
+			ptr = s->buf + s->offsets[ i ];
+			len = s->sizes[ i ];
+			tmp_ret = cb( ptr , len , ud );
+			if ( try_all )
+			{
+				if ( tmp_ret != errOK ) totally = tmp_ret;
+			}
+			else
+			{
+				if ( tmp_ret != errOK ) return tmp_ret;
+			}
 		}
 	}
 	return totally;

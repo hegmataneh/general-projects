@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_TCP_KEEPIDLE
 #define Uses_bool
 #define Uses_sem_t
 #define Uses_pollfd
@@ -164,6 +165,7 @@ LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format
 
 void _close_socket( sockfd * socket_id )
 {
+	shutdown( *socket_id , SHUT_RDWR ); // Use shutdown() before close() to send a clean FIN.
 	close( *socket_id );
 	*socket_id = -1;
 }
@@ -1085,7 +1087,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 			}
 		}
 
-		if ( saved_errno == EPIPE )
+		if ( saved_errno == EPIPE || saved_errno == ECONNRESET )
 		{
 			return errPeerClosed;
 		}
@@ -1362,4 +1364,24 @@ int regression_slope_int( const uint64 * y , size_t n )
 
 	// Return slope as integer (rounded)
 	return ( int )( slope + ( slope >= 0 ? 0.5 : -0.5 ) );
+}
+
+void enable_keepalive_chaotic( int sock )
+{
+	srand( ( unsigned )time( NULL ) ^ ( unsigned )sock );
+
+	int yes = 1;
+	setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) );
+
+	// Prime base values with random jitter ±3s
+	int idle = 29 + ( rand() % 7 - 3 );  // 26–32 s
+	int interval = 7 + ( rand() % 3 - 1 );  // 6–8 s
+	int count = 5;                      // prime and stable
+
+	if ( idle < 10 ) idle = 10;
+	if ( interval < 3 ) interval = 3;
+
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) );
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) );
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
 }

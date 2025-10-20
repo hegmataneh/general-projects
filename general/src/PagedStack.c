@@ -540,7 +540,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_sended__continue_sending:
 						{
-							mm->item_stored--;
+							if ( mm->item_stored > 0 ) mm->item_stored--;
 
 							bool emptied = false;
 							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop packet from stack
@@ -554,7 +554,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_sended__stop_sending:
 						{
-							mm->item_stored--;
+							if ( mm->item_stored > 0 ) mm->item_stored--;
 
 							bool emptied = false;
 							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop stack
@@ -639,50 +639,3 @@ void pg_stk_shutdown( page_stack_t * mm )
 	pthread_mutex_unlock( &mm->ps_lock );
 	pthread_mutex_destroy( &mm->ps_lock );
 }
-
-//_THREAD_FXN void_p cleanup_unused_memfile_proc( pass_p src_page )
-//{
-//	page_stack_t * mm = ( page_stack_t * )src_page;
-//
-//	do
-//	{
-//		if ( mm->close_cleaner ) break;
-//		if ( mm->files.count )
-//		{
-//			pthread_mutex_lock( &mm->ps_lock );
-//			for ( size_t idx = mm->files.count ; idx ; idx-- )
-//			{
-//				pg_stk_memfile_t * pfile = NULL;
-//				if ( mms_array_get_s( &mm->files , idx - 1 , ( void ** )&pfile ) == errOK )
-//				{
-//					if ( pfile->to_be_absolete )
-//					{
-//						if ( pfile != mm->current && pfile != mm->hot_spare )
-//						{
-//							pfile->absolete = 1;
-//							pfile->to_be_absolete = 0;
-//							mm->obsolete_count++;
-//						}
-//						else
-//						{
-//							pfile->to_be_absolete = 0;
-//						}
-//					}
-//					else if ( pfile->absolete )
-//					{
-//						if ( !remove(pfile->path) )
-//						{
-//							pg_stk_close( pfile );
-//							mms_array_delete( &mm->files , idx - 1 );
-//						}
-//					}
-//				}
-//			}
-//			pthread_mutex_unlock( &mm->ps_lock );
-//		}
-//
-//		sleep(5);
-//	} while ( 1 );
-//
-//	return NULL;
-//}

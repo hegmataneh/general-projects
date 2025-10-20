@@ -51,7 +51,7 @@ void _close_socket( sockfd * socket_id );
 //status sendall( sockfd socketfd , buffer buf , size_t * len );
 status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms );
 int peerTcpClosed( sockfd socketfd );
-
+void enable_keepalive_chaotic( int sock );
 
 //----error functions------------------------------------------------------
 _WEAK_ATTR void M_showMsg( LPCSTR msg );

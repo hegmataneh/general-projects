@@ -70,7 +70,6 @@ typedef struct
 	//volatile int close_cleaner;
 
 	/* lifetime statistics */
-	size_t obsolete_count;
 	size_t item_stored;
 
 

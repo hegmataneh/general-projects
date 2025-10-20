@@ -111,7 +111,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 void segmgr_destroy( ci_sgmgr_t * mgr );
 
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv ); // pop filled segment
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ , size_t strides ); // iterate through items
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ , size_t strides , e_direction dir ); // iterate through items
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
 
 // presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm
