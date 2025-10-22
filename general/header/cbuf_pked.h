@@ -13,41 +13,41 @@ _FALSE_SHARE_SAFE typedef struct packed_cbuf_NB // conveys synchronized one prod
 	union
 	{
 		buffer buf;			// raw memory for all rooms
-		char pad1[64];
+		char pad1[CACHE_LINE_SIZE];
 	};
 	union
 	{
 		size_t buf_sz;		// size of each room
-		char pad2[ 64 ];
+		char pad2[ CACHE_LINE_SIZE ];
 	};
 	union
 	{
 		size_t head;		// write address
-		char pad3[ 64 ];
+		char pad3[ CACHE_LINE_SIZE ];
 	};
 	union
 	{
 		size_t tail;		// read address
-		char pad4[ 64 ];
+		char pad4[ CACHE_LINE_SIZE ];
 	};
 	size_t err_full;
 
 	sem_t gateway;
 	volatile bool * pAppShutdown;
-} cbuf_pked;
+} cbuf_pked_t;
 
 // Initialize the queue
-status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , volatile  bool * app_closed_signal );
+status cbuf_pked_init( cbuf_pked_t * vc , size_t buf_sz , volatile  bool * app_closed_signal );
 
 // Destroy the queue
-void cbuf_pked_destroy( cbuf_pked * vc );
+void cbuf_pked_destroy( cbuf_pked_t * vc );
 
 // overwrite oldest one if full . this fxn at producer side so must be so fast
-status cbuf_pked_push( cbuf_pked * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr ); // you can allocate more that use want
+status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr ); // you can allocate more that use want
 
 // Blocking pop: waits if empty
-status cbuf_pked_pop( cbuf_pked * vc , void * out_buf , size_t * out_len , long timeout_sec /*=-1*/ );
+status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t * out_len , long timeout_sec /*=-1*/ );
 
-status cbuf_pked_blindcopy( cbuf_pked * vc , void * out_buf , size_t block_sz_pos );
+status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_pos );
 
 #endif

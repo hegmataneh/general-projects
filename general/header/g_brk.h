@@ -46,10 +46,10 @@ mohsen 14040618
 //#endif
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen
-#define MME_BREAK(err,lvl,msg,echo)\
+#define MME_BREAK(err,lvl,msg,echo,fill_msg)\
 	do {\
 		d_error=(status)err;\
-		M_MK_ERR_MSG(msg,echo);\
+		if(fill_msg)M_MK_ERR_MSG(msg,echo);\
 		_ErrLvl=lvl;\
 		goto __ret;\
 	} while(0)
@@ -62,11 +62,11 @@ mohsen 14040618
 	} while(0)
 
 
-#define MME_BREAK_IF(cond,err,lvl,msg,echo)\
+#define MME_BREAK_IF(cond,err,lvl,msg,echo,fill_msg)\
 	do {\
 		int _cond=(int)(cond);\
 		if (_cond)\
-			MME_BREAK(err,lvl,msg,echo);\
+			MME_BREAK(err,lvl,msg,echo,fill_msg);\
 	} while(0)
 
 #define MME_FMT_BREAK_IF(cond,err,lvl,fmt,...)\
@@ -108,26 +108,28 @@ do \
 		goto __ret;\
 	} while(0)
 
-#define BREAK(err,lvl) MME_BREAK(err,lvl,NULL,False)
-#define BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,False) /*semicolon after this macro*/
+#define BREAK(err,lvl) MME_BREAK(err,lvl,NULL,False,True)
+#define BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,False,True) /*semicolon after this macro*/
 #define BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,False)
 
 // N: indicates that this must give a message (is indeed of type M_ series macros), but since this message iterates a lot, we want to temporarily disable it. at last we must get no message if we convert them back to M_.
 #define N_BREAK BREAK
-#define N_BREAK_IF BREAK_IF
+#define N_BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,False,False) /*semicolon after this macro*/
 #define N_BREAK_STAT BREAK_STAT
 
 #if !defined( __ENGINE ) || !defined __COMPILING // kernel does not have any tools to show msg
 
 // when giving the default message is enough and no additional msg is required
-#define M_BREAK(err,lvl) MME_BREAK(err,lvl,NULL,True)
-#define M_BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,True) /*semicolon after this macro*/
+#define M_BREAK(err,lvl) MME_BREAK(err,lvl,NULL,True,True)
+#define M_BREAK_IF(cond,err,lvl) MME_BREAK_IF(cond,err,lvl,NULL,True,True) /*semicolon after this macro*/
 #define M_BREAK_STAT(err,lvl) MME_BREAK_STAT(err,lvl,NULL,True)
 
-//#define MM_BREAK(err,lvl,msg) MME_BREAK(err,lvl,msg,True)
-#define MM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,msg,True) /*semicolon after this macro*/
+//#define MM_BREAK(err,lvl,msg) MME_BREAK(err,lvl,msg,True,True)
+#define MM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,msg,True,True) /*semicolon after this macro*/
 #define MM_FMT_BREAK_IF(cond,err,lvl,fmt,...) MME_FMT_BREAK_IF(cond,err,lvl,fmt,__VA_ARGS__) /*semicolon after this macro*/
 #define MM_BREAK_STAT(err,lvl,msg) MME_BREAK_STAT(err,lvl,msg,True)
+
+#define NM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,NULL,False,False) /*semicolon after this macro*/
 
 #endif // #if !defined( __ENGINE )
 

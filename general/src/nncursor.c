@@ -28,14 +28,22 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	nnc->std = notcurses_stdplane( nnc->nc ); 
 	ncplane_dim_yx( nnc->std , &nnc->termh , &nnc->termw );
 
+	// tab
 	struct ncplane_options topts = { .y = 0 , .x = 0 , .rows = ( unsigned int )TAB_BAR_HEIGHT , .cols = ( unsigned int )nnc->termw };
 	nnc->tabs_plane = ncplane_create( nnc->std , &topts );
 	N_BREAK_IF( !nnc->tabs_plane , errCreation , 0 );
 
+	// tbl
 	struct ncplane_options bopts = { .y = TAB_BAR_HEIGHT , .x = 0 , .rows = ( unsigned int )( nnc->termh - TAB_BAR_HEIGHT - CMD_H ) , .cols = ( unsigned int )nnc->termw };
 	nnc->body_plane = ncplane_create( nnc->std , &bopts );
 	N_BREAK_IF( !nnc->body_plane , errCreation , 0 );
 
+	// msg
+	struct ncplane_options mopts = { .y = TAB_BAR_HEIGHT + ( nnc->termh - TAB_BAR_HEIGHT - ( CMD_H + 1 ) ) , .x = 0 , .rows = ( unsigned int )( CMD_H + 1 ) , .cols = ( unsigned int )nnc->termw };
+	nnc->msg_plane = ncplane_create( nnc->std , &mopts );
+	N_BREAK_IF( !nnc->msg_plane , errCreation , 0 );
+
+	// cmd
 	struct ncplane_options copts = { .y = TAB_BAR_HEIGHT + ( nnc->termh - TAB_BAR_HEIGHT - CMD_H ) , .x = 0 , .rows = ( unsigned int )CMD_H , .cols = ( unsigned int )nnc->termw };
 	nnc->cmd_plane = ncplane_create( nnc->std , &copts );
 	N_BREAK_IF( !nnc->cmd_plane , errCreation , 0 );
@@ -597,7 +605,18 @@ _PRIVATE_FXN void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 	//V_END_RET
 }
 
-// Draw command box
+
+_PRIVATE_FXN void draw_msgbox( struct ncplane * cmd , const char * buf )
+{
+	ncplane_erase( cmd );
+	int w , h; ncplane_dim_yx( cmd , &h , &w );
+	ncplane_set_fg_rgb8( cmd , 255 , 165 , 0 ); ncplane_set_bg_rgb8( cmd , 10 , 10 , 40 ); ncplane_set_styles( cmd , NCSTYLE_BOLD );
+	ncplane_putstr_yx( cmd , 0 , 0 , "┌" ); for ( int i = 1; i < w - 1; i++ ) ncplane_putstr( cmd , "─" ); ncplane_putstr( cmd , "┐" );
+	ncplane_putstr_yx( cmd , 1 , 0 , "│ " ); ncplane_putstr( cmd , buf ? buf : "" ); ncplane_putstr_yx( cmd , 1 , w - 1 , "│" );
+	ncplane_putstr_yx( cmd , 2 , 0 , "└" ); for ( int i = 1; i < w - 1; i++ ) ncplane_putstr( cmd , "─" ); ncplane_putstr( cmd , "┘" );
+	ncplane_set_styles( cmd , NCSTYLE_NONE ); ncplane_set_fg_default( cmd ); ncplane_set_bg_default( cmd );
+}
+
 _PRIVATE_FXN void draw_cmdbox( struct ncplane * cmd , const char * buf )
 {
 	ncplane_erase( cmd );
@@ -628,6 +647,8 @@ _PRIVATE_FXN void draw( nnc_req * nnc )
 			draw_partial_table( nnc , ptbl );
 		}
 	}
+
+	draw_msgbox( nnc->cmd_plane , nnc->message_text );
 
 	//char cmdbuf[ 128 ] = { 0 }; int cmdpos = 0;
 	//draw_cmdbox( nnc->cmd_plane , cmdbuf );

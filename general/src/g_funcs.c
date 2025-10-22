@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_sem_t
 #define Uses_TCP_KEEPIDLE
 #define Uses_bool
 #define Uses_sem_t

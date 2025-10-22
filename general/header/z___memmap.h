@@ -36,7 +36,7 @@ typedef struct __attribute__( ( packed ) )
 	uint32_t version;
 	uint64_t write_offset; /* next write offset in file */
 	uint64_t seq_counter;  /* next sequence number */
-	uint8_t reserved[ 64 ];
+	uint8_t reserved[ CACHE_LINE_SIZE ];
 } memfile_header_t;
 //#define MEMFILE_HEADER_SIZE (sizeof(memfile_header_t))
 

@@ -9,13 +9,13 @@
 #define BUF_SIZE_LEN 2
 
 // helper: advance index in circular buffer
-_PRIVATE_FXN inline size_t advance_index( cbuf_pked * vc , size_t idx , size_t step )
+_PRIVATE_FXN inline size_t advance_index( cbuf_pked_t * vc , size_t idx , size_t step )
 {
 	return ( idx + step ) % vc->buf_sz;
 }
 
 // compute free space
-_PRIVATE_FXN size_t free_space( cbuf_pked * vc )
+_PRIVATE_FXN size_t free_space( cbuf_pked_t * vc )
 {
 	if ( vc->head >= vc->tail )
 		return vc->buf_sz - ( vc->head - vc->tail ) - 1/*prevent to allow head and tail overlap on each other*/;
@@ -23,7 +23,7 @@ _PRIVATE_FXN size_t free_space( cbuf_pked * vc )
 		return ( vc->tail - vc->head ) - 1;
 }
 
-status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , volatile bool * app_closed_signal )
+status cbuf_pked_init( cbuf_pked_t * vc , size_t buf_sz , volatile bool * app_closed_signal )
 {
 	if ( !vc ) return errArg;
 
@@ -43,7 +43,7 @@ status cbuf_pked_init( cbuf_pked * vc , size_t buf_sz , volatile bool * app_clos
 	return errOK;
 }
 
-void cbuf_pked_destroy( cbuf_pked * vc )
+void cbuf_pked_destroy( cbuf_pked_t * vc )
 {
 	if ( !vc ) return;
 
@@ -56,7 +56,7 @@ void cbuf_pked_destroy( cbuf_pked * vc )
 	}
 }
 
-status cbuf_pked_push( cbuf_pked * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr )
+status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr )
 {
 	if ( alloc_len > vc->buf_sz || buf_len > vc->buf_sz || buf_len > alloc_len ) return errGeneral; // too big
 
@@ -101,7 +101,7 @@ status cbuf_pked_push( cbuf_pked * vc , const buffer buf , size_t buf_len , size
 	return 0;
 }
 
-status cbuf_pked_pop( cbuf_pked * vc , void * out_buf , size_t * out_len , long timeout_sec )
+status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t * out_len , long timeout_sec )
 {
 	//struct timespec ts;
 	//clock_gettime( CLOCK_REALTIME , &ts );
@@ -168,7 +168,7 @@ status cbuf_pked_pop( cbuf_pked * vc , void * out_buf , size_t * out_len , long 
 }
 
 // does not advance pointer. just copy
-status cbuf_pked_blindcopy( cbuf_pked * vc , void * out_buf , size_t block_sz_pos )
+status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_pos )
 {
 	// read size
 	uint16 size16;

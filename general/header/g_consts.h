@@ -62,7 +62,7 @@ enum
 
 #define UDP_LAYER_HDR_SZ 8
 
-#define MAX_PACKET_SIZE 2000
+#define MAX_PACKET_SIZE 10000 /*i see 6300 byte udp so far*/
 
 
 #define SEND_1470_Byte_IN_UDP_in_nanosec 12300

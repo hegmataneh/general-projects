@@ -1,3 +1,7 @@
+#ifdef Uses_warn
+	#define __INC_err
+#endif
+
 #ifdef Uses_TCP_KEEPIDLE
 	#define __INC_sys_socket
 	#define __INC_netinet
@@ -329,7 +333,7 @@
 	#define Uses_ncurses
 #endif
 
-#ifdef Uses_sleep
+#ifdef Uses_sleep // if not implicit declaration of function ‘sleep’ [-Wimplicit-function-declaration]
 	#define __INC_unistd
 #endif
 

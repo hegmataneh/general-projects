@@ -164,3 +164,7 @@
 #ifdef __INC_math
 	 #include <math.h>
 #endif
+
+#ifdef __INC_err
+	 #include <err.h>
+#endif

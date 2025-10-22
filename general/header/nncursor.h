@@ -108,8 +108,13 @@ typedef struct nncursor_requirement
 
 	size_t active;
 	dyn_arr tabHit_arr;
-	bool refresh_tabs;
-	uchar pad[7];
+	union
+	{
+		bool refresh_tabs;
+		uchar pad[8];
+	};
+
+	char message_text[ 1024 ];
 
 	struct notcurses_options opts;
 	struct notcurses * nc;
@@ -117,6 +122,7 @@ typedef struct nncursor_requirement
 
 	struct ncplane * tabs_plane;
 	struct ncplane * body_plane;
+	struct ncplane * msg_plane;
 	struct ncplane * cmd_plane;
 	int termw , termh;
 } nnc_req;
