@@ -4,9 +4,10 @@
 #define Uses_dict_o
 #include <general.dep>
 
-status dict_o_init( dict_o_t * dd )
+status dict_o_init( dict_o_t * dd , bool bfree_values_addrs )
 {
 	MEMSET_ZERO_O( dd );
+	dd->bfree_values_addrs = bfree_values_addrs;
 	return errOK;
 }
 
@@ -104,6 +105,10 @@ void dict_o_free( dict_o_t * d )
 		{
 			entry_o_t * tmp = e;
 			e = e->next;
+			if ( tmp->value && d->bfree_values_addrs )
+			{
+				FREE( tmp->value );
+			}
 			DAC( tmp );
 		}
 	}

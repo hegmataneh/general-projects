@@ -16,10 +16,15 @@ typedef struct dict_o
 	entry_o_t ** buckets;
 	size_t size;
 	size_t key_count;  // number of keys stored
+	union
+	{
+		bool bfree_values_addrs; // if pointer is outy then donot DAC and the end but if responsiblity is to thid dic then DAC them
+		size_t pad1;
+	};
 } dict_o_t;
 
 // Create dictionary with a given number of buckets
-status dict_o_init( dict_o_t * dd );
+status dict_o_init( dict_o_t * dd , bool bfree_values_addrs );
 
 // Free dictionary and all memory
 void dict_o_free( dict_o_t * d );

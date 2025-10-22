@@ -12,9 +12,12 @@ status distributor_init( distributor_t * dis , size_t grp_count )
 
 	BREAK_STAT( mms_array_init( &dis->grps , sizeof( subscribers_t ) , grp_count , GROW_STEP , 0 ) , 0 );
 
-	subscribers_t * psubscribers = NULL;
-	BREAK_STAT( mms_array_get_one_available_unoccopied_item( &dis->grps , ( void ** )&psubscribers ) , 0 );
-	BREAK_STAT( mms_array_init( &psubscribers->subs , sizeof( subscriber_t ) , 1 , GROW_STEP , 0 ) , 0 );
+	for ( size_t idx = 0 ; idx < grp_count ; idx++ )
+	{
+		subscribers_t * psubscribers = NULL;
+		BREAK_STAT( mms_array_get_one_available_unoccopied_item( &dis->grps , ( void ** )&psubscribers ) , 0 );
+		BREAK_STAT( mms_array_init( &psubscribers->subs , sizeof( subscriber_t ) , 1 , GROW_STEP , 0 ) , 0 );
+	}
 
 	dis->iteration_dir = e_dir_default;
 

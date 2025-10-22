@@ -378,6 +378,7 @@
 #endif
 
 #ifdef Uses_dict_o
+	#define Uses_bool
 	#define __INC_dict_o
 #endif
 
