@@ -90,6 +90,7 @@
     <ClCompile Include="src\cirbuf_infinite.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
     <ClCompile Include="src\dbg.c" />
+    <ClCompile Include="src\ddlck.c" />
     <ClCompile Include="src\dict.c" />
     <ClCompile Include="src\dict_fst.c" />
     <ClCompile Include="src\dict_o.c" />
@@ -141,6 +142,7 @@
     <ClInclude Include="dep\general.h" />
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
+    <ClInclude Include="header\ddlck.h" />
     <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />

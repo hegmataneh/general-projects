@@ -417,15 +417,15 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
 {
 	if ( !mm || !buf || !len ) return errArg;
-	pthread_mutex_lock( &mm->ps_lock );
+	LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
 	pg_stk_memfile_t * cur = mm->current;
 	status d_error = errOK;
 	if ( !cur || cur->to_be_absolete )
 	{
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
-			pg_stk_store( mm , buf , len );
 			pthread_mutex_unlock( &mm->ps_lock );
+			pg_stk_store( mm , buf , len );
 			return errRetry;
 		}
 		pthread_mutex_unlock( &mm->ps_lock );
@@ -472,7 +472,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 {
 	INIT_BREAKABLE_FXN();
 
-	pthread_mutex_lock( &mm->ps_lock );
+	LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
 	
 	void_p out_item;
 	size_t out_sz;
@@ -616,7 +616,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 	BEGIN_SMPL
 	N_V_END_RET
 
-	pthread_mutex_unlock( &mm->ps_lock );
+	( pthread_mutex_unlock( &mm->ps_lock ) );
 	return d_error;
 }
 
@@ -625,7 +625,7 @@ void pg_stk_shutdown( page_stack_t * mm )
 {
 	if ( !mm ) return;
 	//mm->close_cleaner = 1;
-	pthread_mutex_lock( &mm->ps_lock );
+	( pthread_mutex_lock( &mm->ps_lock ) );
 	pg_stk_persist_chain( mm );
 	for ( size_t i = 0; i < mm->files.count; i++ )
 	{
@@ -637,6 +637,6 @@ void pg_stk_shutdown( page_stack_t * mm )
 	}
 	if ( mm->hot_spare ) pg_stk_close( mm->hot_spare );
 	mms_array_free( &mm->files );
-	pthread_mutex_unlock( &mm->ps_lock );
+	( pthread_mutex_unlock( &mm->ps_lock ) );
 	pthread_mutex_destroy( &mm->ps_lock );
 }

@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_WARNING
 #define Uses_pthread_mutex_t
 #define Uses_MEMSET_ZERO
@@ -243,7 +244,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	if ( !mgr || !data || !len ) return errArg;
 
 	//gettimeofday( &mgr->last_access , NULL );
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	ci_sgm_t * psgm_active = NULL; // s
 	/* First ensure active exists and can accommodate len (with offsets capacity). */
@@ -278,7 +279,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 			psgm_active = segmgr_new_segment_locked( mgr ); // until this line no free segment found so create new one
 			if ( !psgm_active )
 			{
-				pthread_mutex_unlock( &mgr->lock );
+				( pthread_mutex_unlock( &mgr->lock ) );
 				return errMemoryLow;
 			}
 			else
@@ -330,7 +331,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 			next_empty = segmgr_new_segment_locked( mgr );
 			if ( !next_empty )
 			{
-				pthread_mutex_unlock( &mgr->lock );
+				( pthread_mutex_unlock( &mgr->lock ) );
 				return errMemoryLow;
 			}
 			else
@@ -342,7 +343,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 		if ( !next_empty )
 		{
 			/* no place to write */
-			pthread_mutex_unlock( &mgr->lock );
+			( pthread_mutex_unlock( &mgr->lock ) );
 			return errOverflow;
 		}
 
@@ -358,7 +359,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 		status rc = ci_sgm_grow_offsets( psgm_active );
 		if ( rc != errOK )
 		{
-			pthread_mutex_unlock( &mgr->lock );
+			( pthread_mutex_unlock( &mgr->lock ) );
 			return rc;
 		}
 	}
@@ -409,7 +410,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 		segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
 	}
 
-	pthread_mutex_unlock( &mgr->lock );
+	( pthread_mutex_unlock( &mgr->lock ) );
 	return errOK;
 }
 
@@ -422,7 +423,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv )
 {
 	if ( !mgr ) return NULL;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	while ( !mgr->filled_head )
 	{
 		if ( !block )
@@ -460,7 +461,7 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 {
 	if ( !mgr || !s ) return errArg;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	/* Reset */
 	mgr->total_items -= s->itm_count;
@@ -554,7 +555,7 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
 bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) )
 {
 	bool bret = false;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	ci_sgm_t * sactive = mgr->active;
 	if ( !sactive || !sactive->itm_count || !sactive->sizes || !sactive->sizes[ 0 ] )
@@ -598,7 +599,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buf
 bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 {
 	bool bempty = true;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	/* Check if there are any filled segments waiting */
 	if ( mgr->filled_head != NULL )
@@ -617,7 +618,7 @@ bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 {
 	bool bAnyDeletion = false;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	ci_sgm_t * head = mgr->ring;
 	if ( !head )
@@ -683,7 +684,7 @@ bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 void segmgr_destroy( ci_sgmgr_t * mgr )
 {
 	if ( !mgr ) return;
-	pthread_mutex_lock( &mgr->lock );
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	/* free segments in ring */
 	if ( mgr->ring )
 	{

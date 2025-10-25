@@ -13,6 +13,8 @@
 //#define Uses_MemLEAK
 //#define TRACE_MEMORY_LEAK
 
+//#define ENABLE_LOCK_TRACING
+//#define Uses_LOCK_LINE
 
 //#ifdef _DEBUG
 //#define Uses_assert

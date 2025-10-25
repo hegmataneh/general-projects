@@ -1,3 +1,8 @@
+#ifdef Uses_pthread_mutex_timedlock
+	#define __INC_time
+	#define __INC_pthread
+#endif
+
 #ifdef Uses_warn
 	#define __INC_err
 #endif

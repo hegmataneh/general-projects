@@ -18,6 +18,8 @@ extern const char _UTF16BSign[] ; // big-endian . Unicode in Microsoft terminolo
 extern const char _UTF32LSign[] ; // little-endian
 extern const char _UTF32BSign[] ; // big-endian
 
+extern const sockfd invalid_fd;
+
 //-------------------------------------------------------------------------
 enum
 {

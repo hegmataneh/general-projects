@@ -67,6 +67,9 @@
     <ClCompile Include="src\StackTrace.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\ddlck.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -212,6 +215,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\StackTrace.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\ddlck.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -25,7 +25,7 @@ status vstack_push( HDLR VStack * stack , const void_p data , size_t size )
 {
 	WARNING( size );
 
-	pthread_mutex_lock( &stack->lock );
+	LOCK_LINE( pthread_mutex_lock( &stack->lock ) );
 
 	if ( size + sizeof( size_t ) > stack->capacity - stack->top )
 	{
@@ -44,7 +44,7 @@ status vstack_push( HDLR VStack * stack , const void_p data , size_t size )
 
 status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size )
 {
-	pthread_mutex_lock( &stack->lock );
+	LOCK_LINE( pthread_mutex_lock( &stack->lock ) );
 
 	if ( stack->top == 0 )
 	{
@@ -67,7 +67,7 @@ status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * siz
 
 status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size , bool * pemptied )
 {
-	pthread_mutex_lock( &stack->lock );
+	LOCK_LINE( pthread_mutex_lock( &stack->lock ) );
 
 	if ( stack->top == 0 )
 	{

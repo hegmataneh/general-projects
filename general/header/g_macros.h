@@ -402,3 +402,7 @@
 
 
 #define GROW_STEP 1
+
+#ifndef LOCK_LINE
+	#define LOCK_LINE( exp ) exp
+#endif

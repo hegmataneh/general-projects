@@ -39,6 +39,10 @@ LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float
 	int timeval_compare( const struct timeval * a , const struct timeval * b );
 #endif
 
+#if defined Uses_pthread_mutex_timedlock_rel || !defined __COMPILING
+	status pthread_mutex_timedlock_rel( pthread_mutex_t * mutex , long ms );
+#endif
+
 //----file functions------------------------------------------------------
 #if defined Uses_FILE || !defined __COMPILING
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
@@ -52,6 +56,7 @@ void _close_socket( sockfd * socket_id );
 status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms );
 int peerTcpClosed( sockfd socketfd );
 void enable_keepalive_chaotic( int sock );
+int is_socket_connected_peek( int fd , int timeout_ms );
 
 //----error functions------------------------------------------------------
 _WEAK_ATTR void M_showMsg( LPCSTR msg );

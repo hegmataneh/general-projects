@@ -110,7 +110,7 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 	}
 
 	// assign new ID
-	pthread_mutex_lock( &t->id_lock );
+	LOCK_LINE( pthread_mutex_lock( &t->id_lock ) );
 	uint64 new_id = t->next_id++;
 	pthread_mutex_unlock( &t->id_lock );
 

@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_pthread_mutex_timedlock
 #define Uses_sem_t
 #define Uses_TCP_KEEPIDLE
 #define Uses_bool
@@ -60,6 +61,8 @@ const char _UTF16LSign[] = "\xFF\xFE"; // little-endian . Unicode in Microsoft t
 const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft terminology
 const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
 const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
+
+const sockfd invalid_fd = -1;
 
 const unsigned char MSB_MARKERS[8] = {
 	0x3C,  /* M0 */
@@ -166,9 +169,12 @@ LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format
 
 void _close_socket( sockfd * socket_id )
 {
-	shutdown( *socket_id , SHUT_RDWR ); // Use shutdown() before close() to send a clean FIN.
-	close( *socket_id );
-	*socket_id = -1;
+	if ( *socket_id > invalid_fd )
+	{
+		shutdown( *socket_id , SHUT_RDWR ); // Use shutdown() before close() to send a clean FIN.
+		close( *socket_id );
+		*socket_id = invalid_fd;
+	}
 }
 
 LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
@@ -1385,4 +1391,60 @@ void enable_keepalive_chaotic( int sock )
 	setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) );
 	setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) );
 	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
+}
+
+
+// Returns:
+//  1 = socket looks connected (no EOF detected, no immediate error)
+//  0 = socket closed by peer (recv returned 0) or error that indicates closure
+// -1 = indeterminate (poll error) but errno will be set
+int is_socket_connected_peek( int fd , int timeout_ms )
+{
+	struct pollfd pfd;
+	pfd.fd = fd;
+	pfd.events = POLLIN | POLLERR | POLLHUP;
+	pfd.revents = 0;
+
+	int rv = poll( &pfd , 1 , timeout_ms );
+	if ( rv < 0 ) return -1; // errno set
+	if ( rv == 0 )
+	{
+		// no event within timeout -> assume still connected (no proof of closure)
+		return 1;
+	}
+
+	// If socket is readable, peek a byte: recv() == 0 => orderly shutdown.
+	if ( pfd.revents & POLLIN )
+	{
+		char buf;
+		ssize_t n = recv( fd , &buf , 1 , MSG_PEEK | MSG_DONTWAIT );
+		if ( n == 0 ) return 0;         // connection closed by peer
+		if ( n > 0 ) return 1;          // data available, socket alive
+		// n < 0 -> error
+		if ( errno == EAGAIN || errno == EWOULDBLOCK ) return 1;
+		return 0;
+	}
+
+	// HUP or ERR means closure or error
+	if ( pfd.revents & ( POLLHUP | POLLERR | POLLNVAL ) ) return 0;
+	return 1;
+}
+
+status pthread_mutex_timedlock_rel( pthread_mutex_t * mutex , long ms )
+{
+	struct timespec ts;
+	clock_gettime( CLOCK_REALTIME , &ts );
+
+	ts.tv_sec += ms / 1000;
+	ts.tv_nsec += ( ms % 1000 ) * 1000000;
+	if ( ts.tv_nsec >= 1000000000 )
+	{
+		ts.tv_sec++;
+		ts.tv_nsec -= 1000000000;
+	}
+	if ( pthread_mutex_timedlock( mutex , &ts ) == ETIMEDOUT )
+	{
+		return errTimeout;
+	}
+	return errOK;
 }

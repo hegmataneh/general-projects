@@ -1,3 +1,11 @@
+#ifdef Uses_LOCK_LINE
+	#define Uses_ddlck
+#endif
+
+#ifdef Uses_ddlck
+	#define __INC_ddlck
+#endif
+
 #ifdef Uses_MM_BREAK_IF
 	#define Uses_memory_funcs
 #endif

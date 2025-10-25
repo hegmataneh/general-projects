@@ -29,7 +29,6 @@
 	#include <str.h>
 #endif
 
-
 //#ifdef __INC_yaml_h
 //	#include <yaml.h>
 //#endif
@@ -144,3 +143,6 @@
 	#include <PagedStack.h>
 #endif
 
+#ifdef __INC_ddlck
+	#include <ddlck.h>
+#endif
