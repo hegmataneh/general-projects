@@ -347,7 +347,9 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	/* atomic rename */
 	if ( !rename( mm->hot_spare->path , newpath ) )
 	{
+		#pragma GCC diagnostic ignored "-Wstringop-truncation"
 		strncpy( mm->hot_spare->path , newpath , MAX_PATH - 1 );
+		#pragma GCC diagnostic pop
 	}
 	
 	// TODO . get free space and fill it . and does not make arr too long
@@ -495,9 +497,13 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 		if ( pmemfile->to_be_absolete )
 		{
 			pg_stk_persist_chain( mm );
-			if ( !remove( pmemfile->path ) )
+			if ( !remove( pmemfile->path ) ) // remove file
 			{
-				pg_stk_close( pmemfile );
+				pg_stk_close( pmemfile ); // close memmap
+				if ( pmemfile == mm->current ) // if current is absolete then null
+				{
+					mm->current = NULL;
+				}
 				ret_heap = mms_array_delete( &mm->files , 0 );
 			}
 			else
@@ -625,7 +631,7 @@ void pg_stk_shutdown( page_stack_t * mm )
 {
 	if ( !mm ) return;
 	//mm->close_cleaner = 1;
-	( pthread_mutex_lock( &mm->ps_lock ) );
+	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_persist_chain( mm );
 	for ( size_t i = 0; i < mm->files.count; i++ )
 	{
@@ -633,10 +639,15 @@ void pg_stk_shutdown( page_stack_t * mm )
 		if ( mms_array_get_s( &mm->files , i , ( void ** )&pfile ) == errOK )
 		{
 			pg_stk_close( pfile );
+			if ( pfile == mm->current )
+			{
+				mm->current = NULL;
+			}
 		}
 	}
 	if ( mm->hot_spare ) pg_stk_close( mm->hot_spare );
 	mms_array_free( &mm->files );
 	( pthread_mutex_unlock( &mm->ps_lock ) );
 	pthread_mutex_destroy( &mm->ps_lock );
+	MEMSET_ZERO_O( mm );
 }

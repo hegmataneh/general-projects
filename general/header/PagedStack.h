@@ -48,11 +48,27 @@ typedef struct
 	void_p map;					/* mmap pointer */
 	size_t memmap_size;			/*mem size*/
 	pg_stk_page_hdr_t * hdr;	/* pointer into void_p map */
-	int fd;
-	int decrease_time;			// sec
-	bool to_be_absolete;
+	union
+	{
+		int fd;
+		size_t pad1;
+	};
+	union
+	{
+		int decrease_time;			// sec
+		size_t pad2;
+	};
+	union
+	{
+		bool to_be_absolete;
+		size_t pad3;
+	};
 	//bool absoleted;
-	bool nocked_up; // some insertion happened
+	union
+	{
+		bool nocked_up; // some insertion happened
+		size_t pad4;
+	};
 	
 } pg_stk_memfile_t; // just in memory
 
