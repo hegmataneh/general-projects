@@ -18,6 +18,10 @@
 #include "../header/g_mlk.h" // after macros to overwrite that. after fxn to use definition
 #include "../header/g_brk.h"
 
+#ifdef __INC_ddlck
+	#include <ddlck.h>
+#endif
+
 #ifdef __INC_DBG
 	#include <dbg.h>
 #endif
@@ -140,8 +144,4 @@
 
 #ifdef __INC_PagedStack
 	#include <PagedStack.h>
-#endif
-
-#ifdef __INC_ddlck
-	#include <ddlck.h>
 #endif

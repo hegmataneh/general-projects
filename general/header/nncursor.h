@@ -125,12 +125,16 @@ typedef struct nncursor_requirement
 	struct ncplane * msg_plane;
 	struct ncplane * cmd_plane;
 	int termw , termh;
+	pthread_mutex_t nn_lock;
 } nnc_req;
 
 
 status nnc_begin_init_mode( nnc_req * nnc );
 Boolean continue_loop_callback( nnc_req * nnc );
 void nnc_destroy( nnc_req * nnc );
+
+void nnc_lock_for_changes( nnc_req * nnc );
+void nnc_release_lock( nnc_req * nnc );
 
 status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable );
 status nnc_add_column( nnc_table * tbl , PASSED_CSTR src_hdr , PASSED_CSTR src_subhdr , size_t src_minw );

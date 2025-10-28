@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_FREE_PTR
 #define Uses_STRDUP
 #define Uses_dict_fst

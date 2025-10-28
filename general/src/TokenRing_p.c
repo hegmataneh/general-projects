@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO
 #define Uses_TokenRing_p

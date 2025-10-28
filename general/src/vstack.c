@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_WARNING
 #define Uses_memcpy
 #define Uses_VStack

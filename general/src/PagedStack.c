@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_strncpy
 #define Uses_MM_BREAK_IF
 #define Uses_CALLOC_ONE

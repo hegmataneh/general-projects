@@ -1,6 +1,10 @@
 ﻿#define _XOPEN_SOURCE 700
 
 //#define Uses_STRDUP
+#define Uses_sleep
+#define Uses_pthread_kill
+#define Uses_thrd_sleep
+#define Uses_pthread_t
 #define Uses_WARNING
 #define Uses_MEMSET_ZERO_O
 #define Uses_INIT_BREAKABLE_FXN
@@ -15,6 +19,8 @@ _PRIVATE_FXN size_t slen( PASSED_CSTR s )
 status nnc_begin_init_mode( nnc_req * nnc )
 {
 	INIT_BREAKABLE_FXN();
+
+	pthread_mutex_init( &nnc->nn_lock , NULL );
 
 	setlocale( LC_ALL , "" );
 	MEMSET_ZERO_O( nnc );
@@ -56,6 +62,16 @@ status nnc_begin_init_mode( nnc_req * nnc )
 
 	BEGIN_RET
 	END_RET
+}
+
+void nnc_lock_for_changes( nnc_req * nnc )
+{
+	pthread_mutex_lock( &nnc->nn_lock );
+}
+
+void nnc_release_lock( nnc_req * nnc )
+{
+	pthread_mutex_unlock( &nnc->nn_lock );
 }
 
 status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable )
@@ -255,6 +271,8 @@ void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str )
 
 void nnc_destroy( nnc_req * nnc )
 {
+	pthread_mutex_lock( &nnc->nn_lock );
+
 	notcurses_stop( nnc->nc );
 
 	size_t tbl_cnt = mms_array_get_count( &nnc->tables );
@@ -300,6 +318,9 @@ void nnc_destroy( nnc_req * nnc )
 	}
 	mms_array_free( &nnc->tables );
 	array_free( &nnc->tabHit_arr );
+	pthread_mutex_unlock( &nnc->nn_lock );
+
+	pthread_mutex_destroy( &nnc->nn_lock );
 }
 
 // Compute column widths (fit to contents)
@@ -605,7 +626,6 @@ _PRIVATE_FXN void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 	//V_END_RET
 }
 
-
 _PRIVATE_FXN void draw_msgbox( struct ncplane * cmd , const char * buf )
 {
 	ncplane_erase( cmd );
@@ -630,6 +650,8 @@ _PRIVATE_FXN void draw_cmdbox( struct ncplane * cmd , const char * buf )
 
 _PRIVATE_FXN void draw( nnc_req * nnc )
 {
+	nnc_lock_for_changes( nnc );
+
 	if ( nnc->refresh_tabs )
 	{
 		draw_tabs( nnc , ( nnc_tabHit * )nnc->tabHit_arr.data );
@@ -653,6 +675,8 @@ _PRIVATE_FXN void draw( nnc_req * nnc )
 	//char cmdbuf[ 128 ] = { 0 }; int cmdpos = 0;
 	//draw_cmdbox( nnc->cmd_plane , cmdbuf );
 	
+	nnc_release_lock( nnc );
+
 	notcurses_render( nnc->nc );
 }
 
@@ -662,6 +686,11 @@ Boolean continue_loop_callback( nnc_req * nnc )
 	struct ncinput ni;
 	uint32_t id = notcurses_get_nblock( nnc->nc , &ni );
 	if ( id == 'q' ) return False;
+	if ( id == 61 )
+	{
+		id = NCKEY_RESIZE;
+		notcurses_refresh(nnc->nc, NULL, NULL);
+	}
 	if ( id == NCKEY_RESIZE )
 	{
 		nnc->refresh_tabs = true;
