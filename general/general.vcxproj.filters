@@ -220,5 +220,8 @@
     <ClInclude Include="header\ddlck.h">
       <Filter>header</Filter>
     </ClInclude>
+    <ClInclude Include="header\global_setting.h">
+      <Filter>header</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

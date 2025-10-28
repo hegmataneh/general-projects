@@ -74,8 +74,12 @@ typedef struct
 typedef struct
 {
 	dyn_mms_arr grps; // subscribers_t
-	e_direction iteration_dir;
 	dyn_mms_arr * pheap;
+	union
+	{
+		e_direction iteration_dir;
+		size_t pad1;
+	};
 
 } distributor_t;
 

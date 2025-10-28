@@ -8,6 +8,8 @@
 
 #if defined TRACE_MEMORY_LEAK || !defined __COMPILING
 
-mLeak_t __alc_hit[MLK_HASH_WIDTH][EACH_ADDR_COUNT] = {0};
+#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+	GLOBAL_VAR mLeak_t __alc_hit[MLK_HASH_WIDTH][EACH_ADDR_COUNT] = {0};
+#endif
 
 #endif

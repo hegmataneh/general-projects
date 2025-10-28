@@ -15,12 +15,12 @@ _PRIVATE_FXN inline size_t advance_index( cbuf_pked_t * vc , size_t idx , size_t
 }
 
 // compute free space
-_PRIVATE_FXN size_t free_space( cbuf_pked_t * vc )
+_PRIVATE_FXN size_t free_space( cbuf_pked_t * vc , bool actual_space )
 {
 	if ( vc->head >= vc->tail )
-		return vc->buf_sz - ( vc->head - vc->tail ) - 1/*prevent to allow head and tail overlap on each other*/;
+		return vc->buf_sz - ( vc->head - vc->tail ) - ( actual_space ? 0 : 1 )/*prevent to allow head and tail overlap on each other*/;
 	else
-		return ( vc->tail - vc->head ) - 1;
+		return ( vc->tail - vc->head ) - ( actual_space ? 0 : 1 );
 }
 
 status cbuf_pked_init( cbuf_pked_t * vc , size_t buf_sz , volatile bool * app_closed_signal )
@@ -56,12 +56,31 @@ void cbuf_pked_destroy( cbuf_pked_t * vc )
 	}
 }
 
-status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr )
+#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+//GLOBAL_VAR static int _counter = 0;
+//GLOBAL_VAR static int _sum_len = 0;
+//
+//GLOBAL_VAR static int _pop_count = 0;
+//GLOBAL_VAR static int _pop_size = 0;
+#endif
+
+status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr , bool auto_opengate )
 {
+
+	//printf( "%zu , %zu \n" , buf_len , alloc_len );
+	
+	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+		//_sum_len += buf_len;
+	#endif
+
+	if ( !buf_len )
+	{
+		return errGeneral;
+	}
 	if ( alloc_len > vc->buf_sz || buf_len > vc->buf_sz || buf_len > alloc_len ) return errGeneral; // too big
 
 	size_t need = BUF_SIZE_LEN + alloc_len; // size field + data
-	size_t space = free_space( vc );
+	size_t space = free_space( vc , false ); // prevent head exceed tail
 
 	if ( space < need )
 	{
@@ -69,65 +88,82 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 		return errGeneral; // buffer full
 	}
 
+	size_t tmp_head = vc->head;
+
 	// write size (2 bytes)
-	if ( vc->head + BUF_SIZE_LEN <= vc->buf_sz )
+	if ( tmp_head + BUF_SIZE_LEN <= vc->buf_sz )
 	{
-		memcpy( &vc->buf[ vc->head ] , &buf_len , BUF_SIZE_LEN );
+		memcpy( &vc->buf[ tmp_head ] , &alloc_len , BUF_SIZE_LEN );
 	}
 	else
 	{
 		// wrap-around write for size
-		size_t first = vc->buf_sz - vc->head; // first part
-		memcpy( &vc->buf[ vc->head ] , &buf_len , first );
-		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )&buf_len ) + first , BUF_SIZE_LEN - first );
+		size_t first = vc->buf_sz - tmp_head; // first part
+		memcpy( &vc->buf[ tmp_head ] , &alloc_len , first );
+		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )&alloc_len ) + first , BUF_SIZE_LEN - first );
 	}
-	if ( ring_addr ) *ring_addr = vc->head;
-	vc->head = advance_index( vc , vc->head , BUF_SIZE_LEN );
+	if ( ring_addr ) *ring_addr = tmp_head;
+	tmp_head = advance_index( vc , tmp_head , BUF_SIZE_LEN );
 
 	// write data
-	if ( vc->head + buf_len <= vc->buf_sz )
+	if ( tmp_head + buf_len <= vc->buf_sz )
 	{
-		memcpy( &vc->buf[ vc->head ] , buf , buf_len );
+		memcpy( &vc->buf[ tmp_head ] , buf , buf_len );
 	}
 	else
 	{
-		size_t first = vc->buf_sz - vc->head;
-		memcpy( &vc->buf[ vc->head ] , buf , first );
+		size_t first = vc->buf_sz - tmp_head;
+		memcpy( &vc->buf[ tmp_head ] , buf , first );
 		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )buf ) + first , buf_len - first );
 	}
-	vc->head = advance_index( vc , vc->head , alloc_len );
+	tmp_head = advance_index( vc , tmp_head , alloc_len );
+	vc->head = tmp_head;
+	if ( auto_opengate )
+	{
+		sem_post( &vc->gateway ); // signal consumer . increments the semaphore
+	}
 
-	sem_post( &vc->gateway ); // signal consumer . increments the semaphore
+	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+		//_counter++;
+	#endif
+
 	return 0;
 }
 
-status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t * out_len , long timeout_sec )
+status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_size /*zero to no exp*/ , OUTx size_t * out_len , long timeout_sec , bool auto_checkgate )
 {
+#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+	//_pop_count++;
+#endif
+	
 	//struct timespec ts;
 	//clock_gettime( CLOCK_REALTIME , &ts );
 	//ts.tv_sec += timeout_sec;
 	
-	do
+	if ( auto_checkgate )
 	{
-		// TOTEST more
-		status ret = sem_wait_with_timeout( &vc->gateway , timeout_sec , vc->pAppShutdown );
-		switch ( ret )
+		do
 		{
-			case errOK:
+			// TOTEST more
+			status ret = sem_wait_with_timeout( &vc->gateway , timeout_sec , vc->pAppShutdown );
+			switch ( ret )
 			{
-				break;
+				case errOK:
+				{
+					break;
+				}
+				default: return ret;
 			}
-			default: return ret;
-		}
 
-		//if ( sem_timedwait( &vc->gateway , &ts ) < 0 ) // wait for open signal . decrements the semaphore . if zero wait
-		//{
-		//	if ( errno == ETIMEDOUT ) return errTimeout;
-		//	int val = 0;
-		//	if ( sem_getvalue( &vc->gateway , &val ) < 0 || val < 1 ) return errGeneral;
-		//}
+			//if ( sem_timedwait( &vc->gateway , &ts ) < 0 ) // wait for open signal . decrements the semaphore . if zero wait
+			//{
+			//	if ( errno == ETIMEDOUT ) return errTimeout;
+			//	int val = 0;
+			//	if ( sem_getvalue( &vc->gateway , &val ) < 0 || val < 1 ) return errGeneral;
+			//}
 
-	} while( vc->head == vc->tail );
+		} while( !free_space( vc , true ) );
+	}
 
 	// read size
 	uint16 size16;
@@ -148,6 +184,12 @@ status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t * out_len , lon
 		return errOverflow; // corrupted
 	}
 
+	if ( expectation_size && size16 != expectation_size )
+	{
+		vc->tail = advance_index( vc , vc->tail , size16 );
+		return errCorrupted;
+	}
+
 	// read data
 	if ( out_buf )
 	{
@@ -164,6 +206,11 @@ status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t * out_len , lon
 	}
 	vc->tail = advance_index( vc , vc->tail , size16 );
 	if ( out_len ) *out_len = size16;
+
+	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+		//_pop_size += size16 + BUF_SIZE_LEN;
+	#endif
+
 	return errOK;
 }
 
@@ -202,4 +249,12 @@ status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_
 	}
 	block_sz_pos = advance_index( vc , block_sz_pos , size16 );
 	return errOK;
+}
+
+int cbuf_pked_unreliable_sem_count( cbuf_pked_t * vc )
+{
+	if ( !vc ) return 0;
+	int val = 0;
+	if ( sem_getvalue( &vc->gateway , &val ) < 0 || val < 1 ) return 0;
+	return val;
 }

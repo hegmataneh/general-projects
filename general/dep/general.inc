@@ -4,6 +4,7 @@
 	#define IN_GENERAL _IMPORT
 #endif
 
+#include "../header/global_setting.h"
 #include "../header/g_types.h"
 #include "../header/g_macros.h"
 #include "../header/g_consts.h"
@@ -120,8 +121,6 @@
 #ifdef __dict_fst
 	#include <dict_fst.h>
 #endif
-
-
 
 #ifdef __INC_nncursor
 	#include <nncursor.h>

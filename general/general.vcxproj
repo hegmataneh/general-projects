@@ -143,6 +143,7 @@
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
     <ClInclude Include="header\ddlck.h" />
+    <ClInclude Include="header\global_setting.h" />
     <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />

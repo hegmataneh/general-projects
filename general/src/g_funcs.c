@@ -38,8 +38,8 @@
 #include <general.dep>
 
 
-static short _err = NEXT_GENERAL_ERROR_VALUE;
-static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
+GLOBAL_VAR static short _err = NEXT_GENERAL_ERROR_VALUE;
+GLOBAL_VAR static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
 	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt","errShutdown"};
 
 

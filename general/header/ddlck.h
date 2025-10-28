@@ -39,7 +39,9 @@ typedef ddlck_t _tmp_arr_type_[ DD_MAX_FILE ][ DD_LINE_COUNT ];
 
 extern _tmp_arr_type_ __lck_hit;
 
-
+#ifdef LOCK_LINE
+#undef LOCK_LINE
+#endif
 #define LOCK_LINE( exp )	({ \
 							ushort ___line = __LINE__; \
 							if ( ___line >= DD_LINE_COUNT ) ___line = DD_LINE_COUNT - 1; \
