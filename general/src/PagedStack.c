@@ -121,7 +121,7 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 	
 	mf->fd = fd;
 	mf->map = map;
-	mf->hdr = ( pg_stk_page_hdr_t * )map;
+	mf->hdr = ( pg_stk_page_hdr_t * )map; // also due time set in this part
 
 	/* initialize header if empty */
 	if ( mf->hdr->magic != MEMFILE_HEADER_MAGIC )
@@ -164,6 +164,8 @@ _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 {
 	if ( !mf ) return;
 	vstack_destroy( &mf->hdr->stack );
+	msync( mf->map , mf->memmap_size , MS_SYNC );
+	fsync( mf->fd );
 	munmap( mf->map , mf->memmap_size );
 	close( mf->fd );
 	//pthread_mutex_destroy( &mf->lock );
@@ -183,7 +185,7 @@ _PRIVATE_FXN int compare_pg_stk_memfile( const void * a , const void * b )
 /* write a record to memfile; returns seq number or 0 on failure */
 _PRIVATE_FXN status pg_stk_append_record( page_stack_t * mm , pg_stk_memfile_t * mf , const void_p buf , size_t len )
 {
-	if ( !mf->nocked_up )
+	if ( !mf->nocked_up ) // if memfile not touched by any record then sort again based on due time
 	{
 		mf->nocked_up = true;
 		mf->hdr->due_time = time(NULL);
@@ -192,7 +194,29 @@ _PRIVATE_FXN status pg_stk_append_record( page_stack_t * mm , pg_stk_memfile_t *
 			qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
 		}
 	}
-	return vstack_push( &mf->hdr->stack , buf , len );
+
+	tchs touches;
+	status err_ret = vstack_push( &mf->hdr->stack , buf , len , &touches );
+	switch ( err_ret )
+	{
+		case errOK:
+		{
+			//msync( touches[ 0 ].addr , touches[ 0 ].sz , MS_SYNC );
+			msync( touches[ 1 ].addr , touches[ 1 ].sz , MS_SYNC );
+			//fsync( mf->fd );
+			break;
+		}
+		case errOverflow:
+		{
+			if ( !mf->to_be_absolete )
+			{
+				msync( mf->map , mf->memmap_size , MS_SYNC );
+				fsync( mf->fd );
+			}
+			break;
+		}
+	}
+	return err_ret;
 }
 
 /* ----------------- Manager logic ----------------- */
@@ -277,7 +301,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 		pg_stk_memfile_t * mf = NULL;
 		if ( pg_stk_open_create( line , MEMFILE_SIZE , 0 , &mf ) != errOK && !mf ) continue;
 		if ( !mf->hdr->due_time ) mf->hdr->due_time = time(NULL);
-		mf->nocked_up = true;
+		mf->nocked_up = true; // any record in it so it is not new
 
 		pg_stk_memfile_t ** ppfile = NULL;
 		if ( mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) == errOK )
@@ -343,7 +367,7 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	char newpath[ MAX_PATH ];
 	char newname[ 128 ];
 	time_t tnow = time( NULL );
-	snprintf( newname , sizeof( newname ) , "pg_stk_%zu.dat" , ( unsigned )tnow ); // add time to name
+	snprintf( newname , sizeof( newname ) , "pg_stk_%zu_%zu.dat" , ( unsigned )tnow , mm->file_name_counter++ ); // add time to name
 	pg_stk_fill_path( newpath , sizeof( newpath ) , mm->base_dir , newname );
 	/* atomic rename */
 	if ( !rename( mm->hot_spare->path , newpath ) )
@@ -410,8 +434,6 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 		pg_stk_activate_hot_spare( mm );
 	}
 
-	//N_BREAK_IF( pthread_create( &mm->trd_clean_unused_memfile , NULL , cleanup_unused_memfile_proc , ( pass_p )mm ) != PTHREAD_CREATE_OK , errCreation , 0 );
-
 	BEGIN_SMPL
 	N_END_RET
 }
@@ -441,15 +463,6 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 		mm->item_stored++;
 		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;
-	}
-	switch ( d_error )
-	{
-		case errOverflow:
-		{
-			msync( cur->map , cur->memmap_size , MS_SYNC );
-			//madvise( cur->map , cur->memmap_size , MADV_DONTNEED );
-			break;
-		}
 	}
 	/* not enough space: seal current, activate hot spare, then append to new current */
 	//pg_stk_seal( cur );
@@ -538,6 +551,17 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_not_send__continue_sending: // this segment has Head-of-line blocking
 						{
+							// try prev memmap and continue but not close current
+							if ( pmemfile->hdr->due_time > pmemfile->decrease_time ) // if any time left decrease
+							{
+								pmemfile->hdr->due_time -= pmemfile->decrease_time; // it means it gain lower priority later
+								if ( mm->files.count > 1 )
+								{
+									qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+								}
+							}
+							pmemfile->decrease_time *= 2;
+
 							bcontinue_stack = false;
 							bcontinue_heap = true;
 							break;
@@ -545,6 +569,10 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						case pgstk_not_send__continue_sending_with_delay: // this segment has Head-of-line blocking
 						{
 							BREAK( errTooManyAttempt , 0 );
+						}
+						case pgstk_not_send__not_any_peer:
+						{
+							BREAK( errTooManyAttempt , 0 ); // wait for another time then retry sending
 						}
 						case pgstk_sended__continue_sending:
 						{
@@ -596,7 +624,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 					if ( !mm->files.count ) BREAK( errEmpty , 0 );
 					break;
 				}
-				default:
+				default: // this place means vstack_peek failed but not empty so ignore this one and try another one
 				{
 					// try prev memmap and continue but not close current
 					if ( pmemfile->hdr->due_time > pmemfile->decrease_time )
@@ -631,7 +659,6 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 void pg_stk_shutdown( page_stack_t * mm )
 {
 	if ( !mm ) return;
-	//mm->close_cleaner = 1;
 	pthread_mutex_lock( &mm->ps_lock );
 	pg_stk_persist_chain( mm );
 	for ( size_t i = 0; i < mm->files.count; i++ )

@@ -15,6 +15,14 @@ typedef struct
 	pthread_mutex_t lock; // mutex for MPMC safety
 } VStack;
 
+typedef struct
+{
+	void_p addr;
+	size_t sz;
+} vstk_touched;
+
+typedef vstk_touched tchs[2];
+
 // init stack with user buffer
 void vstack_init( HDLR VStack * stack , _INx void_p buffer , _INx size_t capacity , bool reset /*first time initialized or bind it to existing memory*/ );
 
@@ -22,7 +30,7 @@ void vstack_init( HDLR VStack * stack , _INx void_p buffer , _INx size_t capacit
 void vstack_destroy( HDLR VStack * stack );
 
 // thread-safe push (returns 0 = ok, -1 = overflow)
-status vstack_push( HDLR VStack * stack , const void_p data , size_t size );
+status vstack_push( HDLR VStack * stack , const void_p data , size_t size , tchs * touches );
 
 // peek (non-destructive)
 status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size );
@@ -31,6 +39,6 @@ status vstack_peek( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * siz
 status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size , bool * pemptied );
 
 // clear stack
-void vstack_clear( HDLR VStack * stack );
+void vstack_clear( HDLR VStack * stack , bool clear_var );
 
 #endif

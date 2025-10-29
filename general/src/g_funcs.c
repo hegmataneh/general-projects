@@ -1342,7 +1342,7 @@ status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * a
 int timeval_compare( const struct timeval * a , const struct timeval * b )
 {
 	if ( a->tv_sec < b->tv_sec )
-		return -1;
+		return -1; // a low prio than b
 	else if ( a->tv_sec > b->tv_sec )
 		return 1;
 	else if ( a->tv_usec < b->tv_usec )
@@ -1447,4 +1447,16 @@ status pthread_mutex_timedlock_rel( pthread_mutex_t * mutex , long ms )
 		return errTimeout;
 	}
 	return errOK;
+}
+
+long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
+{
+	const char * start = strstr( filename , ignore_part );  // find the pattern
+	long number = 0;
+	if ( start )
+	{
+		start += strlen( ignore_part );  // move to start of number
+		number = strtol( start , NULL , 10 );  // parse as long
+	}
+	return number;
 }

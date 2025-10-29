@@ -646,9 +646,6 @@ _PRIVATE_FXN void draw_cmdbox( struct ncplane * cmd , const char * buf )
 
 _PRIVATE_FXN void draw( nnc_req * nnc )
 {
-
-__arrr_n += sprintf( __arrr + __arrr_n , "%s %d\n" , __FUNCTION__ , __LINE__ );
-
 	nnc_lock_for_changes( nnc );
 
 	if ( nnc->refresh_tabs )
@@ -677,8 +674,6 @@ __arrr_n += sprintf( __arrr + __arrr_n , "%s %d\n" , __FUNCTION__ , __LINE__ );
 	nnc_release_lock( nnc );
 
 	notcurses_render( nnc->nc );
-
-	__arrr_n += sprintf( __arrr + __arrr_n , "%s %d\n" , __FUNCTION__ , __LINE__ );
 }
 
 Boolean continue_loop_callback( nnc_req * nnc )

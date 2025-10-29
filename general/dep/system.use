@@ -1,3 +1,11 @@
+#ifdef Uses_log
+	#define __INC_math
+#endif
+
+#ifdef Uses_log10
+	#define __INC_math
+#endif
+
 #ifdef Uses_sprintf
 	#define __INC_stdio
 #endif

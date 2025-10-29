@@ -55,7 +55,7 @@ void sub_destroy( distributor_t * dis )
 	DAC( dis->pheap );
 }
 
-status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data ,
+_PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data ,
 				OUTcpy subscriber_t ** subed , int * orderr /*if not null then this is order*/ )
 {
 	INIT_BREAKABLE_FXN();
@@ -102,22 +102,27 @@ status distributor_get_data( distributor_t * dis , pass_p * pdata )
 	N_END_RET
 }
 
-status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data )
+status distributor_subscribe( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data )
 {
 	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , NULL );
 }
 
-status distributor_subscribe_withOrder( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data , int order )
+status distributor_subscribe_out( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed )
+{
+	return distributor_subscribe_t( dis , 0 , type , func , data , subed , NULL );
+}
+
+status distributor_subscribe_withOrder( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , int order )
 {
 	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , &order );
 }
 
-status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data )
+status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data )
 {
 	return distributor_subscribe_t( dis , iGrp , type , func , data , NULL , NULL );
 }
 
-status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , void_p src_tring )
+status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data , void_p src_tring )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -132,7 +137,7 @@ status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on
 	N_END_RET
 }
 
-status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data )
+status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_e type , sub_func_t func , void_p token , pass_p data )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -153,6 +158,7 @@ _PRIVATE_FXN int compare_subscribers( const void * a , const void * b )
 	return 0;
 }
 
+#define DATA_ORDER_( exp ) ( ( exp->data_order == ord_producer ) ? ISNULL( data , exp->data ) : ISNULL( exp->data , data ) )
 
 status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ )
 {
@@ -167,7 +173,7 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_VOID )
 			{
-				pord->psubscriber->func.void_cb( ISNULL( data , pord->psubscriber->data ) );
+				pord->psubscriber->func.void_cb( DATA_ORDER_(pord->psubscriber) );
 			}
 		}
 		BREAK( errOK , 0 );
@@ -197,7 +203,7 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 			BREAK_STAT( mms_array_get_s( &psubscribers->subs , ( size_t )isub , (void**)&psubscriber ) , 0 );
 			if ( psubscriber->type == SUB_VOID )
 			{
-				psubscriber->func.void_cb( ISNULL( data , psubscriber->data ) );
+				psubscriber->func.void_cb( DATA_ORDER_(psubscriber) );
 			}
 		}
 	}
@@ -220,7 +226,7 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_STRING )
 			{
-				pord->psubscriber->func.str_cb( ISNULL( data , pord->psubscriber->data ) , src_msg );
+				pord->psubscriber->func.str_cb( DATA_ORDER_(pord->psubscriber) , src_msg );
 			}
 		}
 		
@@ -264,14 +270,14 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							psubscriber->func.str_cb( ISNULL( data , psubscriber->data ) , src_msg );
+							psubscriber->func.str_cb( DATA_ORDER_(psubscriber) , src_msg );
 							break;
 						}
 					}
 				}
 				else
 				{
-					psubscriber->func.str_cb( ISNULL( data , psubscriber->data ) , src_msg );
+					psubscriber->func.str_cb( DATA_ORDER_(psubscriber) , src_msg );
 				}
 			}
 		}
@@ -294,7 +300,7 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_LONG )
 			{
-				pord->psubscriber->func.long_cb( ISNULL( data , pord->psubscriber->data ) , src_v );
+				pord->psubscriber->func.long_cb( DATA_ORDER_(pord->psubscriber) , src_v );
 			}
 		}
 
@@ -339,14 +345,14 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							psubscriber->func.long_cb( ISNULL( data , psubscriber->data ) , src_v );
+							psubscriber->func.long_cb( DATA_ORDER_(psubscriber) , src_v );
 							break;
 						}
 					}
 				}
 				else
 				{
-					psubscriber->func.long_cb( ISNULL( data , psubscriber->data ) , src_v );
+					psubscriber->func.long_cb( DATA_ORDER_(psubscriber) , src_v );
 				}
 			}
 		}
@@ -369,7 +375,7 @@ status distributor_publish_double( distributor_t * dis , double src_v , pass_p d
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_DOUBLE )
 			{
-				pord->psubscriber->func.dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_v );
+				pord->psubscriber->func.dbl_cb( DATA_ORDER_(pord->psubscriber) , src_v );
 			}
 		}
 
@@ -413,14 +419,14 @@ status distributor_publish_double( distributor_t * dis , double src_v , pass_p d
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							psubscriber->func.dbl_cb( ISNULL( data , psubscriber->data ) , src_v );
+							psubscriber->func.dbl_cb( DATA_ORDER_(psubscriber) , src_v );
 							break;
 						}
 					}
 				}
 				else
 				{
-					psubscriber->func.dbl_cb( ISNULL( data , psubscriber->data ) , src_v );
+					psubscriber->func.dbl_cb( DATA_ORDER_(psubscriber) , src_v );
 				}
 			}
 		}
@@ -443,7 +449,7 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_LONG_DOUBLE )
 			{
-				pord->psubscriber->func.long_dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_i , src_d );
+				pord->psubscriber->func.long_dbl_cb( DATA_ORDER_(pord->psubscriber) , src_i , src_d );
 			}
 		}
 		
@@ -486,14 +492,14 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							psubscriber->func.long_dbl_cb( ISNULL( data , psubscriber->data ) , src_i , src_d );
+							psubscriber->func.long_dbl_cb( DATA_ORDER_(psubscriber) , src_i , src_d );
 							break;
 						}
 					}
 				}
 				else
 				{
-					psubscriber->func.long_dbl_cb( ISNULL( data , psubscriber->data ) , src_i , src_d );
+					psubscriber->func.long_dbl_cb( DATA_ORDER_(psubscriber) , src_i , src_d );
 				}
 			}
 		}
@@ -516,7 +522,7 @@ status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , do
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_STRING_DOUBLE )
 			{
-				pord->psubscriber->func.str_dbl_cb( ISNULL( data , pord->psubscriber->data ) , src_str , src_d );
+				pord->psubscriber->func.str_dbl_cb( DATA_ORDER_(pord->psubscriber) , src_str , src_d );
 			}
 		}
 
@@ -560,14 +566,14 @@ status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , do
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							psubscriber->func.str_dbl_cb( ISNULL( data , psubscriber->data ) , src_str , src_d );
+							psubscriber->func.str_dbl_cb( DATA_ORDER_(psubscriber) , src_str , src_d );
 							break;
 						}
 					}
 				}
 				else
 				{
-					psubscriber->func.str_dbl_cb( ISNULL( data , psubscriber->data ) , src_str , src_d );
+					psubscriber->func.str_dbl_cb( DATA_ORDER_(psubscriber) , src_str , src_d );
 				}
 			}
 		}
@@ -621,13 +627,13 @@ status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , s
 						{
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
-							return psubscriber->func.direct_one_call_bfr_size_cb( ISNULL( data , psubscriber->data ) , src_buf , src_sz );
+							return psubscriber->func.direct_one_call_bfr_size_cb( DATA_ORDER_(psubscriber) , src_buf , src_sz );
 						}
 					}
 				}
 				else
 				{
-					return psubscriber->func.direct_one_call_bfr_size_cb( ISNULL( data , psubscriber->data ) , src_buf , src_sz );
+					return psubscriber->func.direct_one_call_bfr_size_cb( DATA_ORDER_(psubscriber) , src_buf , src_sz );
 				}
 			}
 			else if ( psubscriber->type == SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE )
@@ -644,14 +650,14 @@ status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , s
 							token_ring_p_next( tring , &turn_key );
 							one_token_ring_called = 1;
 							any_call_happend = 1;
-							aggr_ret |= psubscriber->func.multicast_call_buffer_size_cb( ISNULL( data , psubscriber->data ) , src_buf , src_sz );
+							aggr_ret |= psubscriber->func.multicast_call_buffer_size_cb( DATA_ORDER_(psubscriber) , src_buf , src_sz );
 						}
 					}
 				}
 				else
 				{
 					any_call_happend = 1;
-					aggr_ret |= psubscriber->func.multicast_call_buffer_size_cb( ISNULL( data , psubscriber->data ) , src_buf , src_sz );
+					aggr_ret |= psubscriber->func.multicast_call_buffer_size_cb( DATA_ORDER_(psubscriber) , src_buf , src_sz );
 				}
 			}
 		}
@@ -682,7 +688,7 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 				psubscriber->token == token
 			)
 			{
-				return psubscriber->func.direct_one_call_voidp_cb( ISNULL( data , psubscriber->data ) , ptr );
+				return psubscriber->func.direct_one_call_voidp_cb( DATA_ORDER_(psubscriber) , ptr );
 			}
 		}
 	}
@@ -711,7 +717,7 @@ status distributor_publish_voidp( distributor_t * dis , void_p ptr /*caller poin
 				psubscriber->type == SUB_DIRECT_ONE_CALL_VOIDP
 			)
 			{
-				return psubscriber->func.direct_one_call_voidp_cb( ISNULL( data , psubscriber->data ) , ptr );
+				return psubscriber->func.direct_one_call_voidp_cb( DATA_ORDER_(psubscriber) , ptr );
 			}
 		}
 	}

@@ -20,7 +20,7 @@ typedef enum
 	SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE ,
 	SUB_DIRECT_ONE_CALL_VOIDP ,
 	SUB_DIRECT_ONE_CALL_3VOIDP
-} sub_type_t;
+} sub_type_e;
 
 // Different callback signatures
 typedef void ( *sub_void_t )( pass_p data );
@@ -49,13 +49,20 @@ typedef union
 	sub_direct_one_call_3voidp_t			direct_one_call_3voidp_cb;
 } sub_func_t;
 
+typedef enum
+{
+	ord_producer = 0, /*first check producer data if null then check consumer data*/
+	ord_default = ord_producer ,
+	ord_consumer /*first check subscriver data then producer*/
+} data_use_order_e;
+
 #define SUB_FXN( fxn ) ( sub_func_t )fxn
 
 // One subscriber entry
 typedef struct
 {
-	sub_type_t	type;
-	int pad1;
+	sub_type_e	type;
+	data_use_order_e data_order;
 	sub_func_t	func;
 	pass_p		data;
 	void_p		token;
@@ -95,15 +102,16 @@ status distributor_init( distributor_t * dis , size_t grp_count );
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
 void sub_destroy( distributor_t * dis );
 
-status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed /*=NULL*/ , int * order /*if not null then this is order*/ );
+//status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed /*=NULL*/ , int * order /*if not null then this is order*/ );
 
-status distributor_subscribe( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data );
-status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data);
-status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_t type , sub_func_t func , pass_p data , void_p tring_p_t /*make it void_p to detach dependency*/ );
+status distributor_subscribe( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data );
+status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data);
+status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data , void_p tring_p_t /*make it void_p to detach dependency*/ );
+status distributor_subscribe_out( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed );
 
-status distributor_subscribe_withOrder( distributor_t * dis , sub_type_t type , sub_func_t func , pass_p data , int order/*greater priority go first*/ );
+status distributor_subscribe_withOrder( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , int order/*greater priority go first*/ );
 
-status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_t type , sub_func_t func , void_p token , pass_p data ); // only callback with same token call
+status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_e type , sub_func_t func , void_p token , pass_p data ); // only callback with same token call
 
 // Publish different kinds of events
 status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if subscriber precede*/ );

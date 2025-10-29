@@ -17,18 +17,18 @@ void vstack_init( HDLR VStack * stack , _INx void_p buffer , _INx size_t capacit
 
 void vstack_destroy( HDLR VStack * stack )
 {
-	vstack_clear( stack );
+	//vstack_clear( stack , false ); // i should not clear variable because they should be in memmap and store
 	pthread_mutex_destroy( &stack->lock );
 }
 
 // Each item layout: [data bytes][size_t size]
-status vstack_push( HDLR VStack * stack , const void_p data , size_t size )
+status vstack_push( HDLR VStack * stack , const void_p data , size_t size , tchs * touches )
 {
 	WARNING( size );
 
 	LOCK_LINE( pthread_mutex_lock( &stack->lock ) );
 
-	if ( size + sizeof( size_t ) > stack->capacity - stack->top )
+	if ( stack->top + size + sizeof( size_t ) > stack->capacity )
 	{
 		pthread_mutex_unlock( &stack->lock );
 		return errOverflow; // overflow
@@ -38,6 +38,13 @@ status vstack_push( HDLR VStack * stack , const void_p data , size_t size )
 	size_t * szptr = ( size_t * )( stack->buf + stack->top + size );
 	*szptr = size;
 	stack->top += size + sizeof( size_t );
+	if ( touches )
+	{
+		( *touches )[ 0 ].addr = stack->buf + stack->top;
+		( *touches )[ 0 ].sz = size;
+		( *touches )[ 1 ].addr = &stack->top;
+		( *touches )[ 1 ].sz = sizeof( stack->top );
+	}
 
 	pthread_mutex_unlock( &stack->lock );
 	return errOK;
@@ -91,9 +98,12 @@ status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size
 	return errOK;
 }
 
-void vstack_clear( HDLR VStack * stack )
+void vstack_clear( HDLR VStack * stack , bool clear_var )
 {
-	pthread_mutex_lock( &stack->lock );
-	stack->top = 0;
-	pthread_mutex_unlock( &stack->lock );
+	if ( clear_var )
+	{
+		pthread_mutex_lock( &stack->lock );
+		stack->top = 0;
+		pthread_mutex_unlock( &stack->lock );
+	}
 }

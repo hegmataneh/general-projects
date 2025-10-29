@@ -35,9 +35,6 @@ typedef struct /*__attribute__(( packed ))*/
 	uint32_t magic;
 	time_t due_time;	// used to store time in file
 	VStack stack;
-	
-	// TODO . can log retry
-
 } pg_stk_page_hdr_t; // wriable in file
 
 
@@ -82,12 +79,9 @@ typedef struct
 	void_p custom_data;				/*like g*/
 	pthread_mutex_t ps_lock;		/* protects manager's top-level state */
 
-	//pthread_t trd_clean_unused_memfile;
-	//volatile int close_cleaner;
-
 	/* lifetime statistics */
 	size_t item_stored;
-
+	size_t file_name_counter;
 
 } page_stack_t;
 
@@ -96,6 +90,7 @@ typedef enum
 	pgstk_not_send__stop_sending ,
 	pgstk_not_send__continue_sending ,
 	pgstk_not_send__continue_sending_with_delay ,
+	pgstk_not_send__not_any_peer , /*not any tcp out so donot fetch memmap files items*/
 	pgstk_sended__continue_sending ,
 	pgstk_sended__stop_sending
 } pgstk_cmd;
