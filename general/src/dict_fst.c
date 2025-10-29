@@ -1,3 +1,4 @@
+#define Uses_sprintf
 #define Uses_LOCK_LINE
 #define Uses_FREE_PTR
 #define Uses_STRDUP
@@ -41,22 +42,22 @@ void dict_fst_destroy( kv_table_t * tbl )
 	for ( size_t i = 0; i < tbl->nbuckets; ++i )
 	{
 		kv_bucket_t * b = &tbl->buckets[ i ];
-		pthread_rwlock_wrlock( &b->rwlock );
+		
+		LOCK_LINE( pthread_rwlock_wrlock( &b->rwlock ) );
 		kv_entry_t * e = b->head;
 		while ( e )
 		{
 			kv_entry_t * nx = e->next;
-			pthread_spin_destroy( &e->entry_lock );
+			LOCK_LINE( pthread_spin_destroy( &e->entry_lock ) );
 			FREE_PTR( e->key );
 			FREE_PTR( e );
 			e = nx;
 		}
 		b->head = NULL;
-		pthread_rwlock_unlock( &b->rwlock );
-		pthread_rwlock_destroy( &b->rwlock );
+		LOCK_LINE( pthread_rwlock_unlock( &b->rwlock ) );
+		LOCK_LINE( pthread_rwlock_destroy( &b->rwlock ) );
 	}
-	pthread_mutex_destroy(&tbl->id_lock);   // init lock
-
+	LOCK_LINE( pthread_mutex_destroy(&tbl->id_lock) );   // init lock
 	FREE_PTR( tbl->buckets );
 }
 
@@ -86,7 +87,7 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 	newe->next = NULL;
 
 	// Acquire write lock for bucket for update/insert
-	pthread_rwlock_wrlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_wrlock( &b->rwlock ) );
 
 	kv_entry_t * cur = b->head;
 	while ( cur )
@@ -94,7 +95,7 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 		if ( cur->hash == h && strcmp( cur->key , key ) == 0 )
 		{
 			// found existing: update it
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 			cur->v.p_val = pval; // pointer assigned first . because it is more error prone
 			cur->v.int_val = ival;
 			pthread_spin_unlock( &cur->entry_lock );
@@ -138,7 +139,7 @@ status dict_fst_get_bykey( kv_table_t * t , _IN const char * key , _RET_VAL_P in
 	uint64 h = hash64_fnv1a_avalanche( key );
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 	kv_entry_t * cur = b->head;
 	while ( cur )
 	{
@@ -146,7 +147,7 @@ status dict_fst_get_bykey( kv_table_t * t , _IN const char * key , _RET_VAL_P in
 		{
 			// read value atomically while holding entry lock? value is int; read is atomic on most platforms
 			// but to be safe, grab entry spinlock for a short time
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 			int v = cur->v.int_val;
 			void_p p = cur->v.p_val;
 			pthread_spin_unlock( &cur->entry_lock );
@@ -171,7 +172,7 @@ status dict_fst_get_faster_by_hash_id( kv_table_t * t , uint64 key_hash , uint64
 {
 	kv_bucket_t * b = dict_fst_get_bucket( t , key_hash );
 
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 	kv_entry_t * cur = b->head;
 	while ( cur )
 	{
@@ -179,7 +180,7 @@ status dict_fst_get_faster_by_hash_id( kv_table_t * t , uint64 key_hash , uint64
 		{
 			// read value atomically while holding entry lock? value is int; read is atomic on most platforms
 			// but to be safe, grab entry spinlock for a short time
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 			int v = cur->v.int_val;
 			void_p p = cur->v.p_val;
 			pthread_spin_unlock( &cur->entry_lock );
@@ -200,7 +201,7 @@ status dict_fst_get_hash_id_bykey( kv_table_t * t , const char * key , _RET_VAL_
 	uint64 h = hash64_fnv1a_avalanche( key );
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 	kv_entry_t * cur = b->head;
 	while ( cur )
 	{
@@ -208,7 +209,7 @@ status dict_fst_get_hash_id_bykey( kv_table_t * t , const char * key , _RET_VAL_
 		{
 			// read value atomically while holding entry lock? value is int; read is atomic on most platforms
 			// but to be safe, grab entry spinlock for a short time
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 			uint64 tmp_hash = cur->hash;
 			uint64 tmp_id = cur->id;
 			pthread_spin_unlock( &cur->entry_lock );
@@ -240,7 +241,7 @@ status dict_fst_delete( kv_table_t * t , const char * key )
 	uint64 h = hash64_fnv1a_avalanche( key );
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
-	pthread_rwlock_wrlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_wrlock( &b->rwlock ) );
 
 	kv_entry_t * prev = NULL;
 	kv_entry_t * cur = b->head;
@@ -249,7 +250,7 @@ status dict_fst_delete( kv_table_t * t , const char * key )
 		if ( cur->hash == h && strcmp( cur->key , key ) == 0 )
 		{
 			// lock the entry to ensure no-one else is modifying
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 
 			// unlink
 			if ( prev ) prev->next = cur->next;
@@ -288,7 +289,7 @@ int dict_fst_lock_key( kv_table_t * t , const char * key )
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
 	// Acquire bucket read lock first (consistent ordering)
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 
 	kv_entry_t * cur = b->head;
 	while ( cur )
@@ -296,7 +297,7 @@ int dict_fst_lock_key( kv_table_t * t , const char * key )
 		if ( cur->hash == h && strcmp( cur->key , key ) == 0 )
 		{
 			// lock the entry while still holding bucket lock (prevents it from being removed under us)
-			pthread_spin_lock( &cur->entry_lock );
+			LOCK_LINE( pthread_spin_lock( &cur->entry_lock ) );
 			// now safe to release bucket lock
 			pthread_rwlock_unlock( &b->rwlock );
 			return 0;
@@ -317,7 +318,7 @@ status dict_fst_unlock_key( kv_table_t * t , const char * key )
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
 	// We need to find the entry and unlock it. Acquire bucket read lock to find it.
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 	kv_entry_t * cur = b->head;
 	while ( cur )
 	{
@@ -344,7 +345,7 @@ status dict_fst_update_locked( kv_table_t * t , const char * key , int new_value
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
 	// bucket read lock to find entry
-	pthread_rwlock_rdlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_rdlock( &b->rwlock ) );
 	kv_entry_t * cur = b->head;
 	while ( cur )
 	{
@@ -373,7 +374,7 @@ status dict_fst_delete_locked( kv_table_t * t , const char * key )
 
 	// To delete safely we need bucket write lock and entry locked.
 	// Acquire write lock (consistent order: bucket then entry; but entry is already locked by caller)
-	pthread_rwlock_wrlock( &b->rwlock );
+	LOCK_LINE( pthread_rwlock_wrlock( &b->rwlock ) );
 
 	kv_entry_t * prev = NULL;
 	kv_entry_t * cur = b->head;

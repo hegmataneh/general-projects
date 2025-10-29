@@ -1,3 +1,7 @@
+#ifdef Uses_sprintf
+	#define __INC_stdio
+#endif
+
 #ifdef Uses_pthread_mutex_timedlock
 	#define __INC_time
 	#define __INC_pthread

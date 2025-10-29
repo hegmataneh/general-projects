@@ -271,8 +271,6 @@ void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str )
 
 void nnc_destroy( nnc_req * nnc )
 {
-	pthread_mutex_lock( &nnc->nn_lock );
-
 	notcurses_stop( nnc->nc );
 
 	size_t tbl_cnt = mms_array_get_count( &nnc->tables );
@@ -318,8 +316,6 @@ void nnc_destroy( nnc_req * nnc )
 	}
 	mms_array_free( &nnc->tables );
 	array_free( &nnc->tabHit_arr );
-	pthread_mutex_unlock( &nnc->nn_lock );
-
 	pthread_mutex_destroy( &nnc->nn_lock );
 }
 
@@ -650,6 +646,9 @@ _PRIVATE_FXN void draw_cmdbox( struct ncplane * cmd , const char * buf )
 
 _PRIVATE_FXN void draw( nnc_req * nnc )
 {
+
+__arrr_n += sprintf( __arrr + __arrr_n , "%s %d\n" , __FUNCTION__ , __LINE__ );
+
 	nnc_lock_for_changes( nnc );
 
 	if ( nnc->refresh_tabs )
@@ -678,6 +677,8 @@ _PRIVATE_FXN void draw( nnc_req * nnc )
 	nnc_release_lock( nnc );
 
 	notcurses_render( nnc->nc );
+
+	__arrr_n += sprintf( __arrr + __arrr_n , "%s %d\n" , __FUNCTION__ , __LINE__ );
 }
 
 Boolean continue_loop_callback( nnc_req * nnc )
