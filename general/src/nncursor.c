@@ -184,6 +184,37 @@ status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_C
 	END_RET
 }
 
+status nnc_set_static_int( nnc_table * tbl , size_t row , size_t col , int i )
+{
+	INIT_BREAKABLE_FXN();
+
+	if ( row < 0 ) return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->rows , row ) ) ) return d_error;
+	if ( col < 0 )  return errOverflow;
+	if ( ( d_error = mms_array_idx_exist_s( &tbl->cols , col ) ) ) return d_error;
+
+	nnc_row * prow = NULL;
+	BREAK_STAT( mms_array_get_s( &tbl->rows , row , ( void ** )&prow ) , 0 );
+
+	nnc_cell_container * pcell_container = NULL;
+	BREAK_STAT( array_get_s( &prow->cell_containers , col , ( void ** )&pcell_container ) , 0 );
+
+	nnc_clean_prev_cell_content( pcell_container );
+
+	BREAK_IF( !( pcell_container->pcell = CALLOC_ONE( pcell_container->pcell ) ) , errMemoryLow , 0 );
+
+	pcell_container->pcell->prow = NULL;
+	pcell_container->pcell->storage.bt.i = i;
+	pcell_container->pcell->clean_fxn = clean_cell_container;
+	pcell_container->pcell->conversion_fxn = i_as_str_pass;
+	pcell_container->pcell->propagate_changes = NULL; // no changes acceptable for static cell
+
+	//ptbl->rows[ row ].cells[ col ] = strdup( text );
+
+	BEGIN_RET
+	END_RET
+}
+
 _CALLBACK_FXN void propagate_cell_changes( void_p src_cell_container )
 {
 	nnc_cell_container * pcell_container = ( nnc_cell_container * )src_cell_container;
@@ -558,7 +589,7 @@ _PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	}
 
 	// separator under header
-	if ( header_row_slen || subheader_row_slen )
+	if ( header_row_slen && subheader_row_slen )
 	{
 		ncplane_putstr_yx( nnc->body_plane , y++ , 0 , "├" );
 		for ( size_t icl = 0; icl < col_cnt; icl++ )

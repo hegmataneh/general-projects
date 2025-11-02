@@ -388,7 +388,7 @@
 #define GRAY_3		RGB(0x55,0x55,0x55)
 
 #define C_RGB_1		RGB(0x1e,0x1e,0x1e)
-#define C_RGB_2		RGB(0x32,0x32,0x46)
+#define C_RGB_2		RGB(0x33,0x33,0x33)
 
 
 #define RANDOM_COLOR RGB(random(256),random(256),random(256))

@@ -155,6 +155,7 @@ status nnc_register_into_page_auto_refresh( nnc_table * ptable , distributor_t *
 
 // just show string from input
 status nnc_set_static_text( nnc_table * tbl , size_t row , size_t col , PASSED_CSTR static_text );
+status nnc_set_static_int( nnc_table * tbl , size_t row , size_t col , int i );
 
 // set inner cell content provider . so provide data is caller responsibility
 status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_content * pouter_cell );

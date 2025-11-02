@@ -26,3 +26,57 @@ status collect_strings_itr( void * array , size_t count , fdl_geter_2 getter , s
 status strs_distinct( strings_ar * inp , strings_ar * outy );
 
 #endif
+
+#ifdef Uses_TO_STRING
+
+#define TO_STRING(x) _Generic((x), \
+    int: int_to_string, \
+    long: long_to_string, \
+    float: float_to_string, \
+    double: double_to_string, \
+    char *: string_copy, \
+    const char *: string_copy, \
+    default: unknown_to_string \
+)(x)
+
+static char * int_to_string( int v )
+{
+	static char buf[ 32 ];
+	snprintf( buf , sizeof( buf ) , "%d" , v );
+	return buf;
+}
+
+static char * long_to_string( long v )
+{
+	static char buf[ 32 ];
+	snprintf( buf , sizeof( buf ) , "%ld" , v );
+	return buf;
+}
+
+static char * float_to_string( float v )
+{
+	static char buf[ 32 ];
+	snprintf( buf , sizeof( buf ) , "%f" , v );
+	return buf;
+}
+
+static char * double_to_string( double v )
+{
+	static char buf[ 32 ];
+	snprintf( buf , sizeof( buf ) , "%lf" , v );
+	return buf;
+}
+
+static char * string_copy( const char * v )
+{
+	return ( char * )v; // already a string
+}
+
+static char * unknown_to_string( void * v )
+{
+	static char buf[ 32 ];
+	snprintf( buf , sizeof( buf ) , "%p" , v );
+	return buf;
+}
+
+#endif

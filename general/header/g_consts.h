@@ -62,7 +62,7 @@ enum
 
 #define SIZE_ETHERNET 14 // Ethernet header is always 14 bytes (for non-VLAN frames)
 
-#define UDP_LAYER_HDR_SZ 8
+#define UDP_LAYER_HDR_SZ_B 8
 
 #define MAX_PACKET_SIZE 10000 /*i see 6300 byte udp so far*/
 
