@@ -269,15 +269,13 @@ void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str )
 //	END_RET
 //}
 
-void nnc_destroy( nnc_req * nnc )
+_PRIVATE_FXN void nnc_destroy_tables( dyn_mms_arr * ptbls )
 {
-	notcurses_stop( nnc->nc );
-
-	size_t tbl_cnt = mms_array_get_count( &nnc->tables );
+	size_t tbl_cnt = mms_array_get_count( ptbls );
 	for ( size_t itbl = 0; itbl < tbl_cnt; itbl++ )
 	{
 		nnc_table * ptbl = NULL;
-		if ( mms_array_get_s( &nnc->tables , itbl , ( void ** )&ptbl ) == errOK )
+		if ( mms_array_get_s( ptbls , itbl , ( void ** )&ptbl ) == errOK )
 		{
 			size_t col_cnt = mms_array_get_count( &ptbl->cols );
 			for ( size_t icl = 0; icl < col_cnt; icl++ )
@@ -314,7 +312,20 @@ void nnc_destroy( nnc_req * nnc )
 			DAC( ptbl->tabname );
 		}
 	}
-	mms_array_free( &nnc->tables );
+	mms_array_free( ptbls );
+}
+
+void nnc_destroy( nnc_req * nnc )
+{
+	notcurses_stop( nnc->nc );
+
+	nnc_destroy_tables( &nnc->tables );
+	if ( nnc->pmain_tbl_shadow )
+	{
+		nnc_destroy_tables( nnc->pmain_tbl_shadow );
+		DAC( nnc->pmain_tbl_shadow );
+	}
+	
 	array_free( &nnc->tabHit_arr );
 	pthread_mutex_destroy( &nnc->nn_lock );
 }
@@ -375,7 +386,8 @@ _PRIVATE_FXN void compute_widths( nnc_table * ptbl , size_t screen_w , size_t * 
 	}
 }
 
-_PRIVATE_FXN void put_clipped( struct ncplane * plane , int y , int x , PASSED_CSTR s /*=NULL if cell arrive*/ , nnc_cell_content * pcell /*=NULL if constant cell arrive*/ , size_t w )
+_PRIVATE_FXN void put_clipped( struct ncplane * plane , int y , int x , PASSED_CSTR s /*=NULL if cell arrive*/ ,
+	nnc_cell_content * pcell /*=NULL if constant cell arrive*/ , size_t w )
 {
 	if ( !s && pcell && pcell->conversion_fxn ) s = pcell->conversion_fxn( pcell );
 	if ( !s ) s = "";
@@ -460,11 +472,12 @@ _PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 	ncplane_erase( nnc->body_plane );
 	
 	size_t col_cnt = mms_array_get_count( &ptbl->cols );
+	
 	dyn_arr int_arr;
 	BREAK_STAT( array_init( &int_arr , sizeof( size_t ) , col_cnt , GROW_STEP , col_cnt ) , 0 );
-	
 	size_t * colw = ( size_t * )int_arr.data;
-	compute_widths( ptbl , (size_t)(nnc->termw - 2) , colw );
+	compute_widths( ptbl , ( size_t )( nnc->termw - 2 ) , colw );
+
 	int x = 0 , y = 0;
 	// top border
 	ncplane_putstr_yx( nnc->body_plane , y++ , 0 , "┌" );
@@ -475,62 +488,87 @@ _PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 		else ncplane_putstr( nnc->body_plane , "┬" );
 	}
 
-	// header row
-
-	ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
-	ncplane_putstr_yx( nnc->body_plane , y , 0 , "│" );
-
+	#ifndef header_row
+	size_t header_row_slen = 0;
 	for ( size_t icl = 0; icl < col_cnt; icl++ )
 	{
 		nnc_column * pcol = NULL;
 		if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 		{
-			ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
-			ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
-			ncplane_set_styles( nnc->body_plane , NCSTYLE_BOLD | NCSTYLE_UNDERLINE );
-			
-			put_clipped( nnc->body_plane , y , 1 + x , pcol->hdr , NULL , colw[ icl ] );
-			x += ( int )colw[ icl ];
-
-			ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
-			ncplane_putstr_yx( nnc->body_plane , y , 1 + x , "│" );
-			x += 1;
+			header_row_slen += slen( pcol->hdr );
 		}
 	}
-	ncplane_set_styles( nnc->body_plane , NCSTYLE_NONE );
-	y++;
+	if ( header_row_slen )
+	{
+		ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
+		ncplane_putstr_yx( nnc->body_plane , y , 0 , "│" );
+		for ( size_t icl = 0; icl < col_cnt; icl++ )
+		{
+			nnc_column * pcol = NULL;
+			if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+			{
+				ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
+				ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
+				ncplane_set_styles( nnc->body_plane , NCSTYLE_BOLD | NCSTYLE_UNDERLINE );
+
+				put_clipped( nnc->body_plane , y , 1 + x , pcol->hdr , NULL , colw[ icl ] );
+				x += ( int )colw[ icl ];
+
+				ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
+				ncplane_putstr_yx( nnc->body_plane , y , 1 + x , "│" );
+				x += 1;
+			}
+		}
+		ncplane_set_styles( nnc->body_plane , NCSTYLE_NONE );
+		y++;
+	}
+	#endif
 	
-	// Subheader
-	// TODO . if all subheader is empty so why allocate space for it
-	x = 0;
-	ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
-	ncplane_putstr_yx( nnc->body_plane , y , 0 , "│" );
-
+	#ifndef Subheader
+	size_t subheader_row_slen = 0;
 	for ( size_t icl = 0; icl < col_cnt; icl++ )
 	{
 		nnc_column * pcol = NULL;
 		if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
 		{
-			ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
-			//ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
-			put_clipped( nnc->body_plane , y , 1 + x , pcol->subhdr , NULL , colw[ icl ] );
-			x += ( int )colw[ icl ];
-			
-			ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
-			ncplane_putstr_yx( nnc->body_plane , y , 1 + x , "│" ); x += 1;
+			subheader_row_slen += slen( pcol->subhdr );
 		}
 	}
+	if ( subheader_row_slen )
+	{
+		x = 0;
+		ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
+		ncplane_putstr_yx( nnc->body_plane , y , 0 , "│" );
 
-	ncplane_set_styles( nnc->body_plane , NCSTYLE_NONE ); ncplane_set_fg_default( nnc->body_plane ); y++;
+		for ( size_t icl = 0; icl < col_cnt; icl++ )
+		{
+			nnc_column * pcol = NULL;
+			if ( mms_array_get_s( &ptbl->cols , icl , ( void ** )&pcol ) == errOK )
+			{
+				ncplane_set_fg_rgb8( nnc->body_plane , RED_PART( WHITE ) , GREEN_PART( WHITE ) , BLUE_PART( WHITE ) );
+				//ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( BLUE_4 ) , GREEN_PART( BLUE_4 ) , BLUE_PART( BLUE_4 ) );
+				put_clipped( nnc->body_plane , y , 1 + x , pcol->subhdr , NULL , colw[ icl ] );
+				x += ( int )colw[ icl ];
+			
+				ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
+				ncplane_putstr_yx( nnc->body_plane , y , 1 + x , "│" ); x += 1;
+			}
+		}
+		ncplane_set_styles( nnc->body_plane , NCSTYLE_NONE ); ncplane_set_fg_default( nnc->body_plane ); y++;
+	}
 
 	// separator under header
-	ncplane_putstr_yx( nnc->body_plane , y++ , 0 , "├" );
-	for ( size_t icl = 0; icl < col_cnt; icl++ )
+	if ( header_row_slen || subheader_row_slen )
 	{
-		for ( size_t k = 0; k < colw[ icl ]; k++ ) ncplane_putstr( nnc->body_plane , "─" );
-		if ( icl == col_cnt - 1 ) ncplane_putstr( nnc->body_plane , "┤" );
-		else ncplane_putstr( nnc->body_plane , "┼" );
+		ncplane_putstr_yx( nnc->body_plane , y++ , 0 , "├" );
+		for ( size_t icl = 0; icl < col_cnt; icl++ )
+		{
+			for ( size_t k = 0; k < colw[ icl ]; k++ ) ncplane_putstr( nnc->body_plane , "─" );
+			if ( icl == col_cnt - 1 ) ncplane_putstr( nnc->body_plane , "┤" );
+			else ncplane_putstr( nnc->body_plane , "┼" );
+		}
 	}
+	#endif
 	
 	// rows
 	size_t row_cnt = mms_array_get_count( &ptbl->rows );
@@ -557,11 +595,15 @@ _PRIVATE_FXN void draw_table( nnc_req * nnc , nnc_table * ptbl )
 				nnc_cell_container * pcell_container = NULL;
 				if ( array_get_s( &prow->cell_containers , icl , ( void ** )&pcell_container ) == errOK && pcell_container && pcell_container->pcell )
 				{
-					put_clipped( nnc->body_plane , y , 1 + x , NULL , pcell_container->pcell , colw[ icl ] );					
+					put_clipped( nnc->body_plane , y , 1 + x , NULL , pcell_container->pcell , colw[ icl ] );
 				}
-
+				else if ( get_shadow_cell( nnc , ptbl , irw , icl , &pcell_container ) == errOK )
+				{
+					put_clipped( nnc->body_plane , y , 1 + x , NULL , pcell_container->pcell , colw[ icl ] );
+				}
 				prow->refresh_partial_row = false;
 			}
+			
 			x += ( int )colw[ icl ];
 
 			//ncplane_set_fg_default( nnc->body_plane ); ncplane_set_bg_default( nnc->body_plane );
@@ -597,6 +639,15 @@ _PRIVATE_FXN void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 	size_t rw_cnt = mms_array_get_count( &ptbl->rows );
 	for ( size_t irw = 0; irw < rw_cnt; irw++ )
 	{
+		if ( irw % 2 == 0 )
+		{
+			ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( C_RGB_1 ) , GREEN_PART( C_RGB_1 ) , BLUE_PART( C_RGB_1 ) );
+		}
+		else
+		{
+			ncplane_set_bg_rgb8( nnc->body_plane , RED_PART( C_RGB_2 ) , GREEN_PART( C_RGB_2 ) , BLUE_PART( C_RGB_2 ) );
+		}
+		
 		nnc_row * prow = NULL;
 		if ( mms_array_get_s( &ptbl->rows , irw , ( void ** )&prow ) == errOK && prow->refresh_partial_row )
 		{
@@ -607,7 +658,12 @@ _PRIVATE_FXN void draw_partial_table( nnc_req * nnc , nnc_table * ptbl )
 				if ( array_get_s( &prow->cell_containers , cel , ( void ** )&pcell_container ) == errOK && pcell_container->pcell && pcell_container->pcell->refresh_cell )
 				{
 					nnc_cell_content * pcell = pcell_container->pcell;
-
+					ncplane_erase_region( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , 1 , ( int )pcell->paint_s.width );
+					put_clipped( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , NULL , pcell , pcell->paint_s.width );
+				}
+				else if ( get_shadow_cell( nnc , ptbl , irw , cel , &pcell_container ) == errOK )
+				{
+					nnc_cell_content * pcell = pcell_container->pcell;
 					ncplane_erase_region( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , 1 , ( int )pcell->paint_s.width );
 					put_clipped( nnc->body_plane , pcell->paint_s.y , pcell->paint_s.x , NULL , pcell , pcell->paint_s.width );
 				}
@@ -786,4 +842,78 @@ _CALLBACK_FXN _PRIVATE_FXN void nnc_page_auto_refresh( void_p src_page )
 status nnc_register_into_page_auto_refresh( nnc_table * ptable , distributor_t * ptor )
 {
 	return distributor_subscribe( ptor , SUB_VOID , SUB_FXN( nnc_page_auto_refresh ) , ptable );
+}
+
+status get_shadow_cell( nnc_req * nnc , nnc_table * src_ptbl , size_t row , size_t col , nnc_cell_container ** pcell_container )
+{
+	INIT_BREAKABLE_FXN();
+
+	// make shadow tables
+	if ( !nnc->pmain_tbl_shadow )
+	{
+		N_BREAK_IF( !( nnc->pmain_tbl_shadow = CALLOC_ONE( nnc->pmain_tbl_shadow ) ) , errMemoryLow , 0 );
+		BREAK_STAT( mms_array_init( nnc->pmain_tbl_shadow , sizeof( nnc_table ) , 1 , GROW_STEP , 0 ) , 0 );
+	}
+
+	// find main table
+	size_t pgidx = (size_t)-1;
+	for ( size_t idx = 0 ; idx < nnc->tables.count ; idx++ )
+	{
+		nnc_table * ptmptbl = NULL;
+		if ( mms_array_get_s( &nnc->tables , idx , ( void ** )&ptmptbl ) == errOK && ptmptbl == src_ptbl )
+		{
+			pgidx = idx;
+			break;
+		}
+	}
+	if ( pgidx >= nnc->tables.count )
+	{
+		BREAK( errOverflow , 0 );
+	}
+
+	// append table to shadow tbl
+	for ( size_t idx = nnc->pmain_tbl_shadow->count ; idx <= pgidx ; idx++ )
+	{
+		nnc_table * ptmptbl = NULL;
+		if ( mms_array_get_one_available_unoccopied_item( nnc->pmain_tbl_shadow , ( void ** )&ptmptbl ) == errOK )
+		{
+			BREAK_STAT( mms_array_init( &ptmptbl->rows , sizeof( nnc_row ) , 1 , GROW_STEP , 0 ) , 0 );
+		}
+	}
+
+	// append row to shadow tbl
+	nnc_table * ptmptbl = NULL;
+	BREAK_STAT( mms_array_get_s( nnc->pmain_tbl_shadow , pgidx , ( void ** )&ptmptbl ) , 0 );
+	for ( size_t idx = ptmptbl->rows.count ; idx <= row ; idx++ )
+	{
+		nnc_row * prow = NULL;
+		if ( mms_array_get_one_available_unoccopied_item( &ptmptbl->rows , ( void ** )&prow ) == errOK )
+		{
+			array_init( &prow->cell_containers , sizeof( nnc_cell_container ) , 1 , GROW_STEP , 0 );
+		}
+	}
+
+	// 
+	nnc_row * prow = NULL;
+	BREAK_STAT( mms_array_get_s( &ptmptbl->rows , row , ( void ** )&prow ) , 0 );
+
+	for ( size_t idx = prow->cell_containers.count ; idx <= col ; idx++ )
+	{
+		nnc_cell_container * pcell = NULL;
+		BREAK_STAT( array_get_one_available_unoccopied_item( &prow->cell_containers , (void**)&pcell ) , 0 );
+	}
+	
+
+	BREAK_STAT( array_get_s( &prow->cell_containers , col , ( void ** )pcell_container ) , 0 );
+
+	BREAK_IF( !( (*pcell_container)->pcell = CALLOC_ONE( (*pcell_container)->pcell ) ) , errMemoryLow , 0 );
+
+	(*pcell_container)->pcell->prow = NULL;
+	(*pcell_container)->pcell->storage.bt.pass_str = " ";
+	(*pcell_container)->pcell->clean_fxn = clean_cell_container;
+	(*pcell_container)->pcell->conversion_fxn = data_segment_str_pass;
+	(*pcell_container)->pcell->propagate_changes = NULL; // no changes acceptable for static cell
+
+	BEGIN_RET
+	END_RET
 }

@@ -35,8 +35,11 @@ typedef struct
 	callback_t1 clean_fxn; /*if not NULL called*/
 	callback_t1 propagate_changes; /*arg0: void_p src_cell_container*/
 
-	bool refresh_cell;
-	uchar pad[7];
+	union
+	{
+		bool refresh_cell;
+		long pad1;
+	};
 
 	struct
 	{
@@ -74,8 +77,11 @@ typedef struct
 {
 	dyn_arr cell_containers; // nnc_cell_container
 
-	bool refresh_partial_row;
-	uchar pad[7];
+	union
+	{
+		bool refresh_partial_row;
+		long pad1;
+	};
 
 	void_p ptbl;
 } nnc_row;
@@ -87,10 +93,12 @@ typedef struct
 	dyn_mms_arr cols; // nnc_column
 	dyn_mms_arr rows; // nnc_row
 
-	bool refresh_partial_table;
-	bool refresh_table;
-
-	uchar pad[6];
+	union
+	{
+		bool refresh_partial_table;
+		bool refresh_table;
+		long pad1;
+	};
 
 	void_p pnnc;
 } nnc_table;
@@ -106,12 +114,14 @@ typedef struct nncursor_requirement
 {
 	dyn_mms_arr tables; // nnc_table
 
+	dyn_mms_arr * pmain_tbl_shadow; // nnc_table
+
 	size_t active;
 	dyn_arr tabHit_arr;
 	union
 	{
 		bool refresh_tabs;
-		uchar pad[8];
+		long pad1;
 	};
 
 	char message_text[ 1024 ];
@@ -126,6 +136,7 @@ typedef struct nncursor_requirement
 	struct ncplane * cmd_plane;
 	int termw , termh;
 	pthread_mutex_t nn_lock;
+
 } nnc_req;
 
 
@@ -152,6 +163,8 @@ status nnc_set_outer_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_
 void nnc_cell_triggered( nnc_cell_content * pcell );
 void nnc_set_int_cell( nnc_cell_content * pcell , int src_i );
 void nnc_set_string_cell( nnc_cell_content * pcell , PASSED_CSTR str );
+
+status get_shadow_cell( nnc_req * nnc , nnc_table * ptbl , size_t row , size_t col , nnc_cell_container ** pcell_container );
 
 //status nnc_get_emptied_cell( nnc_table * tbl , size_t row , size_t col , nnc_cell_content * * pcell );
 

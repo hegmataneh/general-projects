@@ -85,13 +85,13 @@ typedef struct cirbuf_inf_sgmgr
 	int pad1;
 
 	/* Optional stats */
-	size_t total_items;
-	size_t total_bytes;
+	STAT_FLD size_t total_items;
+	STAT_FLD size_t total_bytes;
 
 	/* life time stat */
 
-	size_t newed_segments;
-	size_t released_segments;
+	STAT_FLD size_t newed_segments;
+	STAT_FLD size_t released_segments;
 
 	//timeval last_access; // prevent from delaying insertion
 } ci_sgmgr_t;

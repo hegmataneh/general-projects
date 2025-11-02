@@ -30,7 +30,7 @@ _FALSE_SHARE_SAFE typedef struct packed_cbuf_NB // conveys synchronized one prod
 		volatile size_t tail;		// read address
 		char pad4[ CACHE_LINE_SIZE ];
 	};
-	size_t err_full;
+	STAT_FLD size_t err_full;
 	union
 	{
 		sem_t gateway;

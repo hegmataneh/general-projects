@@ -406,3 +406,5 @@
 #ifndef LOCK_LINE
 	#define LOCK_LINE( exp ) exp
 #endif
+
+#define STAT_FLD /*it is used for statistics*/

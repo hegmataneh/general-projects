@@ -461,6 +461,7 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	{
 		// GOOD
 		mm->item_stored++;
+		mm->item_stored_byte += len;
 		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;
 	}
@@ -476,6 +477,7 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	if ( ( d_error = pg_stk_append_record( mm , mm->current , buf , len ) ) == errOK )
 	{
 		mm->item_stored++;
+		mm->item_stored_byte += len;
 	}
 	pthread_mutex_unlock( &mm->ps_lock );
 	return d_error;
@@ -576,7 +578,19 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_sended__continue_sending:
 						{
-							if ( mm->item_stored > 0 ) mm->item_stored--;
+							if ( mm->item_stored > 0 )
+							{
+								mm->item_stored--;
+							}
+
+							if ( mm->item_stored_byte >= out_sz )
+							{
+								mm->item_stored_byte -= out_sz;
+							}
+							else if ( mm->item_stored_byte > 0 )
+							{
+								mm->item_stored_byte = 0;
+							}
 
 							bool emptied = false;
 							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop packet from stack
@@ -590,7 +604,18 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 						case pgstk_sended__stop_sending:
 						{
-							if ( mm->item_stored > 0 ) mm->item_stored--;
+							if ( mm->item_stored > 0 )
+							{
+								mm->item_stored--;
+							}
+							if ( mm->item_stored_byte >= out_sz )
+							{
+								mm->item_stored_byte -= out_sz;
+							}
+							else if ( mm->item_stored_byte > 0 )
+							{
+								mm->item_stored_byte = 0;
+							}
 
 							bool emptied = false;
 							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop stack

@@ -80,7 +80,8 @@ typedef struct
 	pthread_mutex_t ps_lock;		/* protects manager's top-level state */
 
 	/* lifetime statistics */
-	size_t item_stored;
+	STAT_FLD size_t item_stored;
+	STAT_FLD size_t item_stored_byte;
 	size_t file_name_counter;
 
 } page_stack_t;
