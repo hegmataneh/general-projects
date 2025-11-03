@@ -25,6 +25,19 @@ status distributor_init( distributor_t * dis , size_t grp_count )
 	N_END_RET
 }
 
+status distributor_init_withLock( distributor_t * dis , size_t grp_count )
+{
+	status ret = distributor_init( dis , grp_count );
+	if ( ret == errOK )
+	{
+		if ( ( dis->pmtx = CALLOC_ONE( dis->pmtx ) ) )
+		{
+			pthread_mutex_init( dis->pmtx , NULL );
+		}
+	}
+	return ret;
+}
+
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count )
 {
 	INIT_BREAKABLE_FXN();
@@ -53,12 +66,23 @@ void sub_destroy( distributor_t * dis )
 	
 	mms_array_free( dis->pheap );
 	DAC( dis->pheap );
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_destroy( dis->pmtx );
+		DAC( dis->pmtx );
+	}
 }
 
 _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data ,
 				OUTcpy subscriber_t ** subed , int * orderr /*if not null then this is order*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	subscribers_t * psubscribers = NULL;
 	BREAK_STAT( mms_array_get_s( &dis->grps , iGrp , (void**)&psubscribers ) , 0 );
@@ -83,7 +107,12 @@ _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return d_error;
 }
 
 status distributor_get_data( distributor_t * dis , pass_p * pdata )
@@ -164,6 +193,11 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 {
 	INIT_BREAKABLE_FXN();
 
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
+
 	if ( dis->pheap ) // 
 	{
 		if ( dis->pheap->count ) qsort( dis->pheap->data , dis->pheap->count , sizeof( void * ) , compare_subscribers );
@@ -209,13 +243,23 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+	N_V_END_RET
+	if ( dis->pmtx )
+	{
+		pthread_mutex_unlock( dis->pmtx );
+	}
+	return d_error;
 }
 
 // Publish different kinds of events
 status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	if ( dis->pheap )
 	{
@@ -284,12 +328,22 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+	N_V_END_RET
+	if ( dis->pmtx )
+	{
+		pthread_mutex_unlock( dis->pmtx );
+	}
+	return d_error;
 }
 
 status distributor_publish_long( distributor_t * dis , long src_v , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	if ( dis->pheap )
 	{
@@ -359,12 +413,22 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+	N_V_END_RET
+	if ( dis->pmtx )
+	{
+		pthread_mutex_unlock( dis->pmtx );
+	}
+	return d_error;
 }
 
 status distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	if ( dis->pheap )
 	{
@@ -433,12 +497,22 @@ status distributor_publish_double( distributor_t * dis , double src_v , pass_p d
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return d_error;
 }
 
 status distributor_publish_long_double( distributor_t * dis , long src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	if ( dis->pheap )
 	{
@@ -506,12 +580,22 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return d_error;
 }
 
 status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	if ( dis->pheap )
 	{
@@ -580,12 +664,22 @@ status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , do
 	}
 
 	BEGIN_SMPL
-	N_END_RET
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return d_error;
 }
 
 status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , size_t src_sz , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	status aggr_ret = errOK;
 	int any_call_happend = 0;
@@ -664,6 +758,10 @@ status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , s
 	}
 	BEGIN_SMPL
 	N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
 	return any_call_happend ? aggr_ret : errNoPeer;
 }
 
@@ -671,6 +769,11 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
 	{
@@ -695,12 +798,21 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 
 	BEGIN_SMPL
 	N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
 	return errNoPeer;
 }
 
 status distributor_publish_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
 	{
@@ -724,12 +836,21 @@ status distributor_publish_voidp( distributor_t * dis , void_p ptr /*caller poin
 	
 	BEGIN_SMPL
 	N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
 	return errNoPeer;
 }
 
 status distributor_publish_onedirectcall_3voidp( distributor_t * dis , void_p ptr1 , void_p ptr2 , void_p ptr3 )
 {
 	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
 	{
@@ -750,5 +871,9 @@ status distributor_publish_onedirectcall_3voidp( distributor_t * dis , void_p pt
 
 	BEGIN_SMPL
 	N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
 	return errNoPeer;
 }

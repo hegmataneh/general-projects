@@ -1,3 +1,11 @@
+#ifdef Uses_iSTR_SAME
+	#define Uses_STRICMP
+#endif
+
+#ifdef Uses_iSTR_DIFF
+	#define Uses_STRICMP
+#endif
+
 #ifdef Uses_TO_STRING
 	#define __INC_str
 #endif

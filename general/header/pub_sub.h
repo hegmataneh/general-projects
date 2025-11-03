@@ -88,6 +88,8 @@ typedef struct
 		size_t pad1;
 	};
 
+	pthread_mutex_t * pmtx; /*some distributor is share between many threads*/
+
 } distributor_t;
 
 typedef struct
@@ -99,6 +101,7 @@ typedef struct
 #define SUBSCRIBER_PROVIDED NULL
 
 status distributor_init( distributor_t * dis , size_t grp_count );
+status distributor_init_withLock( distributor_t * dis , size_t grp_count );
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
 void sub_destroy( distributor_t * dis );
 
