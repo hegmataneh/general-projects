@@ -57,6 +57,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 int peerTcpClosed( sockfd socketfd );
 void enable_keepalive_chaotic( int sock );
 int is_socket_connected_peek( int fd , int timeout_ms );
+int connect_with_timeout( const char * ip , int port , int timeout_sec );
 
 //----error functions------------------------------------------------------
 _WEAK_ATTR void M_showMsg( LPCSTR msg );

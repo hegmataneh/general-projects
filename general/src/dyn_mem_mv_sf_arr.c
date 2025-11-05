@@ -36,7 +36,7 @@ void mms_array_free( dyn_mms_arr * arr )
 	{
 		DAC( arr->data[ iitm ] );
 	}
-	FREE( arr->data );
+	DAC( arr->data );
 	arr->data = NULL;
 	arr->capacity = 0;
 	arr->count = 0;

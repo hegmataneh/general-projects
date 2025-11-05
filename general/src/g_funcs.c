@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_fcntl
 #define Uses_pthread_mutex_timedlock
 #define Uses_sem_t
 #define Uses_TCP_KEEPIDLE
@@ -1459,4 +1460,85 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
 		number = strtol( start , NULL , 10 );  // parse as long
 	}
 	return number;
+}
+
+int connect_with_timeout( const char * ip , int port , int timeout_sec )
+{
+	int sockfd;
+	struct sockaddr_in addr;
+	int flags , result , valopt;
+	fd_set wset;
+	struct timeval tv;
+	socklen_t lon;
+
+	// Create socket
+	sockfd = socket( AF_INET , SOCK_STREAM , 0 );
+	if ( sockfd < 0 )
+	{
+		perror( "socket" );
+		return -1;
+	}
+
+	// Make socket non-blocking
+	flags = fcntl( sockfd , F_GETFL , 0 );
+	fcntl( sockfd , F_SETFL , flags | O_NONBLOCK );
+
+	// Set address
+	memset( &addr , 0 , sizeof( addr ) );
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons( (uint16_t)port );
+	inet_pton( AF_INET , ip , &addr.sin_addr );
+
+	// Start connecting (non-blocking)
+	result = connect( sockfd , ( struct sockaddr * )&addr , sizeof( addr ) );
+	if ( result < 0 )
+	{
+		if ( errno == EINPROGRESS )
+		{
+			// Connection in progress
+			FD_ZERO( &wset );
+			FD_SET( sockfd , &wset );
+			tv.tv_sec = timeout_sec;
+			tv.tv_usec = 0;
+
+			// Wait for socket to become writable (success) or error
+			result = select( sockfd + 1 , NULL , &wset , NULL , &tv );
+			if ( result > 0 )
+			{
+				lon = sizeof( int );
+				getsockopt( sockfd , SOL_SOCKET , SO_ERROR , ( void * )( &valopt ) , &lon );
+				if ( valopt )
+				{
+					errno = valopt;
+					perror( "connect" );
+					close( sockfd );
+					return -1;
+				}
+			}
+			else if ( result == 0 )
+			{
+				fprintf( stderr , "connect timeout\n" );
+				close( sockfd );
+				errno = ETIMEDOUT;
+				return -1;
+			}
+			else
+			{
+				perror( "select" );
+				close( sockfd );
+				return -1;
+			}
+		}
+		else
+		{
+			perror( "connect" );
+			close( sockfd );
+			return -1;
+		}
+	}
+
+	// Restore blocking mode
+	fcntl( sockfd , F_SETFL , flags );
+
+	return sockfd;  // Success
 }
