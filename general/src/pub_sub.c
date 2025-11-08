@@ -1,3 +1,4 @@
+#define Uses_DBG_PT
 #define Uses_token_ring_p_t
 #define Uses_INIT_BREAKABLE_FXN
 #define Uses_MEMSET_ZERO
@@ -54,6 +55,7 @@ status distributor_init_withOrder( distributor_t * dis , size_t grp_count )
 void sub_destroy( distributor_t * dis )
 {
 	if ( !dis ) return;
+	DBG_PT();
 	for ( size_t igrp = 0 ; igrp < dis->grps.count ; igrp++ )
 	{
 		subscribers_t * psubscribers = NULL;
@@ -62,20 +64,24 @@ void sub_destroy( distributor_t * dis )
 			mms_array_free( &psubscribers->subs );
 		}
 	}
+	DBG_PT();
 	mms_array_free( &dis->grps );
-	
+	DBG_PT();
 	mms_array_free( dis->pheap );
+	DBG_PT();
 	DAC( dis->pheap );
-
+	DBG_PT();
 	if ( dis->pmtx )
 	{
 		pthread_mutex_destroy( dis->pmtx );
+		DBG_PT();
 		DAC( dis->pmtx );
 	}
+	DBG_PT();
 }
 
 _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data ,
-				OUTcpy subscriber_t ** subed , int * orderr /*if not null then this is order*/ )
+				OUTcpy subscriber_t ** subed , int * orderr /*if not null then this is order*/ , void * forward_compatiblity )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -133,22 +139,22 @@ status distributor_get_data( distributor_t * dis , pass_p * pdata )
 
 status distributor_subscribe( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data )
 {
-	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , NULL );
+	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , NULL , NULL );
 }
 
 status distributor_subscribe_out( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed )
 {
-	return distributor_subscribe_t( dis , 0 , type , func , data , subed , NULL );
+	return distributor_subscribe_t( dis , 0 , type , func , data , subed , NULL , NULL );
 }
 
 status distributor_subscribe_withOrder( distributor_t * dis , sub_type_e type , sub_func_t func , pass_p data , int order )
 {
-	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , &order );
+	return distributor_subscribe_t( dis , 0 , type , func , data , NULL , &order , NULL );
 }
 
 status distributor_subscribe_ingrp( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data )
 {
-	return distributor_subscribe_t( dis , iGrp , type , func , data , NULL , NULL );
+	return distributor_subscribe_t( dis , iGrp , type , func , data , NULL , NULL , NULL );
 }
 
 status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data , void_p src_tring )
@@ -158,7 +164,7 @@ status distributor_subscribe_with_ring( distributor_t * dis , size_t iGrp /*1 on
 	token_ring_p_t * tring = ( token_ring_p_t * )src_tring;
 
 	subscriber_t * subed = NULL;
-	BREAK_STAT( distributor_subscribe_t( dis , iGrp , type , func , data , &subed , NULL ) , 0 );
+	BREAK_STAT( distributor_subscribe_t( dis , iGrp , type , func , data , &subed , NULL , NULL ) , 0 );
 	subed->tring_p_t = tring; 
 	BREAK_STAT( token_ring_p_add( tring , subed ) , 0 );
 
@@ -171,7 +177,7 @@ status distributor_subscribe_onedirectcall( distributor_t * dis , sub_type_e typ
 	INIT_BREAKABLE_FXN();
 
 	subscriber_t * subed = NULL;
-	BREAK_STAT( distributor_subscribe_t( dis , 0 , type , func , data , &subed , NULL ) , 0 );
+	BREAK_STAT( distributor_subscribe_t( dis , 0 , type , func , data , &subed , NULL , NULL ) , 0 );
 	subed->token = token;
 
 	BEGIN_SMPL
@@ -354,7 +360,7 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 			sub_custome_ord_t * pord = NULL;
 			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_LONG )
 			{
-				pord->psubscriber->func.long_cb( DATA_ORDER_(pord->psubscriber) , src_v );
+				pord->psubscriber->func.long_cb( DATA_ORDER_(pord->psubscriber) , src_v == NP ? ( long )pord->order : src_v ); // pass order if src_v is NP
 			}
 		}
 

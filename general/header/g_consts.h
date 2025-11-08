@@ -1,24 +1,26 @@
 ﻿#pragma once
 
 //-------------------------------------------------------------------------
-extern const char EOS; // 0
+_EXTERN const char EOS; // 0
 //const WCHAR WEOS = _WT('\0'); // 0
-extern const char LF ; // line feed 10
-extern const char CR ; // carriage return 13
+_EXTERN const char LF ; // line feed 10
+_EXTERN const char CR ; // carriage return 13
 
-extern const char _newLineFeed[] ;
+_EXTERN const char _newLineFeed[] ;
 
-extern const char _fileNameDelimiter[] ;
+_EXTERN const char _fileNameDelimiter[] ;
 
-extern const char _SPFD ; // Standard path file delimiter
+_EXTERN const char _SPFD ; // Standard path file delimiter
 
-extern const char _UTF8Sign[] ;
-extern const char _UTF16LSign[] ; // little-endian . Unicode in Microsoft terminology
-extern const char _UTF16BSign[] ; // big-endian . Unicode in Microsoft terminology
-extern const char _UTF32LSign[] ; // little-endian
-extern const char _UTF32BSign[] ; // big-endian
+_EXTERN const char _UTF8Sign[] ;
+_EXTERN const char _UTF16LSign[] ; // little-endian . Unicode in Microsoft terminology
+_EXTERN const char _UTF16BSign[] ; // big-endian . Unicode in Microsoft terminology
+_EXTERN const char _UTF32LSign[] ; // little-endian
+_EXTERN const char _UTF32BSign[] ; // big-endian
 
-extern const sockfd invalid_fd;
+_EXTERN const sockfd invalid_fd;
+
+#define PRECISION_OF_DOUBLE 1e-10
 
 //-------------------------------------------------------------------------
 enum
@@ -53,7 +55,7 @@ enum
 };
 
 //-------------------------------------------------------------------------
-//extern uchar _ErrLvl; // does not dependable in multi thread app
+//_EXTERN uchar _ErrLvl; // does not dependable in multi thread app
 
 #define ETHERNET_MTU 1500
 #define MAX_NFUDP_PAYLOAD 1472
@@ -111,7 +113,42 @@ mutual Hamming distance greater than 4
 maximally separated and rare bytes
 */
 
-extern const unsigned char MSB_MARKERS[8];
+_EXTERN const unsigned char MSB_MARKERS[8];
 
 // --------------------
 
+#define BAD_NETWORK_HANDSHAKE_TIMEOUT 10 /*sec*/
+
+//-------------------------------------------------------------------------
+#define G_SCHAR_MIN  ((schar)0x80)				// -128
+#define G_SCHAR_MAX  ((schar)-1^G_SCHAR_MIN)	// 127
+#define G_UCHAR_MIN  ((uchar)0x00)				// 0
+#define G_UCHAR_MAX  ((uchar)-1^G_UCHAR_MIN)	// 255
+
+#define G_SSHORT_MIN ((sshort)0x8000)			// -32768
+#define G_SSHORT_MAX ((sshort)-1^G_SSHORT_MIN)	// 32767
+#define G_USHORT_MIN ((ushort)0x0000)			// 0
+#define G_USHORT_MAX ((ushort)-1^G_USHORT_MIN)	// 65535
+
+#define G_SLONG_MIN  ((slong)0x80000000L)		// -2,147,483,648
+#define G_SLONG_MAX  ((slong)-1^G_SLONG_MIN)	// 2,147,483,647
+#define G_ULONG_MIN  ((ulong)0x00000000L)		// 0
+#define G_ULONG_MAX  ((ulong)-1^G_ULONG_MIN)	// 4,294,967,295
+
+#define G_SLONGLONG_MIN  ((sint64)0x8000000000000000i64)	// -9,223,372,036,854,775,808
+#define G_SLONGLONG_MAX  ((sint64)-1^G_SLONGLONG_MIN)		// 9,223,372,036,854,775,807
+#define G_ULONGLONG_MIN  ((uint64)0x0000000000000000i64)	// 0
+#define G_ULONGLONG_MAX  ((uint64)-1^G_ULONGLONG_MIN)		// 18,446,744,073,709,551,615
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
+#ifndef M_2_PI
+#define M_2_PI		6.283185307179586476925286766559
+#endif
+#define PI_2		1.57079632679489662
+#define PI_180		0.01745329251994329
+#define M_3_PI_2	4.71238898038468985
+
+#define PHI			1.618

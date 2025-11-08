@@ -1,3 +1,22 @@
+#ifdef Uses_DBG_PT
+	#define Uses_snprintf
+	#define __INC_DBG
+#endif
+
+#ifdef Uses___arrr
+	#define __INC_DBG
+#endif
+
+#ifdef Uses_MARK_LINE
+	#define __INC_DBG
+#endif
+
+#ifdef Uses_MARK_START_THREAD
+	#define __INC_DBG
+#endif
+
+#define Uses_access_qualifier
+
 #ifdef Uses_iSTR_SAME
 	#define Uses_STRICMP
 #endif

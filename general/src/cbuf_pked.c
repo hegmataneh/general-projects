@@ -57,11 +57,11 @@ void cbuf_pked_destroy( cbuf_pked_t * vc )
 }
 
 #ifdef ENABLE_USE_INTERNAL_C_STATISTIC
-//GLOBAL_VAR static int _counter = 0;
-//GLOBAL_VAR static int _sum_len = 0;
+//_GLOBAL_VAR static int _counter = 0;
+//_GLOBAL_VAR static int _sum_len = 0;
 //
-//GLOBAL_VAR static int _pop_count = 0;
-//GLOBAL_VAR static int _pop_size = 0;
+//_GLOBAL_VAR static int _pop_count = 0;
+//_GLOBAL_VAR static int _pop_size = 0;
 #endif
 
 status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr , bool auto_opengate )

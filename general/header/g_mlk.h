@@ -263,7 +263,7 @@
 
 
 		/* **** public **** */
-		extern mLeak_t __alc_hit[ MLK_HASH_WIDTH ][ EACH_ADDR_COUNT ]; /*just extern this array in your code and count leaks*/
+		_EXTERN mLeak_t __alc_hit[ MLK_HASH_WIDTH ][ EACH_ADDR_COUNT ]; /*just extern this array in your code and count leaks*/
 		/* **** public **** */
 
 	#endif  // TRACE_MEMORY_LEAK

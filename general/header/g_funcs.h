@@ -58,6 +58,7 @@ int peerTcpClosed( sockfd socketfd );
 void enable_keepalive_chaotic( int sock );
 int is_socket_connected_peek( int fd , int timeout_ms );
 int connect_with_timeout( const char * ip , int port , int timeout_sec );
+int create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec );
 
 //----error functions------------------------------------------------------
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
@@ -66,6 +67,7 @@ status internalErrorVal( LPCSTR errStr );
 //LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
 LPCSTR systemErrorStr( int prcID /*just for future use*/ );
 LPCSTR __FUNCTION_shrtn( LPCSTR str );
+LPCSTR __FILE_shrtn( LPCSTR str );
 LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
 
 //----String functions------------------------------------------------------
@@ -87,8 +89,10 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 
 IN_GENERAL int fstrcmp( LPCSTR str1 , LPCSTR str2 ); // Farsi Cmp . Written By Mohsen
 IN_GENERAL LPCSTR stristr( LPCSTR sSrc , LPCSTR sDest ); // case insensitive cmp . Written By Mohsen
-IN_GENERAL LPCSTR rstrstr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . Written By Mohsen
-IN_GENERAL LPCSTR rstristr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . case insensitive cmp . Written By Mohsen
+IN_GENERAL LPCSTR strrstr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . Written By Mohsen
+IN_GENERAL LPCSTR strristr( LPCSTR sStr , LPCSTR sSubStr ); // reverse search . case insensitive cmp . Written By Mohsen
+
+LPCSTR strrstr_try( LPCSTR haystack , LPCSTR needle ); // try not null
 
 // strstrs(s)
 IN_GENERAL LPCSTR strstrs( LPCSTR sSrc , int * const pISubStr , int count , LPCSTR * const strs ); // Written By Mohsen
@@ -117,11 +121,11 @@ IN_GENERAL LPCSTR strichr( LPCSTR str , char c ); // case insensitive cmp . Writ
 IN_GENERAL LPCSTR strrinchr( LPCSTR str , char c , int n ); // Written By Mohsen
 
 // ---- chrs --------------------------------------------------------------------------------
-IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+//IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
 // n , i , r
 //IN_GENERAL LPCSTR strnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // n(th) chr . Written By Mohsen
 //IN_GENERAL LPCSTR strichrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // case insensitive cmp . Written By Mohsen
-//IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
+IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
 // ni , ri , nr
 //IN_GENERAL LPCSTR strinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // n(th) chr . case insensitive cmp . Written By Mohsen
 //IN_GENERAL LPCSTR strrichrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // reverse search . case insensitive cmp . Written By Mohsen

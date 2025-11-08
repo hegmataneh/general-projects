@@ -131,40 +131,9 @@ typedef void ( *callback_t5 )( void_p , int );
 
 typedef PASSED_CSTR ( *callback_t6 )( pass_p /*pass_data*/ );
 
-//-------------------------------------------------------------------------
-#define G_SCHAR_MIN  ((schar)0x80)				// -128
-#define G_SCHAR_MAX  ((schar)-1^G_SCHAR_MIN)	// 127
-#define G_UCHAR_MIN  ((uchar)0x00)				// 0
-#define G_UCHAR_MAX  ((uchar)-1^G_UCHAR_MIN)	// 255
 
-#define G_SSHORT_MIN ((sshort)0x8000)			// -32768
-#define G_SSHORT_MAX ((sshort)-1^G_SSHORT_MIN)	// 32767
-#define G_USHORT_MIN ((ushort)0x0000)			// 0
-#define G_USHORT_MAX ((ushort)-1^G_USHORT_MIN)	// 65535
-
-#define G_SLONG_MIN  ((slong)0x80000000L)		// -2,147,483,648
-#define G_SLONG_MAX  ((slong)-1^G_SLONG_MIN)	// 2,147,483,647
-#define G_ULONG_MIN  ((ulong)0x00000000L)		// 0
-#define G_ULONG_MAX  ((ulong)-1^G_ULONG_MIN)	// 4,294,967,295
-
-#define G_SLONGLONG_MIN  ((sint64)0x8000000000000000i64)	// -9,223,372,036,854,775,808
-#define G_SLONGLONG_MAX  ((sint64)-1^G_SLONGLONG_MIN)		// 9,223,372,036,854,775,807
-#define G_ULONGLONG_MIN  ((uint64)0x0000000000000000i64)	// 0
-#define G_ULONGLONG_MAX  ((uint64)-1^G_ULONGLONG_MIN)		// 18,446,744,073,709,551,615
-
-#ifndef M_PI
-#define M_PI 3.1415926535897932384626433832795
-#endif
-
-#ifndef M_2_PI
-#define M_2_PI		6.283185307179586476925286766559
-#endif
-#define PI_2		1.57079632679489662
-#define PI_180		0.01745329251994329
-#define M_3_PI_2	4.71238898038468985
-
-#define PHI			1.618
 
 #ifdef Uses_timeval
 	typedef struct timeval timeval;
 #endif
+

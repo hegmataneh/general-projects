@@ -39,8 +39,8 @@
 #include <general.dep>
 
 
-GLOBAL_VAR static short _err = NEXT_GENERAL_ERROR_VALUE;
-GLOBAL_VAR static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
+_GLOBAL_VAR static short _err = NEXT_GENERAL_ERROR_VALUE;
+_GLOBAL_VAR static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
 	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt","errShutdown"};
 
 
@@ -131,6 +131,13 @@ LPCSTR __FUNCTION_shrtn( LPCSTR str ) // just shorten __FUNCTION__
 {
 	int len = ( int )strlen( str );
 	return ( LPCSTR )( ( ( LPSTR )str ) + (len > 10 ? len - 10 : 0) );
+}
+
+LPCSTR __FILE_shrtn( LPCSTR src_str ) // just shorten __FUNCTION__
+{
+	LPCSTR str = get_filename( src_str );
+	int len = ( int )strlen( str );
+	return ( LPCSTR )( ( ( LPSTR )str ) + ( len > 10 ? len - 10 : 0 ) );
 }
 
 LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
@@ -502,7 +509,7 @@ IN_GENERAL LPCSTR stristr( LPCSTR sStr , LPCSTR sSubstr ) // Written By Mohsen
 	return ( LPCSTR )strcasestr( sStr , sSubstr );
 }
 
-IN_GENERAL LPCSTR rstrstr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
+IN_GENERAL LPCSTR strrstr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
 {
 	LPCSTR lpLastSubStr = NULL;
 	while ( ( sStr = strstr( sStr , sSubStr ) ) )
@@ -513,7 +520,7 @@ IN_GENERAL LPCSTR rstrstr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
 	return lpLastSubStr;
 }
 
-IN_GENERAL LPCSTR rstristr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
+IN_GENERAL LPCSTR strristr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
 {
 	LPCSTR lpLastSubStr = NULL;
 	while ( ( sStr = stristr( sStr , sSubStr ) ) )
@@ -524,6 +531,11 @@ IN_GENERAL LPCSTR rstristr( LPCSTR sStr , LPCSTR sSubStr ) // Written By Mohsen
 	return lpLastSubStr;
 }
 
+LPCSTR strrstr_try( LPCSTR haystack , LPCSTR needle )
+{
+	LPCSTR res = strrstr( haystack , needle );
+	return res ? res : haystack;
+}
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
@@ -766,11 +778,11 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 
 //
 
-IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
-{
-	char car[] = { c , EOS };
-	return rstristr( str , car );
-}
+//IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
+//{
+//	char car[] = { c , EOS };
+//	return rstristr( str , car );
+//}
 
 //IN_GENERAL LPCSTR strrnchr( LPCSTR inStr , char c , int n )
 //{
@@ -959,25 +971,25 @@ IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //	return lpRet;
 //}
 
-//IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // Written By Mohsen
-//{
-//	LPCSTR pOutStr = NULL , pTempOutStr;
-//	for ( ; chrs[ 0 ] != EOS ; chrs++ )
-//	{
-//		if ( ( pTempOutStr = ( LPCSTR )strrchr( str , chrs[ 0 ] ) ) )
-//		{
-//			if ( !pOutStr || pTempOutStr > pOutStr )
-//			{
-//				pOutStr = pTempOutStr;
-//			}
-//		}
-//	}
-//	if ( pCI && pOutStr )
-//	{
-//		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
-//	}
-//	return pOutStr;
-//}
+IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // Written By Mohsen
+{
+	LPCSTR pOutStr = NULL , pTempOutStr;
+	for ( ; chrs[ 0 ] != EOS ; chrs++ )
+	{
+		if ( ( pTempOutStr = ( LPCSTR )strrchr( str , chrs[ 0 ] ) ) )
+		{
+			if ( !pOutStr || pTempOutStr > pOutStr )
+			{
+				pOutStr = pTempOutStr;
+			}
+		}
+	}
+	if ( pCI && pOutStr )
+	{
+		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+	}
+	return pOutStr;
+}
 
 LPCSTR strihead( LPCSTR str , LPCSTR head )
 {
@@ -1280,7 +1292,7 @@ ulong hash( LPCSTR str )
 
 const char * get_filename( const char * path )
 {
-	const char * slash = strrchr( path , '/' );  // find last '/'
+	const char * slash = strrchrs( path , "/\\" , NULL );  // find last '/'
 	if ( slash )
 		return slash + 1;  // return part after last '/'
 	return path;  // no '/' found, whole string is filename
@@ -1541,4 +1553,118 @@ int connect_with_timeout( const char * ip , int port , int timeout_sec )
 	fcntl( sockfd , F_SETFL , flags );
 
 	return sockfd;  // Success
+}
+
+
+// General function to handle socket creation, binding, listening, and accepting with timeout
+int create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec )
+{
+	int server_fd;
+	fd_set read_fds;
+	struct timeval timeout;
+
+	// Create socket
+	if ( ( server_fd = socket( AF_INET , SOCK_STREAM , 0 ) ) == -1 )
+	{
+		//perror( "Socket creation failed" );
+		return -1;
+	}
+
+	int prevflags = fcntl( server_fd , F_GETFL , 0 );
+	if ( prevflags == -1 )
+	{
+		//perror( "fcntl(F_GETFL) failed" );
+		_close_socket( &server_fd );
+		return -1;
+	}
+	if ( fcntl( server_fd , F_SETFL , prevflags | O_NONBLOCK ) == -1 )
+	{
+		//perror( "fcntl(F_SETFL) failed" );
+		_close_socket( &server_fd );
+		return -1;
+	}
+	int opt = 1;
+	if ( setsockopt( server_fd, SOL_SOCKET , SO_REUSEADDR , &opt , sizeof( opt ) ) < 0 )
+	{
+		//perror( "setsockopt error" );
+		_close_socket( &server_fd );
+		return -1;
+	}
+
+	struct sockaddr_in server_addr;
+	socklen_t addrlen = sizeof( server_addr );
+	memset( &server_addr , 0 , sizeof( server_addr ) );
+	server_addr.sin_family = AF_INET;
+	if ( strcmp( ip_address , "INADDR_ANY" ) == 0 )
+	{
+		server_addr.sin_addr.s_addr = INADDR_ANY;
+	}
+	else
+	{
+		server_addr.sin_addr.s_addr = inet_addr( ip_address ); // Specify the IP address to bind to
+	}
+	server_addr.sin_port = htons( (uint16_t)port );
+
+	// Bind the socket
+	if ( bind( server_fd , ( struct sockaddr * )&server_addr , addrlen ) == -1 )
+	{
+		//perror( "Bind failed" );
+		close( server_fd );
+		return -1;
+	}
+
+	// Prepare for listen
+	if ( listen( server_fd , 5 ) == -1 )
+	{
+		//perror( "Listen failed" );
+		close( server_fd );
+		return -1;
+	}
+
+	// Set up timeout value for select()
+	timeout.tv_sec = timeout_sec;
+	timeout.tv_usec = 0;
+
+	// Set up the file descriptor set
+	FD_ZERO( &read_fds );
+	FD_SET( server_fd , &read_fds );
+
+	// Wait for incoming connection with timeout using select()
+	int activity = select( server_fd + 1 , &read_fds , NULL , NULL , &timeout );
+
+	if ( activity == -1 )
+	{
+		//perror( "Select failed" );
+		close( server_fd );
+		return -1;
+	}
+	else if ( activity == 0 )
+	{
+		//perror( "Timeout reached. No connection attempts.\n" );
+		close( server_fd );
+		return -1;
+	}
+
+	// Accept the connection if it's ready
+	if ( FD_ISSET( server_fd , &read_fds ) )
+	{
+		struct sockaddr_in client_addr;
+		socklen_t client_len = sizeof( client_addr );
+		int client_fd;
+
+		client_fd = accept( server_fd , ( struct sockaddr * )&client_addr , &client_len );
+		if ( client_fd < 0 )
+		{
+			//perror( "Accept failed" );
+			close( server_fd );
+			return -1;
+		}
+
+		// Connection accepted
+		close( server_fd );
+		return client_fd;  // Return client socket descriptor for further communication
+	}
+
+	close( server_fd );
+	return -1;  // Timeout or error occurred
 }

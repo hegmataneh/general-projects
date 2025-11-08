@@ -1,3 +1,4 @@
+#define Uses_DBG_PT
 #define Uses_LOCK_LINE
 #define Uses_WARNING
 #define Uses_pthread_mutex_t
@@ -199,8 +200,11 @@ status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t defa
 	mgr->filled_head = mgr->filled_tail = NULL;
 	mgr->filled_count = 0;
 	mgr->segment_total = 0;
-	mgr->total_items = 0;
-	mgr->total_bytes = 0;
+	mgr->current_items = 0;
+	mgr->current_bytes = 0;
+
+	mgr->tt_items = 0;
+	mgr->tt_bytes = 0;
 
 	return errOK;
 }
@@ -374,8 +378,11 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	psgm_active->last_used = time( NULL );
 
 	/* Update manager stats */
-	mgr->total_items++;
-	mgr->total_bytes += len;
+	mgr->current_items++;
+	mgr->current_bytes += len;
+
+	mgr->tt_items++;
+	mgr->tt_bytes += len;
 
 	WARNING( psgm_active->buf_used <= psgm_active->buf_capacity );
 
@@ -464,10 +471,10 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	/* Reset */
-	mgr->total_items -= s->itm_count;
+	mgr->current_items -= s->itm_count;
 	/* subtract bytes */
 	size_t bytes = s->buf_used;
-	if (mgr->total_bytes >= bytes) mgr->total_bytes -= bytes; else mgr->total_bytes = 0;
+	if (mgr->current_bytes >= bytes) mgr->current_bytes -= bytes; else mgr->current_bytes = 0;
 	s->buf_used = 0;
 	s->itm_count = 0;
 	//s->filled = False;
@@ -480,7 +487,8 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 		segmgr_set_active_locked( mgr , s );
 	}
 	pthread_mutex_unlock( &mgr->lock );
-	return errOK;
+	bool bempty = ci_sgm_is_empty( mgr ); // there is lock inside it
+	return bempty ? errEmpty : errOK;
 }
 
 /* Read item at index idx (0 <= idx < s->itm_count) from segment s.
@@ -684,7 +692,8 @@ bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 void segmgr_destroy( ci_sgmgr_t * mgr )
 {
 	if ( !mgr ) return;
-	//LOCK_LINE( pthread_mutex_lock( &mgr->lock ) ); // at the end is that necessary clean every thing . TODO
+	DBG_PT();
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) ); // at the end is that necessary clean every thing . TODO
 	/* free segments in ring */
 	if ( mgr->ring )
 	{
@@ -697,17 +706,19 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 		}
 		ci_sgm_free( mgr->ring );
 	}
+	DBG_PT();
 	mgr->ring = mgr->active = NULL;
 	/* free filled queue if any left (shouldn't be) */
-	ci_sgm_t * q = mgr->filled_head;
-	while ( q )
-	{
-		ci_sgm_t * n = q->next;
-		/* q pointers were overridden for queue; safe to free? We already freed ring above. */
-		/* But if ring was same segment, avoid double-free. */
-		q = n;
-	}
-	//pthread_mutex_unlock( &mgr->lock ); // at the end is that necessary clean every thing . TODO
+	//ci_sgm_t * q = mgr->filled_head;
+	//while ( q )
+	//{
+	//	ci_sgm_t * n = q->next;
+	//	/* q pointers were overridden for queue; safe to free? We already freed ring above. */
+	//	/* But if ring was same segment, avoid double-free. */
+	//	q = n;
+	//}
+	DBG_PT();
+	pthread_mutex_unlock( &mgr->lock ); // at the end is that necessary clean every thing . TODO
 	pthread_mutex_destroy( &mgr->lock );
 	pthread_cond_destroy( &mgr->filled_cond );
 }

@@ -10,7 +10,7 @@
 #pragma GCC diagnostic ignored "-Wunused-variable"
 
 #ifndef IN_DDLCK_H // in other source they prepare prerequisit
-	extern int __tu_global_counter;
+	_EXTERN int __tu_global_counter;
 	static int __tu_file_counter = 0; /*each source has one instance*/
 	static int __tu_line_counter = 0; /*each source has one instance*/
 #endif
@@ -37,7 +37,7 @@ typedef struct
 
 typedef ddlck_t _tmp_arr_type_[ DD_MAX_FILE ][ DD_LINE_COUNT ];
 
-extern _tmp_arr_type_ __lck_hit;
+_EXTERN _tmp_arr_type_ __lck_hit;
 
 #ifdef LOCK_LINE
 #undef LOCK_LINE

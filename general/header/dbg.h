@@ -13,12 +13,12 @@
 
 		/* **** private **** */
 		#ifndef IN_DBG_H // in other source they prepare prerequisit
-			#define __GLOBAL_COUNTER extern int __tu_global_counter;
-			extern int __pc;
-			extern int/*program count*/ __FXN_HIT[MAX_TU/*max TU count or c files*/][MAX_TU_LINES/*max lines count*/][BACKTRACK_COUNT/*n times of calling the line*/];
-			extern LPCSTR __map_c2idx[MAX_TU];
+			#define __GLOBAL_COUNTER _EXTERN int __tu_global_counter;
+			_EXTERN int __pc;
+			_EXTERN int/*program count*/ __FXN_HIT[MAX_TU/*max TU count or c files*/][MAX_TU_LINES/*max lines count*/][BACKTRACK_COUNT/*n times of calling the line*/];
+			_EXTERN LPCSTR __map_c2idx[MAX_TU];
 		#else
-			#define __GLOBAL_COUNTER NULL_ACT /*extern int __tu_global_counter = 0;*/ /*translation unit or c file*/
+			#define __GLOBAL_COUNTER NULL_ACT /*_EXTERN int __tu_global_counter = 0;*/ /*translation unit or c file*/
 		#endif
 
 		#define __LOCAL_COUNTER static int __tu_local_counter = 0; /*each source has one instance*/
@@ -60,3 +60,23 @@
 
 #endif
 
+#if defined ENABLE_USE_DBG_TAG
+
+#define TMP_DUMP_BUFF_NAME __arrr
+#define TMP_DUMP_BUFF_N __arrr_n
+ 
+#ifndef IN_DBG_H
+	_GLOBAL_VAR _EXTERN char TMP_DUMP_BUFF_NAME[ 100000 ];
+	_GLOBAL_VAR _EXTERN int TMP_DUMP_BUFF_N;
+#endif
+
+#define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , trd_id );
+#define MARK_LINE() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s %d\n" , __FUNCTION__ , __LINE__ );
+
+
+#define DBG_TAG_BASE( _ar , _ar_n , fmt , ... ) do { _ar_n+=snprintf((_ar) + (_ar_n), sizeof(_ar), (fmt), ##__VA_ARGS__); } while( 0 )
+#define DBG_TAG( fmt , ... ) DBG_TAG_BASE( TMP_DUMP_BUFF_NAME , TMP_DUMP_BUFF_N , fmt , __VA_ARGS__ )
+#define DBG_PT() DBG_TAG( "%s %d\n" , __FILE_shrtn( __FILE__ ) , __LINE__ )
+
+
+#endif

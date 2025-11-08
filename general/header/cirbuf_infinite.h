@@ -85,8 +85,11 @@ typedef struct cirbuf_inf_sgmgr
 	int pad1;
 
 	/* Optional stats */
-	STAT_FLD size_t total_items; // current state
-	STAT_FLD size_t total_bytes; // current state
+	STAT_FLD size_t current_items; // current state
+	STAT_FLD size_t current_bytes; // current state
+
+	STAT_FLD size_t tt_items; // current state
+	STAT_FLD size_t tt_bytes; // current state
 
 	/* life time stat */
 

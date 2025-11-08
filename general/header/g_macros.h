@@ -7,14 +7,24 @@
 //	#define null (void_p)0
 //#endif
 
-#define PRECISION_OF_DOUBLE 1e-10
-
 //#if defined Uses_VECTOR_LEN || !defined __COMPILING
 //	#define VECTOR_LEN(x1,y1,x2,y2) (sqrt((double(x2)-double(x1))*(double(x2)-double(x1))+(double(y2)-double(y1))*(double(y2)-double(y1))))
 //#endif
 
 //-------------------------------------------------------------------------
 #define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
+
+
+#define ALEN(...) /*count preproc variadc args*/ ALEN0(__VA_ARGS__, \
+						 0x1E, 0x1F, 0x1D,0x1C, 0x1B, 0x1A,0x19,0x18, \
+						 0x17, 0x16, 0x15,0x14, 0x13, 0x12,0x11,0x10, \
+						 0x0E, 0x0F, 0x0D,0x0C, 0x0B, 0x0A,0x09,0x08, \
+						 0x07, 0x06, 0x05,0x04, 0x03, 0x02,0x01,0x00)
+
+#define ALEN0(_00,_01,_02,_03,_04,_05,_06,_07,_08,\
+				_09,_0A,_0B,_0C,_0D,_0F,_0E,_10,_11,\
+				_12,_13,_14,_15,_16,_17,_18,_19,_1A,\
+				_1B,_1C,_1D,_1F,_1E,...) _1E /*ti 31 arg can count*/
 
 //-------------------------------------------------------------------------
 #define HI_NIBBLE( byte )					( ( ( uchar )( byte ) ) >> 4 )
@@ -29,31 +39,94 @@
 #define LO_WORD(dw)							((WORD)(((DWORD_PTR)(dw)) & 0xffff))
 #define MAKE_DWORD(hiWord,loWord)			((DWORD)(((WORD)(((DWORD_PTR)(loWord)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(hiWord)) & 0xffff))) << 16))
 
-//-------------------------------------------------------------------------
-#if defined __GNUC__
-	/* in general, when static libraries are being made,
-	 * aya mishavad chize moshtaraki ra beyne platform-ha peyda kard. dar symbian, vaghti static
-	 * library darad sakhteh mishavad __LIB__ define shodeh ast.
-	 */
-	#define _EXPORT /*obj declared at global namespace*/
-	#define _IMPORT /*extern and linked to global namespace obj*/
+//----- scope and access privilage --------------------------------------------------------------------
+#if defined Uses_access_qualifier || !defined __COMPILING
+	#if defined __GNUC__
+		/* in general, when static libraries are being made,
+		 * aya mishavad chize moshtaraki ra beyne platform-ha peyda kard. dar symbian, vaghti static
+		 * library darad sakhteh mishavad __LIB__ define shodeh ast.
+		 */
+		#define _EXPORT /*obj declared at global namespace*/
+		#define _IMPORT /*extern and linked to global namespace obj*/
 
 
-	#define _WEAK_ATTR __attribute__( ( weak ) ) /*low priority in linkage*/
-	#define _STRONG_ATTR /*hi priority in linkage*/
+		#define _WEAK_ATTR __attribute__( ( weak ) ) /*low priority in linkage*/
+		#define _STRONG_ATTR /*hi priority in linkage*/
 
-#else
-//	#define _EXPORT __declspec(dllexport)
-//	#define _IMPORT __declspec(dllimport)
+	#else
+	//	#define _EXPORT __declspec(dllexport)
+	//	#define _IMPORT __declspec(dllimport)
+	#endif
+
+	#define DO_WHILE(x) do { x; } while(0)
+
+	#ifdef _INx
+	#error
+	#endif
+	#define _INx /*input argument that stored*/
+
+	#define _IN /*input argument*/
+
+	#ifdef HDLR
+	#error
+	#endif
+	#define HDLR /*handler of module*/
+
+	//#define _OUT /*output argument*/
+
+	#ifdef _NEW_OUT_P
+	#error
+	#endif
+	#define _NEW_OUT_P /*output argument that allocated and freed by caller*/
+
+	#ifdef _RET_VAL_P
+	#error
+	#endif
+	#define _RET_VAL_P /*output argument that just filled and mng by caller*/
+
+	#ifdef _CPY_VAL_P
+	#error
+	#endif
+	#define _CPY_VAL_P /*output argument that just filled and mng by caller*/
+
+	#ifdef OUTalc
+	#error
+	#endif
+	#ifdef OUTx
+	#error
+	#endif
+	#ifdef OUTcpy
+	#error
+	#endif
+
+	#define OUTalc	_NEW_OUT_P /*allocate new*/
+	#define OUTx	_RET_VAL_P /*assign*/
+	#define OUTcpy	_CPY_VAL_P /*copy content*/
+
+
+	#define _THREAD_FXN /*identified as thread callback fxn*/
+	#define _CALLBACK_FXN
+	#define _REGULAR_FXN
+
+	#define _PRIVATE_FXN static
+	#define _PUB_FXN /*can call from another lib*/
+
+	#define PRE_MAIN_INITIALIZATION( id ) __attribute__( ( constructor( id ) ) ) /*put it before global fxn then system call it before main in gcc*/
+	//#define PRE_MAIN_INITIALIZATION( id )
+
+
+	#define _GLOBAL_VAR /*variable on global namespace*/
+
+	#define _EXTERN extern
+
 #endif
 
 //-------------------------------------------------------------------------
 //#define ERROR_DEF(err) status err=internalErrorVal((LPCSTR)#err)
-//#define ERROR_USE(err) extern status err
+//#define ERROR_USE(err) _EXTERN status err
 
 //#define LOCAL_ERROR(err) //static ERROR_DEF(err)
 //#define GLOBAL_ERROR(err) //_EXPORT ERROR_DEF(err)
-
 
 //----- string macro --------------------------------------------------------------------
 #if defined Uses_STR_funcs || !defined __COMPILING
@@ -220,51 +293,6 @@
 	#define COALESCE4( a , b , c , d ) ( (a) ? (a) : (b) ? (b) : (c) ? (c) : (d) )
 #endif
 
-#define DO_WHILE(x) do { x; } while(0)
-
-#ifdef _INx
-#error
-#endif
-#define _INx /*input argument that stored*/
-
-#define _IN /*input argument*/
-
-#ifdef HDLR
-#error
-#endif
-#define HDLR /*handler of module*/
-
-//#define _OUT /*output argument*/
-
-#ifdef _NEW_OUT_P
-#error
-#endif
-#define _NEW_OUT_P /*output argument that allocated and freed by caller*/
-
-#ifdef _RET_VAL_P
-#error
-#endif
-#define _RET_VAL_P /*output argument that just filled and mng by caller*/
-
-#ifdef _CPY_VAL_P
-#error
-#endif
-#define _CPY_VAL_P /*output argument that just filled and mng by caller*/
-
-#ifdef OUTalc
-#error
-#endif
-#ifdef OUTx
-#error
-#endif
-#ifdef OUTcpy
-#error
-#endif
-
-#define OUTalc	_NEW_OUT_P /*allocate new*/
-#define OUTx	_RET_VAL_P /*assign*/
-#define OUTcpy	_CPY_VAL_P /*copy content*/
-
 
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
 
@@ -307,19 +335,10 @@
 #define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define _THREAD_FXN /*identified as thread callback fxn*/
-#define _CALLBACK_FXN
-#define _REGULAR_FXN
-
-#define _PRIVATE_FXN static
-#define _PUB_FXN /*can call from another lib*/
-
 #define _FALSE_SHARE_SAFE /*speed up memory access*/
 #define _ALIGNED(date) /*speed up struct member access*/
 
-
 #define _MEMMOVE_UNSAFE_FXN /*used in fxn that return pointer to place that is not safe when main block moved to other place and pointer is dangled*/
-
 
 #define _PAD_NAME2(line) pad_##line
 #define _PAD_NAME(line)  _PAD_NAME2(line)
@@ -334,14 +353,6 @@
 #define NULL_ACT MACRO_E( while(0) )
 #define RANJE_ACT1( swt_var , cse1 , true_act , false_act ) do { switch( swt_var ) { case cse1: { true_act; break; } default: { false_act; } } } while( 0 )
 #define RANJE_ACT2( swt_var , cse1 , cse2 , true_act , false_act ) do { switch( swt_var ) { case cse1: case cse2: { true_act; break; } default: { false_act; } } } while( 0 )
-
-
-#define PRE_MAIN_INITIALIZATION( id ) __attribute__( ( constructor( id ) ) ) /*put it before global fxn then system call it before main in gcc*/
-//#define PRE_MAIN_INITIALIZATION( id )
-
-
-#define GLOBAL_VAR /*variable on global namespace*/
-
 
 #ifdef _DEBUG
 	#if defined Uses_WARNING || !defined __COMPILING
@@ -400,6 +411,7 @@
 
 #define DARKER(rgb)		(((rgb)>>1)&0x7f7f7fL)
 
+//----- ~ color part --------------------------------------------------------------------
 
 #define GROW_STEP 1
 
@@ -408,3 +420,5 @@
 #endif
 
 #define STAT_FLD /*it is used for statistics*/
+
+#define TODO 
