@@ -337,11 +337,6 @@
 #define MIN(a, b) ((a) <= (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define _FALSE_SHARE_SAFE /*speed up memory access*/
-#define _ALIGNED(date) /*speed up struct member access*/
-
-#define _MEMMOVE_UNSAFE_FXN /*used in fxn that return pointer to place that is not safe when main block moved to other place and pointer is dangled*/
-
 #define _PAD_NAME2(line) pad_##line
 #define _PAD_NAME(line)  _PAD_NAME2(line)
 // Main macro to insert padding
@@ -421,8 +416,19 @@
 	#define LOCK_LINE( exp ) exp
 #endif
 
-#define STAT_FLD /*it is used for statistics*/
+#if defined Uses_tag_qulifier || !defined Uses_tag_qulifier /*some class or variable has qualification that if we tagged them these tagged help and guid future people who read code*/
 
-#define TODO 
+	#define _FALSE_SHARE_SAFE /*speed up memory access*/
+	#define _ALIGNED(date) /*speed up struct member access*/
 
-#define SHARED_MEM /*shared between multiple threads*/
+	#define _MEMMOVE_UNSAFE_FXN /*used in fxn that return pointer to place that is not safe when main block moved to other place and pointer is dangled*/
+
+	#define STAT_FLD /*it is used for statistics*/
+
+	#define TODO 
+
+	#define SHARED_MEM /*shared between multiple threads*/
+
+	#define CIRCUIT_BREAKER /*variable used to break hi potential infinite loop*/
+
+#endif

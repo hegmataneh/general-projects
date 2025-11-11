@@ -14,10 +14,6 @@
 #define ENABLE_USE_DBG_TAG /*in some c file there is diagnostic var*/
 
 #ifdef _DEBUG
-	#define ENABLE_USE_DBG_TAG /*there is buffer that keep trace of some mark and checkpoint*/
-#endif
-
-#ifdef _DEBUG
 	//#define ENABLE_LOGGING
 #endif
 
