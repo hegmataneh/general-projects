@@ -11,7 +11,7 @@
 //#define Uses_LOCK_LINE
 
 
-#define ENABLE_USE_INTERNAL_C_STATISTIC /*in some c file there is diagnostic var*/
+#define ENABLE_USE_DBG_TAG /*in some c file there is diagnostic var*/
 
 #ifdef _DEBUG
 	#define ENABLE_USE_DBG_TAG /*there is buffer that keep trace of some mark and checkpoint*/

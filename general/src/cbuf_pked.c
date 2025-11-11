@@ -56,7 +56,7 @@ void cbuf_pked_destroy( cbuf_pked_t * vc )
 	}
 }
 
-#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+#ifdef ENABLE_USE_DBG_TAG
 //_GLOBAL_VAR static int _counter = 0;
 //_GLOBAL_VAR static int _sum_len = 0;
 //
@@ -69,7 +69,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 
 	//printf( "%zu , %zu \n" , buf_len , alloc_len );
 	
-	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+	#ifdef ENABLE_USE_DBG_TAG
 		//_sum_len += buf_len;
 	#endif
 
@@ -123,7 +123,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 		sem_post( &vc->gateway ); // signal consumer . increments the semaphore
 	}
 
-	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+	#ifdef ENABLE_USE_DBG_TAG
 		//_counter++;
 	#endif
 
@@ -132,7 +132,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 
 status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_size /*zero to no exp*/ , OUTx size_t * out_len , long timeout_sec , bool auto_checkgate )
 {
-#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+#ifdef ENABLE_USE_DBG_TAG
 	//_pop_count++;
 #endif
 	
@@ -207,7 +207,7 @@ status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_siz
 	vc->tail = advance_index( vc , vc->tail , size16 );
 	if ( out_len ) *out_len = size16;
 
-	#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+	#ifdef ENABLE_USE_DBG_TAG
 		//_pop_size += size16 + BUF_SIZE_LEN;
 	#endif
 

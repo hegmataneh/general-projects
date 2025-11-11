@@ -2,16 +2,15 @@
 
 
 #if defined Uses_INTERNAL_ERR
-
-#ifndef IN_DBG_H
-	_GLOBAL_VAR _EXTERN short _err;
-	_GLOBAL_VAR _EXTERN LPCSTR errStrs[ _internal_err_count ];
-#endif
-
-#endif
+	#ifndef IN_DBG_H
+		_GLOBAL_VAR _EXTERN short _err;
+		_GLOBAL_VAR _EXTERN LPCSTR errStrs[ _internal_err_count ];
+	#endif
+#endif // Uses_INTERNAL_ERR
 
 //#define __USE_DBG_TOOLS /*uncomment this to use dbg tools*/
 
+#ifdef _DEBUG
 #if defined Uses_DBG || !defined __COMPILING /*at scope of compiler each source must use it*/
 
 	#if defined __USE_DBG_TOOLS || !defined __COMPILING /*manually turn it off*/
@@ -68,7 +67,8 @@
 
 	#endif
 
-#endif
+#endif // Uses_DBG
+#endif // _DEBUG
 
 #if defined ENABLE_USE_DBG_TAG
 
@@ -87,7 +87,7 @@
 
 #define DBG_TAG_BASE( _ar , _ar_n , fmt , ... ) do { _ar_n+=snprintf((_ar) + (_ar_n), sizeof(_ar), (fmt), ##__VA_ARGS__); } while( 0 )
 
-#else // ENABLE_LOGGING
+#else // defined ENABLE_LOGGING
 
 #define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , trd_id ); \
 							log_write( LOG_INFO , "%s started %lu\n" , __FUNCTION__ , trd_id );
@@ -98,9 +98,9 @@
 #define DBG_TAG_BASE( _ar , _ar_n , fmt , ... ) do { _ar_n+=snprintf((_ar) + (_ar_n), sizeof(_ar), (fmt), ##__VA_ARGS__); \
 												log_write( LOG_INFO , (fmt "\n"), ##__VA_ARGS__ ); } while( 0 )
 
-#endif
+#endif // ~ENABLE_LOGGING
 
 #define DBG_TAG( fmt , ... ) DBG_TAG_BASE( TMP_DUMP_BUFF_NAME , TMP_DUMP_BUFF_N , fmt , __VA_ARGS__ )
 #define DBG_PT() DBG_TAG( "%s %d\n" , __FILE_shrtn( __FILE__ ) , __LINE__ )
 
-#endif
+#endif // ENABLE_USE_DBG_TAG

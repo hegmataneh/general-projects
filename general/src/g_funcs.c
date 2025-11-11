@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_INTERNAL_ERR
 #define Uses_DETAILED_ERR
 #define Uses_fcntl
 #define Uses_pthread_mutex_timedlock

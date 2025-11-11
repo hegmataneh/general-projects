@@ -5,6 +5,8 @@
 
 #include <general.dep>
 
+#ifdef _DEBUG
+
 static FILE * log_file = NULL;  // Global file pointer
 static const char * level_str[] = { "DEBUG", "INFO", "WARN", "ERROR" };
 
@@ -56,3 +58,5 @@ void log_close( void )
 		log_file = NULL;
 	}
 }
+
+#endif

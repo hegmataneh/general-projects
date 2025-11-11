@@ -5,7 +5,7 @@
 
 #if defined ENABLE_LOCK_TRACING || !defined __COMPILING
 
-#ifdef ENABLE_USE_INTERNAL_C_STATISTIC
+#ifdef ENABLE_USE_DBG_TAG
 
 _GLOBAL_VAR int __tu_global_counter = 0;
 
