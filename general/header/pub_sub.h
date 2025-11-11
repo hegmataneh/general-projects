@@ -103,6 +103,7 @@ typedef struct
 status distributor_init( distributor_t * dis , size_t grp_count );
 status distributor_init_withLock( distributor_t * dis , size_t grp_count );
 status distributor_init_withOrder( distributor_t * dis , size_t grp_count );
+status distributor_init_withOrder_lock( distributor_t * dis , size_t grp_count );
 void sub_destroy( distributor_t * dis );
 
 //status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data , OUTcpy subscriber_t ** subed /*=NULL*/ , int * order /*if not null then this is order*/ );

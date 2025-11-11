@@ -1,29 +1,23 @@
 #pragma once
 
-#if defined(NDEBUG) && ( defined(DEBUG) || defined(_DEBUG) )
-#error "this condition is not allowed"
-#endif
-
-#if !defined(NDEBUG) && !defined(_DEBUG)
-#define _DEBUG
-#endif
-
-
-//#ifdef _DEBUG
-//#define Uses_assert
-////#pragma message("Debug build active")
-//#endif
-
-#ifdef NDEBUG
-//#pragma message("Release build active")
-#endif
+/* at .inc time this file has environment effect so be carefull */
 
 //#define Uses_MemLEAK
 //#define TRACE_MEMORY_LEAK
+//#define Uses_StackTrace
+//#define __INC_StackTrace
 
 //#define ENABLE_LOCK_TRACING
 //#define Uses_LOCK_LINE
 
+
 #define ENABLE_USE_INTERNAL_C_STATISTIC /*in some c file there is diagnostic var*/
 
-#define ENABLE_USE_DBG_TAG /*there is buffer that keep trace of some mark and checkpoint*/
+#ifdef _DEBUG
+	#define ENABLE_USE_DBG_TAG /*there is buffer that keep trace of some mark and checkpoint*/
+#endif
+
+#ifdef _DEBUG
+	//#define ENABLE_LOGGING
+#endif
+

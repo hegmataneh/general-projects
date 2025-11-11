@@ -14,8 +14,8 @@
 //-------------------------------------------------------------------------
 #define COUNTOF(array) (sizeof(array)/sizeof(array[0]))
 
-
-#define ALEN(...) /*count preproc variadc args*/ ALEN0(__VA_ARGS__, \
+/*count preproc variadic args*/
+#define ALEN(...) ALEN0(__VA_ARGS__, \
 						 0x1E, 0x1F, 0x1D,0x1C, 0x1B, 0x1A,0x19,0x18, \
 						 0x17, 0x16, 0x15,0x14, 0x13, 0x12,0x11,0x10, \
 						 0x0E, 0x0F, 0x0D,0x0C, 0x0B, 0x0A,0x09,0x08, \
@@ -306,6 +306,8 @@
 	// perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) );
 	// } while(0);
 
+	#define DETAILED_ERR(msg) ( TOSTRING( __LINE__ ) " " ""msg"" )
+
 	#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
 
 	#define SET_STDERR(s) do { perror(s); } while(0)
@@ -422,3 +424,5 @@
 #define STAT_FLD /*it is used for statistics*/
 
 #define TODO 
+
+#define SHARED_MEM /*shared between multiple threads*/

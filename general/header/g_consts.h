@@ -23,35 +23,51 @@ _EXTERN const sockfd invalid_fd;
 #define PRECISION_OF_DOUBLE 1e-10
 
 //-------------------------------------------------------------------------
+
+#define ERR_NEXT_VALUE() -(__COUNTER__ - __first_err_const__) // donot shuffle list just add at the end
 enum
 {
-	NEXT_GENERAL_ERROR_VALUE = -25,
-	errShutdown = -24,
-	errTooManyAttempt = -23,
-	errEmpty = -22,
-	errRetry = -21,
-	errPath = -20,
-	errResource = -19,
-	errCorrupted = -18,
-	errOverflow = -17, // if cannot fit and grow not allowed
-	one_time_echo_err = -16, // origin -> this err just use for condition where at app level one M_V_END_RET show err msg and outer caller should ignore it
-	errCreation = -15,
-	errSocket = -14,
-	errDevice = -13,
-	errNotFound = -12,
-	errNoPeer = -11, // origin -> tcp peer disconnected
-	errMaximumExceeded = -10,
-	errOutofRanje = -9,
-	errPeerClosed = -8,
-	errTimeout = -7,
-	errArg = -6, // origin -> bad argument
-	errSyntax = -5,
-	errCanceled = -4,  // indeed this indicates a normal abort and is not an d_error condition
-	errInvalidString = -3,
-	errMemoryLow = -2,
-	errGeneral = -1,
-	errOK = 0,
 	errSystem = 1, // this error is not public error value
+	errOK = 0,
+	__first_err_const__ = __COUNTER__ , /*donot use this item*/
+
+	errGeneral = ERR_NEXT_VALUE() ,
+	errMemoryLow = ERR_NEXT_VALUE(),
+	errInvalidString = ERR_NEXT_VALUE(),
+	errCanceled = ERR_NEXT_VALUE(),  // indeed this indicates a normal abort and is not an d_error condition
+	errSyntax = ERR_NEXT_VALUE(),
+	errArg = ERR_NEXT_VALUE(), // origin -> bad argument
+	errTimeout = ERR_NEXT_VALUE(),
+	errPeerClosed = ERR_NEXT_VALUE(),
+	errOutofRanje = ERR_NEXT_VALUE(),
+	errMaximumExceeded = ERR_NEXT_VALUE(),
+	errNoPeer = ERR_NEXT_VALUE(), // origin -> tcp peer disconnected
+	errNotFound = ERR_NEXT_VALUE(),
+	errDevice = ERR_NEXT_VALUE(),
+	errSocket = ERR_NEXT_VALUE(),
+	errCreation = ERR_NEXT_VALUE(),
+	one_time_echo_err = ERR_NEXT_VALUE(), // origin -> this err just use for condition where at app level one M_V_END_RET show err msg and outer caller should ignore it
+	errOverflow = ERR_NEXT_VALUE(), // if cannot fit and grow not allowed
+	errCorrupted = ERR_NEXT_VALUE(),
+	errResource = ERR_NEXT_VALUE(),
+	errPath = ERR_NEXT_VALUE(),
+	errRetry = ERR_NEXT_VALUE(),
+	errEmpty = ERR_NEXT_VALUE(),
+	errTooManyAttempt = ERR_NEXT_VALUE(),
+	errShutdown = ERR_NEXT_VALUE(),
+	errBind = ERR_NEXT_VALUE(),
+	errsockopt = ERR_NEXT_VALUE(),
+	errListen = ERR_NEXT_VALUE(),
+	errSelect = ERR_NEXT_VALUE(),
+	errAccept = ERR_NEXT_VALUE(),
+	errNoConnection = ERR_NEXT_VALUE(),
+	errConnect = ERR_NEXT_VALUE(),
+	errOpen = ERR_NEXT_VALUE(),
+
+	// ADD extra error here
+
+	NEXT_GENERAL_ERROR_VALUE = ERR_NEXT_VALUE(),
+	_internal_err_count = -NEXT_GENERAL_ERROR_VALUE,
 };
 
 //-------------------------------------------------------------------------
@@ -129,6 +145,7 @@ _EXTERN const unsigned char MSB_MARKERS[8];
 #define G_SSHORT_MAX ((sshort)-1^G_SSHORT_MIN)	// 32767
 #define G_USHORT_MIN ((ushort)0x0000)			// 0
 #define G_USHORT_MAX ((ushort)-1^G_USHORT_MIN)	// 65535
+#define G_USHORT_COUNT 65536
 
 #define G_SLONG_MIN  ((slong)0x80000000L)		// -2,147,483,648
 #define G_SLONG_MAX  ((slong)-1^G_SLONG_MIN)	// 2,147,483,647

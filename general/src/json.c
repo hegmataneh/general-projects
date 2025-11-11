@@ -88,7 +88,7 @@ void json_debug_print( typed( json_string ) str , typed( size ) len )
   * @brief Allocate `count` number of items of `type` in memory
   * and return the pointer to the newly allocated memory
   */
-#define allocN(type, count) (type *)malloc((count) * sizeof(type))
+#define allocN(type, count) (type *)MALLOC((count) * sizeof(type))
 
   /**
    * @brief Allocate an item of `type` in memory and return the
@@ -100,7 +100,7 @@ void json_debug_print( typed( json_string ) str , typed( size ) len )
 	* @brief Re-allocate `count` number of items of `type` in memory
 	* and return the pointer to the newly allocated memory
 	*/
-#define reallocN(ptr, type, count) (type *)realloc(ptr, (count) * sizeof(type))
+#define reallocN(ptr, type, count) (type *)REALLOC(ptr, (count) * sizeof(type))
 
 	/**
 	 * @brief Parses a JSON element {json_element_t} and moves the string

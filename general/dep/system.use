@@ -1,3 +1,11 @@
+#ifdef Uses_va_start
+	#define __INC_stdarg
+#endif
+
+#ifdef Uses_time
+	#define __INC_time
+#endif
+
 #ifdef Uses_log
 	#define __INC_math
 #endif

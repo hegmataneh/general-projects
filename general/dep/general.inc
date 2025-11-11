@@ -11,19 +11,34 @@
 #include "../header/g_sys.h" 
 #include "../header/g_funcs.h"
 
-#ifdef __INC_StackTrace
-	#include <StackTrace.h>
+#ifdef _DEBUG
+	#ifdef __INC_StackTrace
+		#include <StackTrace.h>
+	#endif
 #endif
 
-#include "../header/g_mlk.h" // after macros to overwrite that. after fxn to use definition
+#ifdef _DEBUG
+	#ifdef Uses_LOG
+		#include <log.h>
+	#endif
+#endif
+
+#ifdef _DEBUG
+	#include "../header/g_mlk.h" // after macros to overwrite that. after fxn to use definition
+#endif
+
 #include "../header/g_brk.h"
 
-#ifdef __INC_ddlck
-	#include <ddlck.h>
+#ifdef _DEBUG
+	#ifdef __INC_ddlck
+		#include <ddlck.h>
+	#endif
 #endif
 
-#ifdef __INC_DBG
-	#include <dbg.h>
+#ifdef _DEBUG
+	#ifdef __INC_DBG
+		#include <dbg.h>
+	#endif
 #endif
 
 #ifdef __INC_struct
@@ -137,10 +152,6 @@
 #ifdef __INC_VStack
 	#include <vstack.h>
 #endif
-
-//#ifdef __INC_memmap
-//	#include <memmap.h>
-//#endif
 
 #ifdef __INC_PagedStack
 	#include <PagedStack.h>

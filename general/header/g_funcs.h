@@ -57,8 +57,9 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 int peerTcpClosed( sockfd socketfd );
 void enable_keepalive_chaotic( int sock );
 int is_socket_connected_peek( int fd , int timeout_ms );
-int connect_with_timeout( const char * ip , int port , int timeout_sec );
-int create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec );
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock );
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd );
+void enable_keepalive( sockfd sock );
 
 //----error functions------------------------------------------------------
 _WEAK_ATTR void M_showMsg( LPCSTR msg );

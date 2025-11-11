@@ -1,4 +1,31 @@
+#ifdef Uses_CALLOC_AR
+	#define Uses_memory_funcs
+#endif
+
+#ifdef Uses_log_write
+	#define Uses_LOG
+#endif
+
+#ifdef Uses_log_init
+	#define Uses_LOG
+#endif
+
+#ifdef Uses_LOG
+	#define Uses_bool
+#endif
+
+#ifdef Uses_DETAILED_ERR
+	#define Uses_ERROR_SECTION
+#endif
+
+#define Uses_INTERNAL_ERR
+
+#ifdef Uses_INTERNAL_ERR
+	#define __INC_DBG
+#endif
+
 #ifdef Uses_DBG_PT
+	#define Uses_log_write
 	#define Uses_snprintf
 	#define __INC_DBG
 #endif
@@ -8,6 +35,7 @@
 #endif
 
 #ifdef Uses_MARK_LINE
+	#define Uses_log_write
 	#define __INC_DBG
 #endif
 
@@ -46,6 +74,7 @@
 #endif
 
 #ifdef Uses_MemLEAK
+	#define Uses_bcktrc_t
 	#define Uses_stktrace_log
 #endif
 

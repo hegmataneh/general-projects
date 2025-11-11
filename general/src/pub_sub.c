@@ -52,10 +52,28 @@ status distributor_init_withOrder( distributor_t * dis , size_t grp_count )
 	N_END_RET
 }
 
+status distributor_init_withOrder_lock( distributor_t * dis , size_t grp_count )
+{
+	INIT_BREAKABLE_FXN();
+
+	BREAK_STAT( distributor_init( dis , grp_count ) , 0 );
+
+	N_MALLOC_ONE( dis->pheap , 0 );
+	BREAK_STAT( mms_array_init( dis->pheap , sizeof( sub_custome_ord_t ) , 1 , GROW_STEP , 0 ) , 0 );
+
+	if ( ( dis->pmtx = CALLOC_ONE( dis->pmtx ) ) )
+	{
+		pthread_mutex_init( dis->pmtx , NULL );
+	}
+
+	BEGIN_SMPL
+	N_END_RET
+}
+
 void sub_destroy( distributor_t * dis )
 {
 	if ( !dis ) return;
-	DBG_PT();
+	//DBG_PT();
 	for ( size_t igrp = 0 ; igrp < dis->grps.count ; igrp++ )
 	{
 		subscribers_t * psubscribers = NULL;
@@ -64,20 +82,20 @@ void sub_destroy( distributor_t * dis )
 			mms_array_free( &psubscribers->subs );
 		}
 	}
-	DBG_PT();
+	//DBG_PT();
 	mms_array_free( &dis->grps );
-	DBG_PT();
+	//DBG_PT();
 	mms_array_free( dis->pheap );
-	DBG_PT();
+	//DBG_PT();
 	DAC( dis->pheap );
-	DBG_PT();
+	//DBG_PT();
 	if ( dis->pmtx )
 	{
 		pthread_mutex_destroy( dis->pmtx );
-		DBG_PT();
+		//DBG_PT();
 		DAC( dis->pmtx );
 	}
-	DBG_PT();
+	//DBG_PT();
 }
 
 _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /*1 on flat list*/ , sub_type_e type , sub_func_t func , pass_p data ,
@@ -113,7 +131,7 @@ _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /
 	}
 
 	BEGIN_SMPL
-		N_V_END_RET
+	N_V_END_RET
 		if ( dis->pmtx )
 		{
 			pthread_mutex_unlock( dis->pmtx );

@@ -100,6 +100,7 @@
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\g_mlk.c" />
     <ClCompile Include="src\json.c" />
+    <ClCompile Include="src\log.c" />
     <ClCompile Include="src\minHeap.c" />
     <ClCompile Include="src\nncursor.c" />
     <ClCompile Include="src\PagedStack.c" />
@@ -145,6 +146,7 @@
     <ClInclude Include="header\ddlck.h" />
     <ClInclude Include="header\global_setting.h" />
     <ClInclude Include="header\g_mlk.h" />
+    <ClInclude Include="header\log.h" />
     <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />

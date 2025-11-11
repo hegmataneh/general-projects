@@ -64,6 +64,8 @@
 
 		#pragma GCC diagnostic ignored "-Wuse-after-free"
 
+		extern void _Breaked();
+
 		#define MALLOC(sz) ({ ushort _lline = (ushort)__LINE__; \
 							static ulong __ulcounter=0; void *___p = malloc(sz);\
 							mLeak_t *pml = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
@@ -100,7 +102,7 @@
 								for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
 									if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){\
 										pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
-								if ( pml1 ) pml1->counter--;\
+								if ( pml1 ) { pml1->counter--; } if ( pml1->counter < -1 ) {_Breaked();}  \
 								mLeak_t *pml2 = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
 								__ulcounter = __ulcounter % EACH_ADDR_COUNT;\
 								pml2->caller_fxn = get_filename(__FILE__);\
@@ -133,7 +135,7 @@
 								mLeak_t *pml1 = NULL;\
 								for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
 									if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){ pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
-								if ( pml1 ) pml1->counter--;\
+								if ( pml1 ) {pml1->counter--;} if ( pml1->counter < -1 ) {_Breaked();} \
 								mLeak_t *pml2 = &__alc_hit[hash8_fnv1a_avalanche_l((long)___p)][__ulcounter++]; \
 								__ulcounter = __ulcounter % EACH_ADDR_COUNT;\
 								pml2->caller_fxn = get_filename(__FILE__);\
@@ -168,7 +170,7 @@
 								for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT ; ic++ ){\
 									if ( ptr_before && __alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ].address == ptr_before ){\
 										pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )ptr_before ) ][ ic ]; break;}}\
-								if ( pml1 ) { pml1->counter--;\
+								if ( pml1 ) { pml1->counter--;} if ( pml1->counter < -1 ) {_Breaked();\
 								}\
 								mLeak_t * pml2 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ __ulcounter++ ]; \
 								__ulcounter = __ulcounter % EACH_ADDR_COUNT; \
@@ -233,7 +235,7 @@
 							for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT && ___p; ic++ ){\
 								if ( __alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ ic ].address == ___p ){\
 									pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ ic ]; break;}}\
-							if ( pml1 ) pml1->counter--;\
+							if ( pml1 ) {pml1->counter--;} if ( pml1->counter < -1 ) {_Breaked();} \
 							})
 
 		#define FREE_DOUBLE_PTR(pptr , count) ({ \
@@ -248,14 +250,14 @@
 													pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ ic ]; break;\
 												}\
 											}\
-											if ( pml1 ) pml1->counter--;\
+											if ( pml1 ) {pml1->counter--;} if ( pml1->counter < -1 ) {_Breaked();} \
 											}\
 											void *___p = (void *)pptr; free(( void_p )pptr);\
 											mLeak_t *pml1 = NULL;\
 											for ( ulong ic = 0 ; ic < EACH_ADDR_COUNT && ___p; ic++ ){\
 												if ( __alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ ic ].address == ___p ){\
 													pml1 = &__alc_hit[ hash8_fnv1a_avalanche_l( ( long )___p ) ][ ic ]; break;}}\
-											if ( pml1 ) pml1->counter--;\
+											if ( pml1 ) {pml1->counter--;} if ( pml1->counter < -1 ) {_Breaked();}\
 											})
 
 		/* **** private **** */

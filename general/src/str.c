@@ -5,6 +5,21 @@
 #define Uses_strings_ar
 #include <general.dep>
 
+//-------------------------------------------------------------------------
+const char EOS = '\0'; // 0
+const char LF = '\n'; // line feed 10
+const char CR = '\r'; // carriage return 13
+const char _newLineFeed[] = { CR , LF , EOS };
+const char _fileNameDelimiter[] = { '\\' , '/' , EOS };
+const char _SPFD = '\\'; // Standard path file delimiter
+const char _UTF8Sign[] = "\xEF\xBB\xBF";
+const char _UTF16LSign[] = "\xFF\xFE"; // little-endian . Unicode in Microsoft terminology
+const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft terminology
+const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
+const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
+
+
+//-------------------------------------------------------------------------
 void init_string_ar( strings_ar * list )
 {
 	MEMSET_ZERO_O( list );

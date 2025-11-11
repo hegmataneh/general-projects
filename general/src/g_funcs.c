@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_DETAILED_ERR
 #define Uses_fcntl
 #define Uses_pthread_mutex_timedlock
 #define Uses_sem_t
@@ -38,30 +39,7 @@
 
 #include <general.dep>
 
-
-_GLOBAL_VAR static short _err = NEXT_GENERAL_ERROR_VALUE;
-_GLOBAL_VAR static LPCSTR errStrs[32]={"errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath","errRetry","errEmpty","errTooManyAttempt","errShutdown"};
-
-
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-
-//-------------------------------------------------------------------------
-const char EOS = '\0'; // 0
-const char LF = '\n'; // line feed 10
-const char CR = '\r'; // carriage return 13
-
-const char _newLineFeed[] = { CR , LF , EOS };
-
-const char _fileNameDelimiter[] = { '\\' , '/' , EOS };
-
-const char _SPFD = '\\'; // Standard path file delimiter
-
-const char _UTF8Sign[] = "\xEF\xBB\xBF";
-const char _UTF16LSign[] = "\xFF\xFE"; // little-endian . Unicode in Microsoft terminology
-const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft terminology
-const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
-const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 
 const sockfd invalid_fd = -1;
 
@@ -76,6 +54,7 @@ const unsigned char MSB_MARKERS[8] = {
 	0x0F   /* M7 */
 };
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
 _EXPORT status internalErrorVal(LPCSTR errStr)
 {
@@ -986,7 +965,7 @@ IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // Writ
 	}
 	if ( pCI && pOutStr )
 	{
-		*pCI = strchr( chrs , pOutStr[ 0 ] ) - chrs;
+		*pCI = ( int )( strchr( chrs , pOutStr[ 0 ] ) - chrs );
 	}
 	return pOutStr;
 }
@@ -1406,6 +1385,19 @@ void enable_keepalive_chaotic( int sock )
 	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
 }
 
+void enable_keepalive( sockfd sock )
+{
+	int yes = 1;
+	setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) );
+
+	int idle = 30;  // seconds of inactivity before keepalive probes start
+	int interval = 10;  // seconds between probes
+	int count = 5;   // number of failed probes before marking dead
+
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) );
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) );
+	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
+}
 
 // Returns:
 //  1 = socket looks connected (no EOF detected, no immediate error)
@@ -1474,7 +1466,7 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
 	return number;
 }
 
-int connect_with_timeout( const char * ip , int port , int timeout_sec )
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock )
 {
 	int sockfd;
 	struct sockaddr_in addr;
@@ -1487,8 +1479,8 @@ int connect_with_timeout( const char * ip , int port , int timeout_sec )
 	sockfd = socket( AF_INET , SOCK_STREAM , 0 );
 	if ( sockfd < 0 )
 	{
-		perror( "socket" );
-		return -1;
+		//perror( "socket" );
+		return errSocket;
 	}
 
 	// Make socket non-blocking
@@ -1522,42 +1514,41 @@ int connect_with_timeout( const char * ip , int port , int timeout_sec )
 				if ( valopt )
 				{
 					errno = valopt;
-					perror( "connect" );
+					//perror( "connect" );
 					close( sockfd );
-					return -1;
+					return errNoConnection;
 				}
 			}
 			else if ( result == 0 )
 			{
-				fprintf( stderr , "connect timeout\n" );
+				//fprintf( stderr , "connect timeout\n" );
 				close( sockfd );
 				errno = ETIMEDOUT;
-				return -1;
+				return errTimeout;
 			}
 			else
 			{
-				perror( "select" );
+				//perror( "select" );
 				close( sockfd );
-				return -1;
+				return errSelect;
 			}
 		}
 		else
 		{
-			perror( "connect" );
+			//perror( "connect" );
 			close( sockfd );
-			return -1;
+			return errConnect;
 		}
 	}
 
 	// Restore blocking mode
 	fcntl( sockfd , F_SETFL , flags );
-
-	return sockfd;  // Success
+	*conn_sock = sockfd;
+	return errOK;  // Success
 }
 
-
 // General function to handle socket creation, binding, listening, and accepting with timeout
-int create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec )
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd )
 {
 	int server_fd;
 	fd_set read_fds;
@@ -1566,29 +1557,29 @@ int create_server_socket_with_timeout( const char * ip_address , int port , int 
 	// Create socket
 	if ( ( server_fd = socket( AF_INET , SOCK_STREAM , 0 ) ) == -1 )
 	{
-		//perror( "Socket creation failed" );
-		return -1;
+		perror( DETAILED_ERR( "Socket creation failed.\n" ) );
+		return errSocket;
 	}
 
 	int prevflags = fcntl( server_fd , F_GETFL , 0 );
 	if ( prevflags == -1 )
 	{
-		//perror( "fcntl(F_GETFL) failed" );
+		perror( DETAILED_ERR( "fcntl(F_GETFL) failed.\n" ) );
 		_close_socket( &server_fd );
-		return -1;
+		return errsockopt;
 	}
 	if ( fcntl( server_fd , F_SETFL , prevflags | O_NONBLOCK ) == -1 )
 	{
-		//perror( "fcntl(F_SETFL) failed" );
+		perror( DETAILED_ERR( "fcntl(F_SETFL) failed.\n" ) );
 		_close_socket( &server_fd );
-		return -1;
+		return errsockopt;
 	}
 	int opt = 1;
 	if ( setsockopt( server_fd, SOL_SOCKET , SO_REUSEADDR , &opt , sizeof( opt ) ) < 0 )
 	{
-		//perror( "setsockopt error" );
+		perror( DETAILED_ERR( "setsockopt error.\n" ) );
 		_close_socket( &server_fd );
-		return -1;
+		return errsockopt;
 	}
 
 	struct sockaddr_in server_addr;
@@ -1608,17 +1599,17 @@ int create_server_socket_with_timeout( const char * ip_address , int port , int 
 	// Bind the socket
 	if ( bind( server_fd , ( struct sockaddr * )&server_addr , addrlen ) == -1 )
 	{
-		//perror( "Bind failed" );
+		perror( DETAILED_ERR( "Bind failed.\n" ) );
 		close( server_fd );
-		return -1;
+		return errBind;
 	}
 
 	// Prepare for listen
 	if ( listen( server_fd , 5 ) == -1 )
 	{
-		//perror( "Listen failed" );
+		perror( DETAILED_ERR( "Listen failed.\n" ) );
 		close( server_fd );
-		return -1;
+		return errListen;
 	}
 
 	// Set up timeout value for select()
@@ -1634,15 +1625,15 @@ int create_server_socket_with_timeout( const char * ip_address , int port , int 
 
 	if ( activity == -1 )
 	{
-		//perror( "Select failed" );
+		perror( DETAILED_ERR( "Select failed.\n" ) );
 		close( server_fd );
-		return -1;
+		return errSelect;
 	}
 	else if ( activity == 0 )
 	{
-		//perror( "Timeout reached. No connection attempts.\n" );
+		perror( DETAILED_ERR( "Timeout reached.\n" ) );
 		close( server_fd );
-		return -1;
+		return errTimeout;
 	}
 
 	// Accept the connection if it's ready
@@ -1650,21 +1641,20 @@ int create_server_socket_with_timeout( const char * ip_address , int port , int 
 	{
 		struct sockaddr_in client_addr;
 		socklen_t client_len = sizeof( client_addr );
-		int client_fd;
 
-		client_fd = accept( server_fd , ( struct sockaddr * )&client_addr , &client_len );
-		if ( client_fd < 0 )
+		*client_fd = accept( server_fd , ( struct sockaddr * )&client_addr , &client_len );
+		if ( (*client_fd) < 0 )
 		{
-			//perror( "Accept failed" );
+			perror( DETAILED_ERR( "Accept failed.\n" ) );
 			close( server_fd );
-			return -1;
+			return errAccept;
 		}
 
 		// Connection accepted
 		close( server_fd );
-		return client_fd;  // Return client socket descriptor for further communication
+		return errOK;
 	}
 
 	close( server_fd );
-	return -1;  // Timeout or error occurred
+	return errNoConnection;  // Timeout or error occurred
 }

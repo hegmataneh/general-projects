@@ -5,6 +5,8 @@
 // Warning . After realloc, the memory block may move, so any previously stored pointer to its data becomes invalid
 // zero block at the begining
 
+// not THREAD SAFE
+
 typedef struct
 {
 	void ** data;      // raw buffer
