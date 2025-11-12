@@ -1,5 +1,6 @@
 ﻿#define _XOPEN_SOURCE 700
 
+#define Uses_MARK_LINE
 //#define Uses_STRDUP
 #define Uses_sleep
 #define Uses_pthread_kill
@@ -21,16 +22,31 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	INIT_BREAKABLE_FXN();
 
 	pthread_mutex_init( &nnc->nn_lock , NULL );
-
 	setlocale( LC_ALL , "" );
 	MEMSET_ZERO_O( nnc );
 	struct notcurses_options opts = { 0 };
+
+	//notcurses_init()
+	//opts.flags = NCOPTION_SUPPRESS_BANNERS | NCOPTION_NO_ALTERNATE_SCREEN;
+	//opts.flags = NCOPTION_NO_ALTERNATE_SCREEN | NCOPTION_INHIBIT_SETLOCALE;
 	opts.flags = NCOPTION_SUPPRESS_BANNERS;
-	nnc->nc = notcurses_core_init( &opts , NULL );
+	//opts.flags |= NCOPTION_SUPPRESS_BANNERS | NCOPTION_DRAIN_INPUT;
+
+#ifdef ENABLE_USE_DBG_TAG
+	MARK_LINE();
+#endif
+
+	//nnc->nc = notcurses_init( &opts , stdout );
+
+	nnc->nc = notcurses_core_init( &opts , stdout );
+
+#ifdef ENABLE_USE_DBG_TAG
+MARK_LINE();
+#endif
+
 	N_BREAK_IF( !nnc->nc , errCreation , 0 );
 	
 	notcurses_mice_enable( nnc->nc , NCMICE_BUTTON_EVENT );
-
 	nnc->std = notcurses_stdplane( nnc->nc ); 
 	ncplane_dim_yx( nnc->std , &nnc->termh , &nnc->termw );
 
@@ -55,9 +71,7 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	N_BREAK_IF( !nnc->cmd_plane , errCreation , 0 );
 
 	BREAK_STAT( mms_array_init( &nnc->tables , sizeof( nnc_table ) , 1 , GROW_STEP , 0 ) , 0 );
-
 	BREAK_STAT( array_init( &nnc->tabHit_arr , sizeof( nnc_tabHit ) , 1 , GROW_STEP , 0 ) , 0 );
-
 	nnc->refresh_tabs = true;
 
 	BEGIN_RET
