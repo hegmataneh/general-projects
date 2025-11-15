@@ -70,6 +70,9 @@
     <ClCompile Include="src\ddlck.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\log.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -221,6 +224,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\global_setting.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\log.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,14 +1,20 @@
 #pragma once
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----T2T functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 status string_to_int( LPCSTR str , int * out );
 
-
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----formats wrapper functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/);
 long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 
+
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----time functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 #if defined Uses_timespec || !defined __COMPILING
 	void format_clock_time( const struct timespec * ts , LPSTR buffer , size_t buf_size );
 	void round_up_to_next_interval( struct timespec * now , int min_val , int interval , struct timespec * result ); // use min as least value to sleep and interval to round up to iteration of that value
@@ -31,26 +37,32 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 	double timeval_diff_ms( struct timeval * start , struct timeval * end );
 #endif
 
-#if defined Uses_sem_wait_with_timeout || !defined __COMPILING
-	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed_signal );
-#endif
-
 #if defined Uses_timeval || !defined __COMPILING
 	int timeval_compare( const struct timeval * a , const struct timeval * b );
 #endif
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//----mutex functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+#if defined Uses_sem_wait_with_timeout || !defined __COMPILING
+	status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed_signal );
+#endif
 #if defined Uses_pthread_mutex_timedlock_rel || !defined __COMPILING
 	status pthread_mutex_timedlock_rel( pthread_mutex_t * mutex , long ms );
 #endif
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----file functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 #if defined Uses_FILE || !defined __COMPILING
 FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
 #endif
 LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
 const char * get_filename( const char * path );
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----socket functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 void _close_socket( sockfd * socket_id );
 //status sendall( sockfd socketfd , buffer buf , size_t * len );
 status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms );
@@ -60,8 +72,11 @@ int is_socket_connected_peek( int fd , int timeout_ms );
 status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock );
 status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd );
 void enable_keepalive( sockfd sock );
+status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms );
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----error functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
 LPCSTR internalErrorStr( status errValue );
 status internalErrorVal( LPCSTR errStr );
@@ -71,7 +86,9 @@ LPCSTR __FUNCTION_shrtn( LPCSTR str );
 LPCSTR __FILE_shrtn( LPCSTR str );
 LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----String functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 LPSTR newStr(LPCSTR); // donot use it directly use NEWSTR instead
 
 //LPCSTR __msg( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR msg , int line_number );
@@ -108,7 +125,7 @@ IN_GENERAL LPCSTR stristrs( LPCSTR sSrc , int * const pISubStr , int count , LPC
 IN_GENERAL int strsstr( LPCSTR * strs , int strs_count , LPCSTR target );
 IN_GENERAL int strsistr( LPCSTR * strs , int strs_count , LPCSTR target );
 
-// ---- chr --------------------------------------------------------------------------------
+// ---- chr 
 //IN_GENERAL LPCSTR strchr( LPCSTR str , char c ); // Exist
 // n , i , r
 IN_GENERAL LPCSTR strnchr( LPCSTR str , char c , int n ); // n(th) chr . Written By Mohsen
@@ -121,7 +138,7 @@ IN_GENERAL LPCSTR strichr( LPCSTR str , char c ); // case insensitive cmp . Writ
 // nir
 IN_GENERAL LPCSTR strrinchr( LPCSTR str , char c , int n ); // Written By Mohsen
 
-// ---- chrs --------------------------------------------------------------------------------
+// ---- chrs 
 //IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
 // n , i , r
 //IN_GENERAL LPCSTR strnchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // n(th) chr . Written By Mohsen
@@ -137,7 +154,9 @@ IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*
 IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 //IN_GENERAL LPCSTR stritail( LPCSTR str , LPCSTR head );
 
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----buffer functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
 uint8 hash8_fnv1a_avalanche( const char * s );

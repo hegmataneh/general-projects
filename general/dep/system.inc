@@ -62,8 +62,11 @@
 	#include <sys/select.h>
 #endif
 
-#ifdef __INC_netinet
+#ifdef __INC_arpa_inet
 	#include <arpa/inet.h>
+#endif
+
+#ifdef __INC_netinet
 	#include <netinet/in.h>
 #endif
 
@@ -95,7 +98,6 @@
 	#include <fcntl.h>
 #endif
 
-
 #ifdef __INC_netinet_ip
 	#include <netinet/ip.h>
 #endif
@@ -107,6 +109,10 @@
 #ifdef __INC_netinet_tcp
 	#include <netinet/tcp.h>
 #endif
+
+//#ifdef __INC_linux_tcp
+//	#include <linux/tcp.h>
+//#endif
 
 #ifdef __INC_limits
 	#include <limits.h>

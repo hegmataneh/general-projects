@@ -1,3 +1,12 @@
+#ifdef Uses_tcp_info
+	#define __INC_sys_socket
+	#define __INC_netinet_tcp
+#endif
+
+#ifdef Uses_gettimeofday
+	#define __INC_sys_time
+#endif
+
 #ifdef Uses_va_start
 	#define __INC_stdarg
 #endif
@@ -29,6 +38,7 @@
 
 #ifdef Uses_TCP_KEEPIDLE
 	#define __INC_sys_socket
+	#define __INC_arpa_inet
 	#define __INC_netinet
 	#define __INC_netinet_tcp
 #endif
@@ -119,6 +129,7 @@
 #ifdef Uses_udphdr
 	#define __INC_netinet_udp
 	#define __INC_netinet_ip
+	#define __INC_arpa_inet
 	#define __INC_netinet
 #endif
 
@@ -139,6 +150,7 @@
 
 #ifdef Uses_send
 	#define __INC_sys_socket
+	#define __INC_arpa_inet
 	#define __INC_netinet
 #endif
 
@@ -243,6 +255,7 @@
 
 #ifdef Uses_socket
 	#define __INC_sys_socket
+	#define __INC_arpa_inet
 	#define __INC_netinet
 #endif
 
@@ -323,6 +336,7 @@
 #endif
 
 #ifdef Uses_sockaddr_in
+	#define __INC_arpa_inet
 	#define __INC_netinet
 #endif
 

@@ -10,6 +10,8 @@
 		for number of errors anymore
 */
 
+#define Uses_tcp_info
+#define Uses_gettimeofday
 #define Uses_INTERNAL_ERR
 #define Uses_DETAILED_ERR
 #define Uses_fcntl
@@ -1097,8 +1099,11 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 		errno = saved_errno;
 		return errGeneral;
 	}
-
-	return total_sent == len ? errOK : errGeneral; /* should equal len */
+	if ( total_sent == len && wait_for_ack( fd , total_sent , timeout_ms ) == errOK )
+	{
+		return errOK;
+	}
+	return errGeneral; /* should equal len */
 }
 
 
@@ -1658,4 +1663,39 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 
 	close( server_fd );
 	return errNoConnection;  // Timeout or error occurred
+}
+
+// Wait until all sent bytes are ACKed by peer.
+status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms )
+{
+	struct tcp_info info;
+	socklen_t len = sizeof( info );
+
+	// Get start time for timeout
+	struct timeval start , now;
+	gettimeofday( &start , NULL );
+
+	for (;;)
+	{
+		// query TCP_INFO
+		if ( getsockopt( sock , SOL_TCP , TCP_INFO , &info , &len ) < 0 )
+			return errsockopt;
+
+		// For older kernels:
+		// tcpi_unacked = # of unacknowledged packets
+		if ( info.tcpi_unacked == 0 )
+			return errOK; // all data ACKed
+
+		// Check timeout
+		gettimeofday( &now , NULL );
+		int elapsed_ms = ( now.tv_sec - start.tv_sec ) * 1000 +
+			( now.tv_usec - start.tv_usec ) / 1000;
+
+		if ( elapsed_ms >= timeout_ms )
+			break;  // timed out
+
+		// small sleep to avoid busy looping
+		usleep( 100 );
+	}
+	return errTimeout;  // timed out
 }
