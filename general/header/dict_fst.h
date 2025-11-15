@@ -23,7 +23,7 @@ typedef struct kv_entry
 	struct kv_entry * next;			// chain link
 } kv_entry_t;
 
-typedef struct kv_bucket
+typedef struct kv_bucket /*each bucket consist many key each one have value. each key value is static*/
 {
 	kv_entry_t * head;
 	pthread_rwlock_t rwlock;		// readers-writer lock for the bucket

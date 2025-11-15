@@ -6,7 +6,8 @@
 _GLOBAL_VAR short _err = NEXT_GENERAL_ERROR_VALUE;
 _GLOBAL_VAR LPCSTR errStrs[ _internal_err_count ] = { "errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
 	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath",\
-	"errRetry","errEmpty","errTooManyAttempt","errShutdown","errBind","errsockopt","errListen","errSelect","errAccept","errNoConnection","errConnect","errOpen"};
+	"errRetry","errEmpty","errTooManyAttempt","errShutdown","errBind","errsockopt","errListen","errSelect","errAccept","errNoConnection","errConnect","errOpen",\
+	"errACK"};
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 

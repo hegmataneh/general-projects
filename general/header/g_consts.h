@@ -63,6 +63,7 @@ enum
 	errNoConnection = ERR_NEXT_VALUE(),
 	errConnect = ERR_NEXT_VALUE(),
 	errOpen = ERR_NEXT_VALUE(),
+	errACK = ERR_NEXT_VALUE(), /*no ack in time window*/
 
 	// ADD extra error here
 
@@ -91,6 +92,7 @@ enum
 
 #define AUTO_MODERATE_BUFFER_CAPACITY 10 /*simple array that must realloc x more room if size reach capacity*/
 
+#define ACK_TIMEOUT_ms  100 // Local network (same datacenter): 50–100 ms
 
 #define DEFAULT_BT_BUF_SZ 16 /*basic type size scale*/
 #define DEFAULT_SFS_BUF_SZ 64 /*small formatted string size scale*/

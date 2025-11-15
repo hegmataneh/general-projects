@@ -999,7 +999,7 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 //	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
 //}
 
-status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_ms )
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_onsend_ms , int timeout_onack_ms )
 {
 	const unsigned char * p = ( const unsigned char * )buf;
 	size_t remaining = len;
@@ -1051,7 +1051,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 			pfd.events = POLLOUT;
 			pfd.revents = 0;
 
-			int poll_timeout = timeout_ms; /* in milliseconds; negative => infinite */
+			int poll_timeout = timeout_onsend_ms; /* in milliseconds; negative => infinite */
 			int poll_ret;
 
 			if ( poll_timeout < 0 )
@@ -1099,9 +1099,13 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 		errno = saved_errno;
 		return errGeneral;
 	}
-	if ( total_sent == len && wait_for_ack( fd , total_sent , timeout_ms ) == errOK )
+	if ( total_sent == len )
 	{
-		return errOK;
+		if ( wait_for_ack( fd , total_sent , timeout_onack_ms ) == errOK )
+		{
+			return errOK;
+		}
+		return errACK;
 	}
 	return errGeneral; /* should equal len */
 }
@@ -1666,7 +1670,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 }
 
 // Wait until all sent bytes are ACKed by peer.
-status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms )
+status wait_for_ack( int sock , size_t sent_bytes /*Forward compatibility*/ , int timeout_ms )
 {
 	struct tcp_info info;
 	socklen_t len = sizeof( info );
