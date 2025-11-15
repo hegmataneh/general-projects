@@ -1101,11 +1101,14 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 	}
 	if ( total_sent == len )
 	{
+	#ifdef ENABLE_WAIT_FOR_PACKET_ACK
 		if ( wait_for_ack( fd , total_sent , timeout_onack_ms ) == errOK )
 		{
 			return errOK;
 		}
 		return errACK;
+	#endif
+		return errOK;
 	}
 	return errGeneral; /* should equal len */
 }
