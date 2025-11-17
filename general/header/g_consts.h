@@ -93,6 +93,8 @@ enum
 #define AUTO_MODERATE_BUFFER_CAPACITY 10 /*simple array that must realloc x more room if size reach capacity*/
 
 #define ACK_TIMEOUT_ms  100 // Local network (same datacenter): 50–100 ms
+#define SEND_TIMEOUT_ms 5
+#define RETRY_MECHANISM 3
 
 #define DEFAULT_BT_BUF_SZ 16 /*basic type size scale*/
 #define DEFAULT_SFS_BUF_SZ 64 /*small formatted string size scale*/

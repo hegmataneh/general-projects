@@ -999,7 +999,7 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 //	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
 //}
 
-status tcp_send_all( int fd , const void * buf , size_t len , int flags , int timeout_onsend_ms , int timeout_onack_ms )
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout/*0 no retry*/ )
 {
 	const unsigned char * p = ( const unsigned char * )buf;
 	size_t remaining = len;
@@ -1014,12 +1014,12 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 
 	while ( remaining > 0 )
 	{
-		ssize_t n = send( fd , p , remaining , send_flags );
+		ssize_t n = send( fd , p , remaining , send_flags ); // send() copies data only up to the amount of space available in the TCP buffer at that layer.
 		if ( n > 0 )
 		{
 			/* Successfully sent n bytes; advance pointer and continue. */
 			p += n;
-			remaining -= ( size_t )n;
+			remaining -= ( size_t )n; // never happened that n greater that ordered size
 			total_sent += ( size_t )n;
 			continue;
 		}
@@ -1045,13 +1045,13 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 
 		if ( saved_errno == EAGAIN || saved_errno == EWOULDBLOCK )
 		{
-			/* Socket would block. Wait for it to become writable using poll(). */
+			/* Socket does not have storage to store my data so wait for it to become writable using poll(). */
 			struct pollfd pfd;
 			pfd.fd = fd;
 			pfd.events = POLLOUT;
 			pfd.revents = 0;
 
-			int poll_timeout = timeout_onsend_ms; /* in milliseconds; negative => infinite */
+			int poll_timeout = pool_timeout_onsend_ms; /* in milliseconds; negative => infinite */
 			int poll_ret;
 
 			if ( poll_timeout < 0 )
@@ -1079,6 +1079,10 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 			else if ( poll_ret == 0 )
 			{
 				/* Timeout */
+				if ( retry_count_on_timeout > 0 && remaining > 0 )
+				{
+					return tcp_send_all( fd , p , remaining , flags , pool_timeout_onsend_ms , timeout_onack_ms , retry_count_on_timeout - 1 );
+				}
 				errno = ETIMEDOUT;
 				return errTimeout;
 			}
@@ -1099,7 +1103,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 		errno = saved_errno;
 		return errGeneral;
 	}
-	if ( total_sent == len )
+	if ( total_sent >= len )
 	{
 	#ifdef ENABLE_WAIT_FOR_PACKET_ACK
 		if ( wait_for_ack( fd , total_sent , timeout_onack_ms ) == errOK )
@@ -1112,7 +1116,6 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int ti
 	}
 	return errGeneral; /* should equal len */
 }
-
 
 status string_to_int( LPCSTR str , int * out )
 {

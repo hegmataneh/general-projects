@@ -20,10 +20,11 @@ static int full_callback( void * data , uintptr_t pc ,
 	const char * function )
 {
 	bcktrc_t * trc = ( bcktrc_t * )data;
-	trc->fxns[ trc->idx ] = function ? function : "??";
-	trc->files[ trc->idx ] = filename ? filename : "??";
+	if ( !function ) function = "??";
+	if ( !filename ) filename = "??";
+	trc->fxns[ trc->idx ] = function;
+	trc->files[ trc->idx ] = filename;
 	trc->lines[ trc->idx ] = lineno;
-	
 	bool bnew = true;
 	for ( long prev = 0 ; prev <= trc->idx - 1 ; prev++ )
 	{
