@@ -1,3 +1,7 @@
+#ifdef Uses_TCP_NODELAY
+	#define __INC_netinet_tcp
+#endif
+
 #ifdef Uses_tcp_info
 	#define __INC_sys_socket
 	#define __INC_netinet_tcp
