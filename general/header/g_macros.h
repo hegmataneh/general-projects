@@ -143,8 +143,8 @@
 
 	#endif
 
-	#define STRINGIFY(x)	#x
-	#define TOSTRING(x)		STRINGIFY(x)
+	#define STRINGIFY(x)	#x /*IMMORTAL*/
+	#define TOSTRING(x)		STRINGIFY(x) /*IMMORTAL*/
 
 	#define STRDUP( str ) strdup( str )
 
@@ -282,8 +282,6 @@
 #define IS_EVEN( i )	( ( ( i ) & 1 ) ? FALSE : TRUE ) // zoj
 #define POW_OF_2( p )	( 1 << p )
 
-//#define MUTABLE_D_ERROR mutable status d_error
-
 #define ROUND_UP( i , x )	( ( (i) + ((x)-1) ) & ~((x)-1) ) // i ra zarib x mi konad
 
 #ifndef ISNULL
@@ -296,21 +294,15 @@
 
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
 
-	// INIT_BREAKABLE_FXN()
+	#define DETAILED_IMMORTAL_ERR_STR(msg) \
+		( " " __FILE__ " " TOSTRING( __LINE__ ) " " ""msg"" ) /*append line number heading of string msg*/
 
-	//#define _MSG(s) __msg(__custom_message,sizeof(__custom_message),s,__LINE__)
+	#define KERNEL_CALL_NORET( sysfxn , fxn_shrt_form , immortal_lpcstr ) do { if ( ( sysfxn ) && immortal_lpcstr ) \
+		*immortal_lpcstr = DETAILED_IMMORTAL_ERR_STR( ""fxn_shrt_form"" "\n" ); } while( 0 ) /*call system fxn then on error just fill error string*/
 
-	//#define _DETAIL_ERROR( user_friendly_msg ) do 
-	// { 
-	// perror(_MSG(user_friendly_msg)); 
-	// perror( __snprintf( __custom_message , sizeof(__custom_message) , "more details: %s(#%d)@ln(%d)\n" , strerror(errno), errno , __LINE__ ) );
-	// } while(0);
+	//#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
 
-	#define DETAILED_ERR(msg) ( TOSTRING( __LINE__ ) " " ""msg"" )
-
-	#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
-
-	#define SET_STDERR(s) do { perror(s); } while(0)
+	#define SET_STDERR(s) do { perror(s); } while(0) /*print err str*/
 
 	#define _ECHO(s,...) do { SET_STDERR(__snprintf(__custom_message , sizeof(__custom_message),s,##__VA_ARGS__)); } while(0)
 
@@ -322,11 +314,6 @@
 	#define _VERBOSE_ECHO(msg,...) do {\
 		SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
-
-	//#define ERR_RET( user_friendly_msg , RET ) 
-	//	do {
-	//	_DETAIL_ERROR( user_friendly_msg );
-	//	return RET; } while(0);
 
 #endif // #if defined Uses_ERROR_SECTION
 

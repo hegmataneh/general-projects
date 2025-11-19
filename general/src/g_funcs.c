@@ -65,7 +65,7 @@ _EXPORT status internalErrorVal(LPCSTR errStr)
 	return _err--;
 }
 
-_EXPORT LPCSTR internalErrorStr(status errValue)
+_EXPORT IMMORTAL_LPCSTR internalErrorStr(status errValue)
 {
 	if ( errValue > errOK )
 	{
@@ -104,7 +104,7 @@ LPSTR newStr( LPCSTR str )
 	return temp;
 }
 
-LPCSTR systemErrorStr( int prcID /*just for future use*/ )
+IMMORTAL_LPCSTR systemErrorStr( int prcID /*just for future use*/ )
 {
 	return errno ? ( LPCSTR )strerror( errno ) : "";
 }
@@ -122,7 +122,7 @@ LPCSTR __FILE_shrtn( LPCSTR src_str ) // just shorten __FUNCTION__
 	return ( LPCSTR )( ( ( LPSTR )str ) + ( len > 10 ? len - 10 : 0 ) );
 }
 
-LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
+IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
 {
 	return ( (ifnotstr && strlen(ifnotstr)) ? "" : internalErrorStr( err ) );
 }
@@ -157,17 +157,17 @@ LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format
 	return msg_holder;
 }
 
-void _close_socket( sockfd * socket_id )
+void _close_socket( sockfd * socket_id , IMMORTAL_LPCSTR * notif )
 {
 	if ( *socket_id > invalid_fd )
 	{
-		shutdown( *socket_id , SHUT_RDWR ); // Use shutdown() before close() to send a clean FIN.
-		close( *socket_id );
+		KERNEL_CALL_NORET( shutdown( *socket_id , SHUT_RDWR ) == -1 , "shutdown()" , notif ); // Use shutdown() before close() to send a clean FIN.
+		KERNEL_CALL_NORET( close( *socket_id ) == -1 , "close()" , notif );
 		*socket_id = invalid_fd;
 	}
 }
 
-LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
+LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ , IMMORTAL_LPCSTR * notif )
 {
 	FILE * file = fopen( path , "r" );
 	if ( file == NULL )
@@ -183,7 +183,7 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 	if ( buf == NULL )
 	{
 		fprintf( stderr , "Unable to allocate memory for file" );
-		fclose( file );
+		KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , notif );
 		return NULL;
 	}
 
@@ -192,7 +192,7 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ )
 	#pragma GCC diagnostic pop
 	buf[ len ] = EOS;
 
-	fclose( file );
+	KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , notif );
 	file = NULL;
 
 	return ( LPCSTR )buf;
@@ -265,7 +265,7 @@ static void get_datetime_str( LPSTR  buffer , size_t size )
 	strftime( buffer , size , "%Y%m%d_%H%M%S" , t );
 }
 
-FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
+FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ , IMMORTAL_LPCSTR * notif )
 {
 	char final_path[ MAX_PATH ] = { 0 };
 	char name_part[ 256 ] = { 0 };
@@ -279,7 +279,7 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 		ssize_t len = readlink( "/proc/self/exe" , exe_path , sizeof( exe_path ) - 1 );
 		if ( len == -1 )
 		{
-			perror( "readlink" );
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "readlink()\n" );
 			return NULL;
 		}
 		exe_path[ len ] = '\0';
@@ -335,7 +335,7 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ )
 	FILE * file = fopen( final_path , "w" );
 	if ( !file )
 	{
-		perror( "fopen" );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fopen()\n" );
 		return NULL;
 	}
 
@@ -628,7 +628,6 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 	}
 }
 
-
 //IN_GENERAL void_p removeChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
 //	WARNING( pSz );
@@ -642,7 +641,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	if ( pSz ) *pSz = sz;
 //	return sz ? basestr : NULL;
 //}
-
+//
 //IN_GENERAL void_p removeiChr( void_p const str /*in out*/ , char chr , int sz /*in*/ , int * const pSz /*out*/ ) // 1389/11/19
 //{
 //	WARNING( pSz );
@@ -684,7 +683,7 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	if ( pSz ) *pSz = memSz;
 //	return memSz ? basestr : NULL;
 //}
-
+//
 //IN_GENERAL void_p serializeChrs( void_p const sMem /*in out*/ , size_t memSz /*in*/ , size_t * const pSz /*out*/ , void_p const chrs /*in*/ , size_t chrsCount /*in*/ ) // 1390/06/03
 //{
 //	WARNING( pSz );
@@ -731,7 +730,6 @@ IN_GENERAL void replaceChr( char fromChar , char toChar , LPCSTR str , size_t sz
 //	return memSz ? sMem : NULL;
 //}
 
-
 // ---- chr --------------------------------------------------------------------------------
 
 IN_GENERAL LPCSTR strichr( LPCSTR str , char c )
@@ -759,13 +757,12 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 }
 
 //
-
 //IN_GENERAL LPCSTR strrichr( LPCSTR str , char c )
 //{
 //	char car[] = { c , EOS };
 //	return rstristr( str , car );
 //}
-
+//
 //IN_GENERAL LPCSTR strrnchr( LPCSTR inStr , char c , int n )
 //{
 //	LPSTR str = ( LPSTR )inStr;
@@ -792,7 +789,7 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 //	}
 //	return str;
 //}
-
+//
 //IN_GENERAL LPCSTR strrinchr( LPCSTR inStr , char c , int n )
 //{
 //	LPSTR str = ( LPSTR )inStr;
@@ -819,10 +816,10 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 //	}
 //	return str;
 //}
-
+//
 // ~~~~~ chr --------------------------------------------------------------------------------
 // ---- chrs --------------------------------------------------------------------------------
-
+//
 //IN_GENERAL LPCSTR strichrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // case insensitive cmp . Written By Mohsen
 //{
 //	LPCSTR pOutStr = NULL , pTempOutStr;
@@ -880,9 +877,9 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 //	}
 //	return pOutStr;
 //}
-
 //
-
+//
+//
 //IN_GENERAL LPCSTR strrichrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // reverse search . case insensitive cmp . Written By Mohsen
 //{
 //	LPCSTR pOutStr = NULL , pTempOutStr;
@@ -940,9 +937,9 @@ IN_GENERAL LPCSTR strinchr( LPCSTR str , char c , int n )
 //	}
 //	return pOutStr;
 //}
-
 //
-
+//
+//
 //IN_GENERAL LPCSTR strchrs( LPCSTR str , LPCSTR chrs , int * const pCI ) // same as strpbrk . Written By Mohsen
 //{
 //	LPCSTR lpRet = strpbrk( str , chrs );
@@ -999,7 +996,8 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 //	return byteleft == 0 ? errOK : errCanceled; // return -1 on failure, 0 on success
 //}
 
-status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout/*0 no retry*/ )
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms ,
+	int retry_count_on_timeout/*0 no retry*/ , IMMORTAL_LPCSTR * notif , buffer * more_detail )
 {
 	const unsigned char * p = ( const unsigned char * )buf;
 	size_t remaining = len;
@@ -1007,7 +1005,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 
 	/* Add MSG_NOSIGNAL if available to avoid SIGPIPE. */
 #ifdef MSG_NOSIGNAL
-	int send_flags = flags | MSG_NOSIGNAL;
+	int send_flags = flags | MSG_NOSIGNAL; // Prevents SIGPIPE if peer closed connection.
 #else
 	int send_flags = flags;
 #endif
@@ -1030,7 +1028,12 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 			 * send() returning 0 on a TCP socket is unusual. Treat as error:
 			 * peer likely closed or OS-level oddity. Set errno to ECONNRESET.
 			 */
+			if ( more_detail )
+			{
+				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			}
 			errno = ECONNRESET;
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
 			return errPeerClosed;
 		}
 
@@ -1071,6 +1074,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 				{
 					/* Peer closed or error on socket. We surface as ECONNRESET. */
 					errno = ECONNRESET;
+					if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
 					return errPeerClosed;
 				}
 				/* Writable: loop will retry send() */
@@ -1081,20 +1085,27 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 				/* Timeout */
 				if ( retry_count_on_timeout > 0 && remaining > 0 )
 				{
-					return tcp_send_all( fd , p , remaining , flags , pool_timeout_onsend_ms , timeout_onack_ms , retry_count_on_timeout - 1 );
+					return tcp_send_all( fd , p , remaining , flags , pool_timeout_onsend_ms , timeout_onack_ms , retry_count_on_timeout - 1 , notif , more_detail );
 				}
+				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "Timeout\n" );
 				errno = ETIMEDOUT;
 				return errTimeout;
 			}
 			else
 			{
 				/* poll() itself failed */
+				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "poll()\n" );
+				if ( more_detail )
+				{
+					strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				}
 				return errSocket; /* errno set by poll */
 			}
 		}
 
 		if ( saved_errno == EPIPE || saved_errno == ECONNRESET )
 		{
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
 			return errPeerClosed;
 		}
 
@@ -1114,6 +1125,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 	#endif
 		return errOK;
 	}
+	if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "send != request\n" );
 	return errGeneral; /* should equal len */
 }
 
@@ -1217,8 +1229,6 @@ int strsstr( LPCSTR * strs , int strs_count , LPCSTR target )
 	return -1;  // not found
 }
 
-
-
 int strsistr( LPCSTR * strs , int strs_count , LPCSTR target )
 {
 	for ( int i = 0; i < strs_count; i++ )
@@ -1293,7 +1303,6 @@ const char * get_filename( const char * path )
 	return path;  // no '/' found, whole string is filename
 }
 
-
 status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * app_closed )
 {
 	if ( !sem || timeout_sec < 0 )
@@ -1346,7 +1355,6 @@ status sem_wait_with_timeout( sem_t * sem , long timeout_sec , volatile bool * a
 	return errTimeout;
 }
 
-
 int timeval_compare( const struct timeval * a , const struct timeval * b )
 {
 	if ( a->tv_sec < b->tv_sec )
@@ -1381,12 +1389,12 @@ int regression_slope_int( const uint64 * y , size_t n )
 	return ( int )( slope + ( slope >= 0 ? 0.5 : -0.5 ) );
 }
 
-void enable_keepalive_chaotic( int sock )
+void enable_keepalive_chaotic( int sock , IMMORTAL_LPCSTR * notif )
 {
 	srand( ( unsigned )time( NULL ) ^ ( unsigned )sock );
 
 	int yes = 1;
-	setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) );
+	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , notif );
 
 	// Prime base values with random jitter ±3s
 	int idle = 29 + ( rand() % 7 - 3 );  // 26–32 s
@@ -1396,30 +1404,30 @@ void enable_keepalive_chaotic( int sock )
 	if ( idle < 10 ) idle = 10;
 	if ( interval < 3 ) interval = 3;
 
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) );
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) );
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , notif );
 }
 
-void enable_keepalive( sockfd sock )
+void enable_keepalive( sockfd sock , IMMORTAL_LPCSTR * notif )
 {
 	int yes = 1;
-	setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) );
+	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , notif );
 
 	int idle = 30;  // seconds of inactivity before keepalive probes start
 	int interval = 10;  // seconds between probes
 	int count = 5;   // number of failed probes before marking dead
 
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) );
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) );
-	setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , notif );
 }
 
 // Returns:
 //  1 = socket looks connected (no EOF detected, no immediate error)
 //  0 = socket closed by peer (recv returned 0) or error that indicates closure
 // -1 = indeterminate (poll error) but errno will be set
-int is_socket_connected_peek( int fd , int timeout_ms )
+int is_socket_connected_peek( int fd , int timeout_ms , IMMORTAL_LPCSTR * notif )
 {
 	struct pollfd pfd;
 	pfd.fd = fd;
@@ -1427,7 +1435,11 @@ int is_socket_connected_peek( int fd , int timeout_ms )
 	pfd.revents = 0;
 
 	int rv = poll( &pfd , 1 , timeout_ms );
-	if ( rv < 0 ) return -1; // errno set
+	if ( rv < 0 )
+	{
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "poll()\n" );
+		return -1; // errno set
+	}
 	if ( rv == 0 )
 	{
 		// no event within timeout -> assume still connected (no proof of closure)
@@ -1482,11 +1494,11 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
 	return number;
 }
 
-status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock )
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock , IMMORTAL_LPCSTR * notif , buffer * more_detail )
 {
 	int sockfd;
 	struct sockaddr_in addr;
-	int flags , result , valopt;
+	int flags , result , valopt = 0;
 	fd_set wset;
 	struct timeval tv;
 	socklen_t lon;
@@ -1495,7 +1507,11 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 	sockfd = socket( AF_INET , SOCK_STREAM , 0 );
 	if ( sockfd < 0 )
 	{
-		//perror( "socket" );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
 		return errSocket;
 	}
 
@@ -1529,29 +1545,41 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 				getsockopt( sockfd , SOL_SOCKET , SO_ERROR , ( void * )( &valopt ) , &lon );
 				if ( valopt )
 				{
+					if ( more_detail )
+					{
+						strerror_r( valopt , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+					}
 					errno = valopt;
-					//perror( "connect" );
+					if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
 					close( sockfd );
 					return errNoConnection;
 				}
 			}
 			else if ( result == 0 )
 			{
-				//fprintf( stderr , "connect timeout\n" );
+				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "timeout\n" );
 				close( sockfd );
 				errno = ETIMEDOUT;
 				return errTimeout;
 			}
 			else
 			{
-				//perror( "select" );
+				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
+				if ( more_detail )
+				{
+					strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				}
 				close( sockfd );
 				return errSelect;
 			}
 		}
 		else
 		{
-			//perror( "connect" );
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
+			if ( more_detail )
+			{
+				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			}
 			close( sockfd );
 			return errConnect;
 		}
@@ -1564,7 +1592,7 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 }
 
 // General function to handle socket creation, binding, listening, and accepting with timeout
-status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd )
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd , IMMORTAL_LPCSTR * notif , buffer * more_detail )
 {
 	int server_fd;
 	fd_set read_fds;
@@ -1573,28 +1601,63 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	// Create socket
 	if ( ( server_fd = socket( AF_INET , SOCK_STREAM , 0 ) ) == -1 )
 	{
-		perror( DETAILED_ERR( "Socket creation failed.\n" ) );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
 		return errSocket;
 	}
-
 	int prevflags = fcntl( server_fd , F_GETFL , 0 );
 	if ( prevflags == -1 )
 	{
-		perror( DETAILED_ERR( "fcntl(F_GETFL) failed.\n" ) );
-		_close_socket( &server_fd );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(F_GETFL) failed.\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
+		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 	if ( fcntl( server_fd , F_SETFL , prevflags | O_NONBLOCK ) == -1 )
 	{
-		perror( DETAILED_ERR( "fcntl(F_SETFL) failed.\n" ) );
-		_close_socket( &server_fd );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(O_NONBLOCK) failed.\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
+		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 	int opt = 1;
 	if ( setsockopt( server_fd, SOL_SOCKET , SO_REUSEADDR , &opt , sizeof( opt ) ) < 0 )
 	{
-		perror( DETAILED_ERR( "setsockopt error.\n" ) );
-		_close_socket( &server_fd );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEADDR)\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
+		_close_socket( &server_fd , NULL );
+		return errsockopt;
+	}
+	if ( setsockopt( server_fd , SOL_SOCKET , SO_REUSEPORT , &opt , sizeof( opt ) ) < 0 ) // Let server restart immediately without waiting TIME_WAIT.
+	{
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEPORT)\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
+		_close_socket( &server_fd , NULL );
+		return errsockopt;
+	}
+	if ( setsockopt( server_fd , IPPROTO_TCP , TCP_QUICKACK , &opt , sizeof( opt ) ) < 0 ) // Force immediate ACK. Decreases feedback latency. Disable delayed ACK at receiver
+	{
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(TCP_QUICKACK)\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
+		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 
@@ -1615,15 +1678,29 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	// Bind the socket
 	if ( bind( server_fd , ( struct sockaddr * )&server_addr , addrlen ) == -1 )
 	{
-		perror( DETAILED_ERR( "Bind failed.\n" ) );
+		if ( errno == EADDRINUSE )
+		{
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "bind(ADDRINUSE)-multiple instance\n" );
+		}
+		else
+		{
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "bind()\n" );
+			if ( more_detail )
+			{
+				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			}
+		}
 		close( server_fd );
 		return errBind;
 	}
-
 	// Prepare for listen
 	if ( listen( server_fd , 5 ) == -1 )
 	{
-		perror( DETAILED_ERR( "Listen failed.\n" ) );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "listen()\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
 		close( server_fd );
 		return errListen;
 	}
@@ -1641,13 +1718,17 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 
 	if ( activity == -1 )
 	{
-		perror( DETAILED_ERR( "Select failed.\n" ) );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
+		if ( more_detail )
+		{
+			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+		}
 		close( server_fd );
 		return errSelect;
 	}
 	else if ( activity == 0 )
 	{
-		perror( DETAILED_ERR( "Timeout reached.\n" ) );
+		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "Timeout reached.\n" );
 		close( server_fd );
 		return errTimeout;
 	}
@@ -1661,7 +1742,11 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		*client_fd = accept( server_fd , ( struct sockaddr * )&client_addr , &client_len );
 		if ( (*client_fd) < 0 )
 		{
-			perror( DETAILED_ERR( "Accept failed.\n" ) );
+			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "accept()\n" );
+			if ( more_detail )
+			{
+				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			}
 			close( server_fd );
 			return errAccept;
 		}
@@ -1672,6 +1757,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	}
 
 	close( server_fd );
+	if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "NoConnection.\n" );
 	return errNoConnection;  // Timeout or error occurred
 }
 
@@ -1698,8 +1784,8 @@ status wait_for_ack( int sock , size_t sent_bytes /*Forward compatibility*/ , in
 
 		// Check timeout
 		gettimeofday( &now , NULL );
-		int elapsed_ms = ( now.tv_sec - start.tv_sec ) * 1000 +
-			( now.tv_usec - start.tv_usec ) / 1000;
+		int elapsed_ms = (int)(( now.tv_sec - start.tv_sec ) * 1000 +
+			( now.tv_usec - start.tv_usec ) / 1000);
 
 		if ( elapsed_ms >= timeout_ms )
 			break;  // timed out

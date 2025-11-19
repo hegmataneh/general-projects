@@ -14,7 +14,7 @@
 #define ENABLE_USE_DBG_TAG /*in some c file there is diagnostic var*/
 
 #ifdef _DEBUG
-	//#define ENABLE_LOGGING
+	#define ENABLE_LOGGING
 #endif
 
 //#define ENABLE_WAIT_FOR_PACKET_ACK /*it make sending so slow so i comment this 4040824*/

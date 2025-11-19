@@ -612,6 +612,75 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 	return d_error;
 }
 
+status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j , long src_k , pass_p data /*=NULL if subscriber precede*/ )
+{
+	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
+
+	if ( dis->pheap )
+	{
+		if ( dis->pheap->count ) qsort( dis->pheap->data , dis->pheap->count , sizeof( void * ) , compare_subscribers );
+
+		for ( size_t idx = 0 ; idx < dis->pheap->count ; idx++ )
+		{
+			sub_custome_ord_t * pord = NULL;
+			if ( mms_array_get_s( dis->pheap , idx , ( void ** )&pord ) == errOK && pord->psubscriber->type == SUB_x3LONG )
+			{
+				pord->psubscriber->func.x3long_cb( DATA_ORDER_( pord->psubscriber ) , src_i , src_j , src_k );
+			}
+		}
+
+		BREAK( errOK , 0 );
+	}
+	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
+	{
+		int one_token_ring_called = 0;
+		int start , end , step;
+		subscribers_t * psubscribers = NULL;
+		BREAK_STAT( mms_array_get_s( &dis->grps , igrp , ( void ** )&psubscribers ) , 0 );
+
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = ( int )psubscribers->subs.count;
+			step = 1;
+		}
+		else
+		{
+			start = ( int )psubscribers->subs.count - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
+		{
+			subscriber_t * psubscriber = NULL;
+			BREAK_STAT( mms_array_get_s( &psubscribers->subs , ( size_t )isub , ( void ** )&psubscriber ) , 0 );
+
+			if ( psubscriber->type == SUB_x3LONG )
+			{
+				// TODO . tring no implemented for this
+				if ( !psubscriber->tring_p_t )
+				{
+					psubscriber->func.x3long_cb( DATA_ORDER_( psubscriber ) , src_i , src_j , src_k );
+				}
+			}
+		}
+	}
+
+	BEGIN_SMPL
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return d_error;
+}
+
+
 status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ )
 {
 	INIT_BREAKABLE_FXN();

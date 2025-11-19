@@ -15,6 +15,8 @@ typedef enum
 	SUB_LONG ,
 	SUB_DOUBLE ,
 	SUB_LONG_DOUBLE ,
+	SUB_x3LONG ,
+
 	SUB_STRING_DOUBLE ,
 	SUB_DIRECT_ONE_CALL_BUFFER_SIZE ,
 	SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE ,
@@ -28,6 +30,8 @@ typedef void ( *sub_string_t )( pass_p data , LPCSTR msg );
 typedef void ( *sub_long_t )( pass_p data , long v );
 typedef void ( *sub_double_t )( pass_p data , double v );
 typedef void ( *sub_long_double_t )( pass_p data , long i , double d );
+typedef void ( *sub_x3long_t )( pass_p data , long i , long j , long k );
+
 typedef void ( *sub_string_double_t )( pass_p data , LPCSTR i , double d );
 typedef status ( *sub_direct_one_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
 typedef status ( *sub_multicast_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
@@ -42,6 +46,8 @@ typedef union
 	sub_long_t								long_cb;
 	sub_double_t							dbl_cb;
 	sub_long_double_t						long_dbl_cb;
+	sub_x3long_t							x3long_cb;
+
 	sub_string_double_t						str_dbl_cb;
 	sub_direct_one_call_buffer_size_t		direct_one_call_bfr_size_cb;
 	sub_multicast_call_buffer_size_t		multicast_call_buffer_size_cb;
@@ -123,6 +129,8 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 status distributor_publish_long( distributor_t * dis , long src_v , pass_p data /*=NULL if subscriber precede*/ );
 status distributor_publish_double( distributor_t * dis , double src_v , pass_p data /*=NULL if subscriber precede*/ );
 status distributor_publish_long_double( distributor_t * dis , long src_i , double src_d , pass_p data /*=NULL if subscriber precede*/ );
+status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j , long src_k , pass_p data /*=NULL if subscriber precede*/ );
+
 status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ );
 status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , size_t src_sz , pass_p data /*=NULL if subscriber precede*/ );
 

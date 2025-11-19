@@ -1,3 +1,7 @@
+#ifdef Uses_PATH_MAX
+	#define __INC_limits
+#endif
+
 #ifdef Uses_TCP_NODELAY
 	#define __INC_netinet_tcp
 #endif

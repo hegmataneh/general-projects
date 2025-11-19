@@ -15,7 +15,8 @@ typedef enum
 // Initialize logger with a file path (creates or appends)
 status log_init( const char * filename , bool bnew );
 
-// Write formatted message to log
+// Write a formatted log message with level and timestamp
+// this fxn put \n at the end
 void log_write( LogLevel level , const char * fmt , ... );
 
 // Close the log file

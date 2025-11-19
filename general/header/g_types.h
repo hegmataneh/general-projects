@@ -40,14 +40,15 @@ typedef char * LPSTR;			/*in ubuntu gcc -> 8 bytes*/
 typedef const char * LPCSTR;	/*in ubuntu gcc -> 8 bytes*/ // keep this style
 
 
-typedef LPSTR INNER_STR; /*used inside local function and it must be freed at the end*/
-typedef LPSTR PASSED_STR; /*string that passed inside function and just could be read not freed atall*/
+typedef LPSTR  INNER_STR; /*used inside local function and it must be freed at the end*/
+typedef LPSTR  PASSED_STR; /*string that passed inside function and just could be read not freed atall*/
 
-typedef LPCSTR INNER_CSTR; /*used inside local function and it must be freed at the end*/
-typedef LPCSTR PASSED_CSTR; /*string that passed inside function and just could be read not freed atall*/
+typedef LPCSTR  INNER_CSTR; /*used inside local function and it must be freed at the end*/
+typedef LPCSTR  PASSED_CSTR; /*string that passed inside function and just could be read not freed atall*/
 
+typedef LPCSTR  IMMORTAL_LPCSTR; /*string that passed and should not free atall*/
 
-//typedef LPCSTR LPCTSTR;			/*in ubuntu gcc -> 8 bytes*/
+//typedef LPCSTR LPCTSTR;		/*in ubuntu gcc -> 8 bytes*/
 //typedef LPSTR LPTSTR;			/*in ubuntu gcc -> 8 bytes*/
 
 typedef __int64u ubigint;		/*in ubuntu gcc -> 8 bytes*/

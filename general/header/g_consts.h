@@ -107,7 +107,6 @@ enum
 
 typedef enum
 {
-	
 	head_2_tail ,
 	tail_2_head ,
 	e_dir_default = head_2_tail
@@ -173,3 +172,6 @@ _EXTERN const unsigned char MSB_MARKERS[8];
 #define M_3_PI_2	4.71238898038468985
 
 #define PHI			1.618
+
+#define MIN_SYSERR_BUF_SZ 256 /*at least this size should be prodided to store system error strings*/
+#define MIN_SYSERR_BUF_CAPACITY ( MIN_SYSERR_BUF_SZ - 1 )

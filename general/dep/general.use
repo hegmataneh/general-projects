@@ -1,3 +1,7 @@
+#ifdef Uses_KERNEL_CALL_NORET
+	#define Uses_ERROR_SECTION
+#endif
+
 #ifdef Uses_CALLOC_AR
 	#define Uses_memory_funcs
 #endif
@@ -214,7 +218,12 @@
 #endif
 
 #ifdef Uses_ERROR_SECTION
+	#define Uses_TOSTRING
 	#define __INC_macros
+#endif
+
+#ifdef Uses_TOSTRING
+	#define Uses_STR_funcs
 #endif
 
 #ifdef Uses_cirbuf_packet_sync

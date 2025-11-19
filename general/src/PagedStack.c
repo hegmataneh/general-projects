@@ -1,3 +1,4 @@
+#define Uses_KERNEL_CALL_NORET
 #define Uses_LOCK_LINE
 #define Uses_strncpy
 #define Uses_MM_BREAK_IF
@@ -284,7 +285,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 }
 
 /* load chain from metadata file (if present). For simplicity we'll ignore validation errors and treat as best-effort. */
-_PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
+_PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * notif )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -309,7 +310,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 			*ppfile = mf;
 		}
 	}
-	fclose( f );
+	KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , notif );
 
 	if ( mm->files.count > 1 )
 	{
@@ -320,7 +321,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm )
 	BEGIN_RET
 	case 1:
 	{
-		fclose( f );
+		KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , notif );
 	}
 	N_END_RET
 }
@@ -425,7 +426,7 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 	}
 	BREAK_STAT( pg_stk_create( mm , base_dir ) , 0 );
 	mm->custom_data = custom_data;
-	d_error = pg_stk_load_chain( mm );
+	d_error = pg_stk_load_chain( mm , NULL );
 	if ( d_error != errNotFound ) BREAK_STAT( d_error , 0 );
 	BREAK_STAT( pg_stk_ensure_hot_spare( mm ) , 0 );
 	/* If no current active file, activate the hot spare */

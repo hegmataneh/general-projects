@@ -55,36 +55,36 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 //----file functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 #if defined Uses_FILE || !defined __COMPILING
-FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ );
+FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ , IMMORTAL_LPCSTR * notif );
 #endif
-LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ );
+LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ , IMMORTAL_LPCSTR * notif );
 const char * get_filename( const char * path );
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----socket functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-void _close_socket( sockfd * socket_id );
+void _close_socket( sockfd * socket_id , IMMORTAL_LPCSTR * notif );
 //status sendall( sockfd socketfd , buffer buf , size_t * len );
-status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout /*0 no retry*/ );
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout /*0 no retry*/ , IMMORTAL_LPCSTR * notif , buffer * more_detail );
 int peerTcpClosed( sockfd socketfd );
-void enable_keepalive_chaotic( int sock );
-int is_socket_connected_peek( int fd , int timeout_ms );
-status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock );
-status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd );
-void enable_keepalive( sockfd sock );
+void enable_keepalive_chaotic( int sock , IMMORTAL_LPCSTR * notif );
+int is_socket_connected_peek( int fd , int timeout_ms , IMMORTAL_LPCSTR * notif );
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock , IMMORTAL_LPCSTR * notif , buffer * more_detail );
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd , IMMORTAL_LPCSTR * notif , buffer * more_detail );
+void enable_keepalive( sockfd sock , IMMORTAL_LPCSTR * notif );
 status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms );
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----error functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
-LPCSTR internalErrorStr( status errValue );
+IMMORTAL_LPCSTR internalErrorStr( status errValue );
 status internalErrorVal( LPCSTR errStr );
 //LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
-LPCSTR systemErrorStr( int prcID /*just for future use*/ );
+IMMORTAL_LPCSTR systemErrorStr( int prcID /*just for future use*/ );
 LPCSTR __FUNCTION_shrtn( LPCSTR str );
 LPCSTR __FILE_shrtn( LPCSTR str );
-LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
+IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----String functions------------------------------------------------------
