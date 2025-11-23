@@ -8,7 +8,7 @@ status string_to_int( LPCSTR str , int * out );
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----formats wrapper functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/);
+LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string /*=NULL*/);
 long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 
 

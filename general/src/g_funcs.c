@@ -214,7 +214,7 @@ LPCSTR trim_trailing_zeros(LPSTR s) {
 	return s;
 }
 
-LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_float , LPCSTR unit_name /*= "pps"*/ )
+LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_float , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string )
 {
 	LPCSTR units[] = { "", "K", "M", "G", "T", "P" };
 	double value = ( double )pps;
@@ -225,10 +225,11 @@ LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_floa
 		value /= 1000.0;
 		unit++;
 	}
-	char buf2[64];
-	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float );
+
+	char buf2[DEFAULT_MFS_BUF_SZ];
+	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float ); // make format
 	snprintf( buf , buflen , buf2 , value );
-	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s" , trim_trailing_zeros(buf) , ( STRLEN(units[unit]) > 0 || STRLEN(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
+	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s%s" , prefix_string ? prefix_string : "" , trim_trailing_zeros(buf) , ( STRLEN(units[unit]) > 0 || STRLEN(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
 	strncpy( buf , buf2 , buflen );
 
 	return buf;

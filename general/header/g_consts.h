@@ -64,6 +64,7 @@ enum
 	errConnect = ERR_NEXT_VALUE(),
 	errOpen = ERR_NEXT_VALUE(),
 	errACK = ERR_NEXT_VALUE(), /*no ack in time window*/
+	errNoCountinue = ERR_NEXT_VALUE(), /*just use for its name purpose*/
 
 	// ADD extra error here
 

@@ -400,7 +400,7 @@
 #define GROW_STEP 1
 
 #ifndef LOCK_LINE
-	#define LOCK_LINE( exp ) exp
+	#define LOCK_LINE( exp ) exp /*just do what exp say instead of ddlock*/
 #endif
 
 #if defined Uses_tag_qulifier || !defined Uses_tag_qulifier /*some class or variable has qualification that if we tagged them these tagged help and guid future people who read code*/

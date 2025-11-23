@@ -183,6 +183,14 @@ _PRIVATE_FXN ci_sgm_t * filled_queue_pop_tail( ci_sgmgr_t * mgr )
 	return s;
 }
 
+_PRIVATE_FXN ci_sgm_t * filled_head_queue_peek( ci_sgmgr_t * mgr )
+{
+	ci_sgm_t * s = mgr->filled_head;
+	if ( !s ) return NULL;
+	if ( !mgr->filled_head ) mgr->filled_tail = NULL;
+	return s;
+}
+
 /* ---------- Public Manager API ---------- */
 
 /* Initialize manager. If allow_grow==True, manager will allocate new segments when needed. */
@@ -248,7 +256,9 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	if ( !mgr || !data || !len ) return errArg;
 
 	//gettimeofday( &mgr->last_access , NULL );
+	mgr->release_lock = true;
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	mgr->release_lock = false;
 
 	ci_sgm_t * psgm_active = NULL; // s
 	/* First ensure active exists and can accommodate len (with offsets capacity). */
@@ -430,20 +440,26 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv )
 {
 	if ( !mgr ) return NULL;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
-	while ( !mgr->filled_head )
+	if ( trv != seg_trv_FIFO_nolock )
 	{
-		if ( !block )
+		//mgr->release_lock = true;
+		LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+		//mgr->release_lock = false;
+		while ( !mgr->filled_head )
 		{
-			pthread_mutex_unlock( &mgr->lock );
-			return NULL;
+			if ( !block )
+			{
+				pthread_mutex_unlock( &mgr->lock );
+				return NULL;
+			}
+			pthread_cond_wait( &mgr->filled_cond , &mgr->lock );
 		}
-		pthread_cond_wait( &mgr->filled_cond , &mgr->lock );
 	}
 	ci_sgm_t * s = NULL;
 
 	switch ( trv )
 	{
+		case seg_trv_FIFO_nolock:
 		case seg_trv_FIFO:
 		{
 			s = filled_queue_pop( mgr );
@@ -457,8 +473,83 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 	}
 	/* popped segment is detached from queue but still belongs to ring (we kept next==prev==self) */
 	/* Keep its ring pointers as-is; consumers can read s->buf, s->itm_count, offsets, sizes */
-	pthread_mutex_unlock( &mgr->lock );
+	
+	if ( trv != seg_trv_FIFO_nolock )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+	}
 	return s;
+}
+
+#ifdef ENABLE_USE_DBG_TAG
+_GLOBAL_VAR long long _filed_packet = 0;
+_GLOBAL_VAR long long _filed_segment = 0;
+#endif
+
+_PRIVATE_FXN _CALLBACK_FXN status process_itm( buffer data , size_t len , pass_p src_ci_sgmgr_t )
+{
+	ci_sgmgr_t * mgr = ( ci_sgmgr_t * )src_ci_sgmgr_t;
+	if ( mgr->release_lock ) return errNoCountinue;
+	if ( mgr->fault_callback( data , len , mgr->user_data ) == errOK )
+	{
+		_filed_packet++;
+		return errOK;
+	}
+	return errNoCountinue;
+}
+
+/// <summary>
+/// return errNoCountinue if you want break loop
+/// </summary>
+void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb cb , pass_p ud , seg_trv trv )
+{
+	if ( !mgr || trv != seg_trv_FIFO_nolock ) return;
+	mgr->fault_callback = cb;
+	mgr->user_data = ud;
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	if ( !mgr->filled_head || mgr->filled_head == mgr->active || mgr->filled_head == mgr->filled_tail )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+		return;
+	}
+	status d_error;
+
+	while( !mgr->release_lock && mgr->filled_head != mgr->active && mgr->filled_head && mgr->filled_tail && mgr->filled_head != mgr->filled_tail )
+	{
+		ci_sgm_t * speek = filled_head_queue_peek( mgr );
+		if ( !speek )
+		{
+			pthread_mutex_unlock( &mgr->lock );
+			return;
+		}
+
+		d_error = ci_sgm_iter_items( speek , process_itm , mgr , false/*at first error stop iteration*/ , 1 , head_2_tail );
+		if ( d_error == errOK )
+		{
+			_filed_segment++;
+			/*all packet processed*/
+			ci_sgm_t * spop = filled_queue_pop( mgr );
+			if ( spop && spop == speek ) /*not possible poped different from head*/
+			{
+				/* Reset */
+				mgr->current_items -= spop->itm_count;
+				/* subtract bytes */
+				size_t bytes = spop->buf_used;
+				if ( mgr->current_bytes >= bytes ) mgr->current_bytes -= bytes; else mgr->current_bytes = 0;
+				spop->buf_used = 0;
+				spop->itm_count = 0;
+				//spop->filled = False;
+				spop->in_filled_queue = False;
+				/* do not free offsets arrays; keep capacity to reuse */
+			}
+		}
+		else if ( d_error == errNoCountinue )
+		{
+			break;
+		}
+	}
+
+	pthread_mutex_unlock( &mgr->lock );
 }
 
 /* After consumer flushes segment's items to persistent storage, call this to mark it empty and reusable.
@@ -563,7 +654,9 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
 bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( const buffer buf , size_t sz ) )
 {
 	bool bret = false;
+	//mgr->release_lock = true;
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	//mgr->release_lock = false;
 
 	ci_sgm_t * sactive = mgr->active;
 	if ( !sactive || !sactive->itm_count || !sactive->sizes || !sactive->sizes[ 0 ] )
@@ -626,7 +719,9 @@ bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 {
 	bool bAnyDeletion = false;
+	//mgr->release_lock = true;
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	//mgr->release_lock = false;
 
 	ci_sgm_t * head = mgr->ring;
 	if ( !head )

@@ -62,6 +62,8 @@ typedef struct cirbuf_inf_segment
 	time_t last_used;
 } ci_sgm_t;
 
+typedef status (*seg_item_cb)(buffer data, size_t len, pass_p ud);
+
 /* Manager struct */
 typedef struct cirbuf_inf_sgmgr
 {
@@ -81,8 +83,15 @@ typedef struct cirbuf_inf_sgmgr
 	/* Limits and policies */
 	size_t default_seg_capacity;
 	size_t default_offsets_capacity;
-	Boolean allow_grow;      /* whether manager may allocate new segments */
-	int pad1;
+	union
+	{
+		struct
+		{
+			Boolean allow_grow;      /* whether manager may allocate new segments */
+			bool release_lock; /*when some important job want to lock on mgr then set it true then after lock release it*/
+		};
+		size_t pad1;
+	};
 
 	/* Optional stats */
 	STAT_FLD size_t current_items; // current state
@@ -96,15 +105,20 @@ typedef struct cirbuf_inf_sgmgr
 	STAT_FLD size_t newed_segments;
 	STAT_FLD size_t released_segments;
 
+	struct
+	{
+		pass_p user_data;
+		seg_item_cb fault_callback;
+	};
+
 	//timeval last_access; // prevent from delaying insertion
 } ci_sgmgr_t;
-
-typedef status (*seg_item_cb)(buffer data, size_t len, pass_p ud);
 
 typedef enum seg_trv
 {
 	seg_trv_FIFO ,
-	seg_trv_LIFO
+	seg_trv_LIFO ,
+	seg_trv_FIFO_nolock , /*traverse and send to file then if empty then poped*/
 } seg_trv;
 
 // default_seg_capacity = each sausage byte size , default_offsets_capacity = max item add of each sausage
@@ -116,6 +130,11 @@ void segmgr_destroy( ci_sgmgr_t * mgr );
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv ); // pop filled segment
 status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ , size_t strides , e_direction dir ); // iterate through items
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
+
+/// <summary>
+/// return errNoCountinue if you want break loop
+/// </summary>
+void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb cb , pass_p ud , seg_trv trv );
 
 // presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm
 bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( const buffer buf , size_t sz ) ); // return wheater segment is closed
