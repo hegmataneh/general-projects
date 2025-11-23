@@ -1,3 +1,25 @@
+#ifdef Uses_instBps_t
+	#define Uses_instantaneousBps
+#endif
+
+#ifdef Uses_cir_rate_wnd_t
+	#define Uses_circular_sliding_rate_window
+#endif
+
+#ifdef Uses_instantaneousBps
+	#define Uses_uint64_t
+	#define Uses_bool
+	#define Uses_time_t
+	#define __INC_instantaneousBps
+#endif
+
+#ifdef Uses_circular_sliding_rate_window
+	#define Uses_time_t
+	#define Uses_bool
+	#define Uses_uint64_t
+	#define __INC_circular_sliding_rate_window
+#endif
+
 #ifdef Uses_KERNEL_CALL_NORET
 	#define Uses_ERROR_SECTION
 #endif

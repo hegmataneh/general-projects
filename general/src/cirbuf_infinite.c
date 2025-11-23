@@ -560,7 +560,7 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
  *   - return change it as filled
  * This allows user to "expire" an active segment early.
  */
-bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) )
+bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( const buffer buf , size_t sz ) )
 {
 	bool bret = false;
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
@@ -573,7 +573,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buf
 	}
 
 	/* Call user callback with buffer */
-	if ( callback( sactive->buf , sactive->sizes[ 0 ] ) )
+	if ( lastone_callback( sactive->buf + sactive->offsets[ sactive->itm_count - 1 ] , sactive->sizes[ sactive->itm_count - 1 ] ) )
 	{
 		filled_queue_push( mgr , sactive );
 		bret = true; // change it as filled

@@ -2,7 +2,7 @@
 
 // non thread safe
 
-typedef struct cirbuf_metric_t
+typedef struct cirbuf_metric_t /*variable length snapshot window*/
 {
 	uint64 * samples;   // per-slot counts
 	size_t capacity;     // number of time slots

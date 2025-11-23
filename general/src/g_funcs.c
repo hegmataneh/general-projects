@@ -1494,7 +1494,8 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
 	return number;
 }
 
-status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock , IMMORTAL_LPCSTR * notif , buffer * more_detail )
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock ,
+	IMMORTAL_LPCSTR * notif , buffer * more_detail )
 {
 	int sockfd;
 	struct sockaddr_in addr;

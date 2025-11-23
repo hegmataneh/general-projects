@@ -233,7 +233,7 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	//pthread_mutexattr_t attr;
 	//pthread_mutexattr_init( &attr );
 	//pthread_mutexattr_settype( &attr , PTHREAD_MUTEX_RECURSIVE ); // make it double locked
-	pthread_mutex_init( &mm->ps_lock , NULL );
+	BREAK_IF( pthread_mutex_init( &mm->ps_lock , NULL ) , errCreation , 0 );
 
 	mm->current = NULL;
 	mm->hot_spare = NULL;

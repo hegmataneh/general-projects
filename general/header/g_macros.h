@@ -295,7 +295,7 @@
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
 
 	#define DETAILED_IMMORTAL_ERR_STR(msg) \
-		( " " __FILE__ " " TOSTRING( __LINE__ ) " " ""msg"" ) /*append line number heading of string msg*/
+		( TOSTRING( __LINE__ ) " " ""msg"" ) /*append line number heading of string msg*/
 
 	#define KERNEL_CALL_NORET( sysfxn , fxn_shrt_form , immortal_lpcstr ) do { if ( ( sysfxn ) && immortal_lpcstr ) \
 		*immortal_lpcstr = DETAILED_IMMORTAL_ERR_STR( ""fxn_shrt_form"" "\n" ); } while( 0 ) /*call system fxn then on error just fill error string*/

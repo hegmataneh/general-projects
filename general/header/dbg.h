@@ -82,15 +82,15 @@
 
 #ifndef ENABLE_LOGGING
 
-#define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , trd_id );
+#define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , this_thread );
 #define MARK_LINE() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s %d\n" , __FUNCTION__ , __LINE__ );
 
 #define DBG_TAG_BASE( _ar , _ar_n , fmt , ... ) do { _ar_n+=snprintf((_ar) + (_ar_n), sizeof(_ar), (fmt), ##__VA_ARGS__); } while( 0 )
 
 #else // defined ENABLE_LOGGING
 
-#define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , trd_id ); \
-							log_write( LOG_INFO , "%s started %lu\n" , __FUNCTION__ , trd_id );
+#define MARK_START_THREAD() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s started %lu\n" , __FUNCTION__ , this_thread ); \
+							log_write( LOG_INFO , "%s started %lu\n" , __FUNCTION__ , this_thread );
 
 #define MARK_LINE() TMP_DUMP_BUFF_N += sprintf( TMP_DUMP_BUFF_NAME + TMP_DUMP_BUFF_N , "%s %d\n" , __FUNCTION__ , __LINE__ ); \
 							log_write( LOG_INFO , "%s %d\n" , __FUNCTION__ , __LINE__ );

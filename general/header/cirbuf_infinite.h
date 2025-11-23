@@ -118,7 +118,7 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
 
 // presume time exist in packet structure and just caller of this fxn know how to retrive it so instead of memcpy use fxn call to check active segment age. and if condition be ok filled sgm
-bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *callback )( const buffer buf , size_t sz ) ); // return wheater segment is closed
+bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( const buffer buf , size_t sz ) ); // return wheater segment is closed
 bool ci_sgm_is_empty( ci_sgmgr_t * mgr );
 
 bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds );

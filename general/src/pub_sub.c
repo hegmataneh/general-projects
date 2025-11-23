@@ -33,7 +33,10 @@ status distributor_init_withLock( distributor_t * dis , size_t grp_count )
 	{
 		if ( ( dis->pmtx = CALLOC_ONE( dis->pmtx ) ) )
 		{
-			pthread_mutex_init( dis->pmtx , NULL );
+			if ( pthread_mutex_init( dis->pmtx , NULL ) )
+			{
+				ret = errCreation;
+			}
 		}
 	}
 	return ret;
@@ -63,7 +66,7 @@ status distributor_init_withOrder_lock( distributor_t * dis , size_t grp_count )
 
 	if ( ( dis->pmtx = CALLOC_ONE( dis->pmtx ) ) )
 	{
-		pthread_mutex_init( dis->pmtx , NULL );
+		BREAK_IF( pthread_mutex_init( dis->pmtx , NULL ) , errCreation , 0 );
 	}
 
 	BEGIN_SMPL
@@ -638,7 +641,7 @@ status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j
 	}
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
 	{
-		int one_token_ring_called = 0;
+		//int one_token_ring_called = 0;
 		int start , end , step;
 		subscribers_t * psubscribers = NULL;
 		BREAK_STAT( mms_array_get_s( &dis->grps , igrp , ( void ** )&psubscribers ) , 0 );

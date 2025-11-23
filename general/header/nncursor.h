@@ -17,16 +17,20 @@ typedef struct
 {
 	struct
 	{
-		DATAB tmpbuf[DEFAULT_SFS_BUF_SZ];
+		DATAB tmpbuf[DEFAULT_MFS_BUF_SZ];
 
-		union
+		union /*please be aware of union and struct ability*/
 		{
 			int i;
 			//double d;
 			//long l;
 			PASSED_CSTR pass_str; // passed and shouldnt freed
 			//INNER_STR in_str; // must freed
-			pass_p pass_data;
+			struct
+			{
+				int j;
+				pass_p pass_data;
+			};
 
 		} bt; // basic type
 	} storage;

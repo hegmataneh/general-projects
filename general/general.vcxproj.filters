@@ -73,6 +73,12 @@
     <ClCompile Include="src\log.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\cir_rate_wnd.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\instantaneousBps.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -227,6 +233,12 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\log.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\cir_rate_wnd.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\instantaneousBps.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>
