@@ -314,6 +314,8 @@
 	#define _VERBOSE_ECHO(msg,...) do {\
 		SET_STDERR( __snprintf( __custom_message , sizeof( __custom_message ) , "ln%d-" msg , __LINE__ , ##__VA_ARGS__ ) );  } while(0)
 
+	#define _MK_MSG( arr, fmt, ...) ({\
+		__snprintf( arr , sizeof( arr ) , ""fmt"" , ##__VA_ARGS__ ); arr; })
 
 #endif // #if defined Uses_ERROR_SECTION
 
@@ -417,5 +419,10 @@
 	#define SHARED_MEM /*shared between multiple threads*/
 
 	#define CIRCUIT_BREAKER /*variable used to break hi potential infinite loop*/
+
+	#define IMPORTANT /*most take a more care*/
+
+	#define IGNORE_RESULT __attribute__((unused))
+
 
 #endif

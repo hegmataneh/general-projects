@@ -21,12 +21,16 @@ mohsen 14040618
 #define EACH_FXN_MSG_HOLDER __custom_message
 
 #define M_MK_ERR_MSG(msg,echo) do {\
-		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , "(%s:%d)-%s(%s)(%s)" ,\
-			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , ( msg ? msg : "" ) , __conditional_internalErrorStr(d_error,msg) , systemErrorStr(NP) ); } while ( 0 )
+		IMMORTAL_LPCSTR lp_sys_err = systemErrorStr(NP); char ttmmppbuf[50];\
+		__snprintf( ttmmppbuf , sizeof(ttmmppbuf) , "{~%%s:%%d} %%s%%s%s" , ( ( lp_sys_err && strlen(lp_sys_err) ) ? "<%%s>" : "" ) );  \
+		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , ttmmppbuf ,\
+			__FUNCTION_shrtn( __FUNCTION__ ) , __LINE__ , ( ( msg && strlen( msg ) ) ? msg : "" ) ,\
+			__conditional_internalErrorStr(d_error,msg,false) , systemErrorStr(NP) ); } while ( 0 )
 
-#define M_MK_ERR_FMT_MSG(fmt,...) do {\
-		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , "(%s:%d)-" fmt "(%s)(%s)",\
-			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , __VA_ARGS__ , __conditional_internalErrorStr(d_error,fmt) , systemErrorStr(NP) ); } while ( 0 )
+#define M_MK_ERR_FMT_MSG(fmt,...) do { IMMORTAL_LPCSTR lp_sys_err = systemErrorStr(NP); char ttmmppbuf[50]; \
+		__snprintf( ttmmppbuf , sizeof(ttmmppbuf) , "{~%%s:%%d} " fmt "%%s%s" , ( ( lp_sys_err && lp_sys_err[0] ) ? "<%%s>" : "" ) );  \
+		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , ttmmppbuf,\
+			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , __VA_ARGS__ , __conditional_internalErrorStr(d_error,fmt,false) , systemErrorStr(NP) ); } while ( 0 )
 
 	
 //#ifdef __ENGINE // app must provide def for M_MSG
@@ -99,7 +103,7 @@ do \
 #define INIT_BREAKABLE_FXN() \
 	status d_error = errOK;  /*c does not have class and data member*/\
 	int _ErrLvl = 0; \
-	char EACH_FXN_MSG_HOLDER [ 256 ] = "";
+	char EACH_FXN_MSG_HOLDER [ DEFAULT_MFS_BUF_SZ ] = "";
 
 #define BREAK_OK(lvl)\
 	do {\

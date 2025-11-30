@@ -2,10 +2,21 @@
 
 
 #if defined Uses_INTERNAL_ERR
-	#ifndef IN_DBG_H
-		_GLOBAL_VAR _EXTERN short _err;
-		_GLOBAL_VAR _EXTERN LPCSTR errStrs[ _internal_err_count ];
-	#endif
+
+typedef struct
+{
+	IMMORTAL_LPCSTR simple_text;
+	IMMORTAL_LPCSTR local_sign_text;
+} internal_err_text_t;
+
+#define DEF_LCL_ERR(exp) { ""exp"" , "[" ""exp"" "]" }
+
+#ifndef IN_DBG_H
+		
+//_GLOBAL_VAR _EXTERN short __local_err_val;
+_GLOBAL_VAR _EXTERN internal_err_text_t __local_err_strs[ _internal_err_count ];
+
+#endif
 #endif // Uses_INTERNAL_ERR
 
 //#define __USE_DBG_TOOLS /*uncomment this to use dbg tools*/

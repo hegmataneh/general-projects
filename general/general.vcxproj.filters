@@ -73,7 +73,7 @@
     <ClCompile Include="src\log.c">
       <Filter>src</Filter>
     </ClCompile>
-    <ClCompile Include="src\cir_rate_wnd.c">
+    <ClCompile Include="src\cr_in_wnd.c">
       <Filter>src</Filter>
     </ClCompile>
     <ClCompile Include="src\instantaneousBps.c">
@@ -235,7 +235,7 @@
     <ClInclude Include="header\log.h">
       <Filter>header</Filter>
     </ClInclude>
-    <ClInclude Include="header\cir_rate_wnd.h">
+    <ClInclude Include="header\cr_in_wnd.h">
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\instantaneousBps.h">

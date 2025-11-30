@@ -8,7 +8,7 @@
 
 
 /* Allocate and initialize a segment with given capacities */
-_PRIVATE_FXN status ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size_t offsets_capacity )
+_PRIVATE_FXN status priv_ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size_t offsets_capacity )
 {
 	( *psgm ) = CALLOC_ONE( ( *psgm ) );
 	if ( !( *psgm ) ) return errMemoryLow;
@@ -45,7 +45,7 @@ _PRIVATE_FXN status ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity , size
 	return errOK;
 }
 
-_PRIVATE_FXN void ci_sgm_free( ci_sgm_t * s )
+_PRIVATE_FXN void priv_ci_sgm_free( ci_sgm_t * s )
 {
 	if ( !s ) return;
 	DAC( s->buf );
@@ -55,7 +55,7 @@ _PRIVATE_FXN void ci_sgm_free( ci_sgm_t * s )
 }
 
 /* Grow offsets arrays; returns 0 on success */
-_PRIVATE_FXN status ci_sgm_grow_offsets( ci_sgm_t * s )
+_PRIVATE_FXN status priv_ci_sgm_grow_offsets( ci_sgm_t * s )
 {
 	size_t newcap = s->offsets_capacity * OFFSETS_GROW_FACTOR;
 	if ( newcap == 0 ) newcap = DEFAULT_OFFSETS_CAP;
@@ -79,7 +79,7 @@ _PRIVATE_FXN status ci_sgm_grow_offsets( ci_sgm_t * s )
 }
 
 /* Insert segment into ring after 'pos' (pos can be NULL to create single node) */
-_PRIVATE_FXN void ci_sgm_insert_after( ci_sgmgr_t * mgr , ci_sgm_t * pos , ci_sgm_t * s )
+_PRIVATE_FXN void priv_ci_sgm_insert_after( ci_sgmgr_t * mgr , ci_sgm_t * pos , ci_sgm_t * s )
 {
 	if ( !mgr->ring )
 	{
@@ -106,10 +106,16 @@ _PRIVATE_FXN void ci_sgm_insert_after( ci_sgmgr_t * mgr , ci_sgm_t * pos , ci_sg
 	mgr->newed_segments++; // just statistic
 }
 
+_GLOBAL_VAR _EXTERN long long _inner_status_error;
+
 /* Remove segment s from ring. If ring becomes empty, set mgr->ring to NULL */
-_PRIVATE_FXN void ci_sgm_remove_from_ring( ci_sgmgr_t * mgr , ci_sgm_t * s )
+_PRIVATE_FXN void priv_ci_sgm_remove_from_ring( ci_sgmgr_t * mgr , ci_sgm_t * s )
 {
 	if ( !mgr->ring || !s ) return;
+	if ( s && s->in_filled_queue )
+	{
+		_inner_status_error++;
+	}
 	if ( s->next == s )
 	{
 		mgr->ring = NULL;
@@ -128,16 +134,20 @@ _PRIVATE_FXN void ci_sgm_remove_from_ring( ci_sgmgr_t * mgr , ci_sgm_t * s )
 /* --- Filled queue ops --- */
 
 /* Push a segment to filled queue (assumes mgr lock is held) */
-_PRIVATE_FXN void filled_queue_push( ci_sgmgr_t * mgr , ci_sgm_t * s )
+_PRIVATE_FXN void priv_filled_queue_push( ci_sgmgr_t * mgr , ci_sgm_t * s )
 {
-	if ( s->in_filled_queue ) return;
+	if ( s->in_filled_queue )
+	{
+		_inner_status_error++;
+		return;
+	}
 	s->in_filled_queue = True;
 	s->queue_next = NULL; // end of linek list /* next used as queue link */ // The filled queue is a single-linked FIFO queue, not a circular doubly-linked list. so this line set tail node end
 	s->queue_prev = mgr->filled_tail;
 	
 	//s->filled = True;
 	s->active_lock = False;
-	//s->next = NULL; 
+	//s->next = NULL;
 	if ( !mgr->filled_head )
 	{
 		mgr->filled_head = mgr->filled_tail = s;
@@ -148,25 +158,39 @@ _PRIVATE_FXN void filled_queue_push( ci_sgmgr_t * mgr , ci_sgm_t * s )
 		mgr->filled_tail = s;
 	}
 	mgr->filled_count++;
+	mgr->filled_segments_counter++;
 	pthread_cond_signal( &mgr->filled_cond );
 }
 
 /* Pop a filled segment from queue FIFO, return it (mgr lock must be held) or NULL if empty */
-_PRIVATE_FXN ci_sgm_t * filled_queue_pop( ci_sgmgr_t * mgr )
+_PRIVATE_FXN ci_sgm_t * priv_filled_queue_pop( ci_sgmgr_t * mgr )
 {
 	ci_sgm_t * s = mgr->filled_head;
 	if ( !s ) return NULL;
 	mgr->filled_head = s->queue_next;
-	if ( !mgr->filled_head ) mgr->filled_tail = NULL;
+	
+	if ( mgr->filled_head )
+		mgr->filled_head->queue_prev = NULL;
+	else
+		mgr->filled_tail = NULL;
+	//if ( !mgr->filled_count ) /*just to be insure but in origin version this line does not exist*/
+	//{
+	//	s->in_filled_queue = False;
+	//	s->queue_next = s->queue_prev = NULL;
+	//	mgr->filled_tail = NULL;
+	//	mgr->filled_head = NULL;
+	//	return NULL;
+	//}
 	//s->next = s->prev = s; /* reset ring pointers to self (not re-inserted yet) */
 	s->in_filled_queue = False;
-	s->queue_next = NULL;
+	//s->queue_next = NULL;
+	s->queue_next = s->queue_prev = NULL;
 	mgr->filled_count--;
 	return s;
 }
 
 /* Pop a filled segment from stack LIFO, return it (mgr lock must be held) or NULL if empty */
-_PRIVATE_FXN ci_sgm_t * filled_queue_pop_tail( ci_sgmgr_t * mgr )
+_PRIVATE_FXN ci_sgm_t * priv_filled_queue_pop_tail( ci_sgmgr_t * mgr )
 {
 	ci_sgm_t * s = mgr->filled_tail;
 	if ( !s ) return NULL;
@@ -177,17 +201,26 @@ _PRIVATE_FXN ci_sgm_t * filled_queue_pop_tail( ci_sgmgr_t * mgr )
 	else
 		mgr->filled_head = NULL;
 
+	//if ( !mgr->filled_count ) /*just to be insure but in origin version this line does not exist*/
+	//{
+	//	s->in_filled_queue = False;
+	//	s->queue_next = s->queue_prev = NULL;
+	//	mgr->filled_tail = NULL;
+	//	mgr->filled_head = NULL;
+	//	return NULL;
+	//}
+
 	s->queue_next = s->queue_prev = NULL;
 	s->in_filled_queue = False;
 	mgr->filled_count--;
 	return s;
 }
 
-_PRIVATE_FXN ci_sgm_t * filled_head_queue_peek( ci_sgmgr_t * mgr )
+_PRIVATE_FXN ci_sgm_t * priv_filled_head_queue_peek( ci_sgmgr_t * mgr )
 {
 	ci_sgm_t * s = mgr->filled_head;
 	if ( !s ) return NULL;
-	if ( !mgr->filled_head ) mgr->filled_tail = NULL;
+	//if ( !mgr->filled_head ) mgr->filled_tail = NULL;
 	return s;
 }
 
@@ -221,23 +254,23 @@ status segmgr_init( ci_sgmgr_t * mgr , size_t default_seg_capacity , size_t defa
 _PRIVATE_FXN ci_sgm_t * segmgr_new_segment_locked( ci_sgmgr_t * mgr )
 {
 	ci_sgm_t * new_sgm = NULL;
-	status ret = ci_sgm_create( &new_sgm , mgr->default_seg_capacity , mgr->default_offsets_capacity );
+	status ret = priv_ci_sgm_create( &new_sgm , mgr->default_seg_capacity , mgr->default_offsets_capacity );
 	if ( ret != errOK ) return NULL;
 	/* Insert after active if exists, else after ring pointer. */
 	if ( mgr->active )
 	{
-		ci_sgm_insert_after( mgr , mgr->active , new_sgm );
+		priv_ci_sgm_insert_after( mgr , mgr->active , new_sgm );
 	}
 	else
 	{
-		ci_sgm_insert_after( mgr , mgr->ring , new_sgm );
+		priv_ci_sgm_insert_after( mgr , mgr->ring , new_sgm );
 		//mgr->ring = new_sgm; // if there is no active so ring must be null
 	}
 	return new_sgm;
 }
 
 /* Set a segment as active (assumes mgr lock held). */
-_PRIVATE_FXN void segmgr_set_active_locked( ci_sgmgr_t * mgr , ci_sgm_t * s )
+_PRIVATE_FXN void priv_segmgr_set_active_locked( ci_sgmgr_t * mgr , ci_sgm_t * s )
 {
 	if ( mgr->active ) mgr->active->active_lock = False;
 	mgr->active = s; // maybe active set to NULL . because cannot allocate next one
@@ -304,14 +337,14 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 			//if ( !mgr->ring ) mgr->ring = psgm_active;
 		}
 		WARNING( psgm_active );
-		segmgr_set_active_locked( mgr , psgm_active );
+		priv_segmgr_set_active_locked( mgr , psgm_active );
 	}
 
 	/* If item is larger than buffer capacity -> error (we don't split items) */
 	WARNING( len <= mgr->default_seg_capacity );
 	if ( len > psgm_active->buf_capacity )
 	{
-		segmgr_set_active_locked( mgr , NULL );
+		priv_segmgr_set_active_locked( mgr , NULL );
 		psgm_active = NULL;
 		//pthread_mutex_unlock( &mgr->lock );
 	}
@@ -320,7 +353,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	if ( psgm_active->buf_used + len > psgm_active->buf_capacity )
 	{
 		/* mark current active as filled and push to filled queue */
-		filled_queue_push( mgr , psgm_active );
+		priv_filled_queue_push( mgr , psgm_active );
 
 		/* find next empty segment */
 		ci_sgm_t * next_empty = NULL;
@@ -361,7 +394,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 			return errOverflow;
 		}
 
-		segmgr_set_active_locked( mgr , next_empty );
+		priv_segmgr_set_active_locked( mgr , next_empty );
 		psgm_active = mgr->active;
 	}
 
@@ -370,7 +403,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	/* Ensure offsets capacity */
 	if ( psgm_active->itm_count + 1 > psgm_active->offsets_capacity )
 	{
-		status rc = ci_sgm_grow_offsets( psgm_active );
+		status rc = priv_ci_sgm_grow_offsets( psgm_active );
 		if ( rc != errOK )
 		{
 			( pthread_mutex_unlock( &mgr->lock ) );
@@ -399,7 +432,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	/* If segment becomes exactly full, mark filled and move active */
 	if ( psgm_active->buf_used == psgm_active->buf_capacity )
 	{
-		filled_queue_push( mgr , psgm_active );
+		priv_filled_queue_push( mgr , psgm_active );
 
 		/* Try to find next empty or create */
 		ci_sgm_t * next_empty = NULL;
@@ -424,7 +457,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 				*pNewSegment = true;
 			}
 		}
-		segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
+		priv_segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
 	}
 
 	( pthread_mutex_unlock( &mgr->lock ) );
@@ -452,7 +485,10 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 				pthread_mutex_unlock( &mgr->lock );
 				return NULL;
 			}
-			pthread_cond_wait( &mgr->filled_cond , &mgr->lock );
+			if ( pthread_cond_wait( &mgr->filled_cond , &mgr->lock ) )
+			{
+				return NULL;
+			}
 		}
 	}
 	ci_sgm_t * s = NULL;
@@ -462,12 +498,12 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 		case seg_trv_FIFO_nolock:
 		case seg_trv_FIFO:
 		{
-			s = filled_queue_pop( mgr );
+			s = priv_filled_queue_pop( mgr );
 			break;
 		}
 		case seg_trv_LIFO:
 		{
-			s = filled_queue_pop_tail( mgr );
+			s = priv_filled_queue_pop_tail( mgr );
 			break;
 		}
 	}
@@ -482,17 +518,35 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 }
 
 #ifdef ENABLE_USE_DBG_TAG
-_GLOBAL_VAR long long _filed_packet = 0;
-_GLOBAL_VAR long long _filed_segment = 0;
+//_GLOBAL_VAR long long _filed_packet = 0;
+_GLOBAL_VAR long long _evac_segment = 0;
+
+_GLOBAL_VAR long long _evac_segment_paused = 0;
 #endif
 
-_PRIVATE_FXN _CALLBACK_FXN status process_itm( buffer data , size_t len , pass_p src_ci_sgmgr_t )
+_PRIVATE_FXN _CALLBACK_FXN status process_itm( buffer data , size_t len , pass_p src_ci_sgmgr_t , void * nested_callback )
 {
 	ci_sgmgr_t * mgr = ( ci_sgmgr_t * )src_ci_sgmgr_t;
-	if ( mgr->release_lock ) return errNoCountinue;
-	if ( mgr->fault_callback( data , len , mgr->user_data ) == errOK )
+	//if ( mgr->release_lock )
+	//{
+	//	if ( ( --mgr->release_lock_countdown ) < 1 )
+	//	{
+	//		_evac_segment_paused++;
+	//		return errNoCountinue;
+	//	}
+	//}
+	if ( ( ( seg_item_cb )nested_callback )( data , len , mgr->nested_user_data , NULL ) == errOK )
 	{
-		_filed_packet++;
+		if ( mgr->release_lock )
+		{
+			if ( ( --mgr->release_lock_countdown ) < 1 )
+			{
+				_evac_segment_paused++;
+				return errNoCountinue;
+			}
+		}
+		
+		//_filed_packet++;
 		return errOK;
 	}
 	return errNoCountinue;
@@ -501,11 +555,11 @@ _PRIVATE_FXN _CALLBACK_FXN status process_itm( buffer data , size_t len , pass_p
 /// <summary>
 /// return errNoCountinue if you want break loop
 /// </summary>
-void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb cb , pass_p ud , seg_trv trv )
+void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb main_cb , pass_p ud , seg_trv trv , int release_lock_countdown )
 {
 	if ( !mgr || trv != seg_trv_FIFO_nolock ) return;
-	mgr->fault_callback = cb;
-	mgr->user_data = ud;
+	mgr->nested_user_data = ud;
+	mgr->release_lock_countdown = release_lock_countdown;
 	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	if ( !mgr->filled_head || mgr->filled_head == mgr->active || mgr->filled_head == mgr->filled_tail )
 	{
@@ -513,34 +567,61 @@ void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb cb , pass
 		return;
 	}
 	status d_error;
-
-	while( !mgr->release_lock && mgr->filled_head != mgr->active && mgr->filled_head && mgr->filled_tail && mgr->filled_head != mgr->filled_tail )
+	
+	mgr->release_lock = false;
+	while
+	(
+		mgr->filled_head != mgr->active && /*donot work on active*/
+		mgr->filled_head &&
+		mgr->filled_tail &&
+		mgr->filled_head != mgr->filled_tail && /*donot work on last segment*/
+		mgr->filled_head->in_filled_queue && /*be in filled because when another pop fetch it it does not in filled queue*/
+		mgr->filled_count > 2
+	)
 	{
-		ci_sgm_t * speek = filled_head_queue_peek( mgr );
+		//if ( mgr->release_lock )
+		//{
+		//	if ( ( --mgr->release_lock_countdown ) < 1 )
+		//	{
+		//		_evac_segment_paused++;
+		//		break;
+		//	}
+		//}
+
+		ci_sgm_t * speek = priv_filled_head_queue_peek( mgr );
 		if ( !speek )
 		{
 			pthread_mutex_unlock( &mgr->lock );
 			return;
 		}
 
-		d_error = ci_sgm_iter_items( speek , process_itm , mgr , false/*at first error stop iteration*/ , 1 , head_2_tail );
+		d_error = ci_sgm_iter_items( speek , process_itm/*wrapper_cb*/ , mgr , false/*at first error stop iteration*/ , 1 , head_2_tail , main_cb );
 		if ( d_error == errOK )
 		{
-			_filed_segment++;
+			_evac_segment++;
 			/*all packet processed*/
-			ci_sgm_t * spop = filled_queue_pop( mgr );
+			ci_sgm_t * spop = priv_filled_queue_pop( mgr );
 			if ( spop && spop == speek ) /*not possible poped different from head*/
 			{
 				/* Reset */
 				mgr->current_items -= spop->itm_count;
 				/* subtract bytes */
 				size_t bytes = spop->buf_used;
-				if ( mgr->current_bytes >= bytes ) mgr->current_bytes -= bytes; else mgr->current_bytes = 0;
+				if ( mgr->current_bytes >= bytes ) mgr->current_bytes -= bytes;
+				else
+				{
+					_inner_status_error++;
+					mgr->current_bytes = 0;
+				}
 				spop->buf_used = 0;
 				spop->itm_count = 0;
 				//spop->filled = False;
 				spop->in_filled_queue = False;
 				/* do not free offsets arrays; keep capacity to reuse */
+			}
+			else
+			{
+				_inner_status_error++;
 			}
 		}
 		else if ( d_error == errNoCountinue )
@@ -565,7 +646,12 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	mgr->current_items -= s->itm_count;
 	/* subtract bytes */
 	size_t bytes = s->buf_used;
-	if (mgr->current_bytes >= bytes) mgr->current_bytes -= bytes; else mgr->current_bytes = 0;
+	if (mgr->current_bytes >= bytes) mgr->current_bytes -= bytes;
+	else
+	{
+		_inner_status_error++;
+		mgr->current_bytes = 0;
+	}
 	s->buf_used = 0;
 	s->itm_count = 0;
 	//s->filled = False;
@@ -575,16 +661,16 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 	/* Keep segment in ring as-is; if no active, prefer this as active */
 	if ( !mgr->active )
 	{
-		segmgr_set_active_locked( mgr , s );
+		priv_segmgr_set_active_locked( mgr , s );
 	}
 	pthread_mutex_unlock( &mgr->lock );
 	bool bempty = ci_sgm_is_empty( mgr ); // there is lock inside it
 	return bempty ? errEmpty : errOK;
 }
 
-/* Read item at index idx (0 <= idx < s->itm_count) from segment s.
-* Returns pointer to internal buffer (valid while segment not modified) and size via out parameter.
-* O(1).*/
+// Read item at index idx (0 <= idx < s->itm_count) from segment s.
+// Returns pointer to internal buffer (valid while segment not modified) and size via out parameter.
+// O(1).
 //status ci_sgm_get_item( ci_sgm_t * s , size_t idx , const void ** out_ptr , size_t * out_len )
 //{
 //	if ( !s || !out_ptr || !out_len ) return errArg;
@@ -595,9 +681,10 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 //}
 
 /* Optional utility: iterate items sequentially in a segment with a callback */
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ , size_t strides , e_direction dir )
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ ,
+	size_t strides , e_direction dir , seg_item_cb main_cb )
 {
-	if ( !s || !cb || strides < 1 ) return errArg;
+	if ( !s || !wrapper_cb || strides < 1 ) return errArg;
 	if ( !s->itm_count ) return errOK;
 	status totally = ( strides == 1 ? errOK : errRetry );
 	buffer ptr;
@@ -610,7 +697,7 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
 		{
 			ptr = s->buf + s->offsets[ i ];
 			len = s->sizes[ i ];
-			tmp_ret = cb( ptr , len , ud );
+			tmp_ret = wrapper_cb( ptr , len , ud , main_cb );
 			if ( try_all )
 			{
 				if ( tmp_ret != errOK ) totally = tmp_ret;
@@ -627,7 +714,7 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb cb , pass_p ud , bool try_a
 		{
 			ptr = s->buf + s->offsets[ i ];
 			len = s->sizes[ i ];
-			tmp_ret = cb( ptr , len , ud );
+			tmp_ret = wrapper_cb( ptr , len , ud , main_cb );
 			if ( try_all )
 			{
 				if ( tmp_ret != errOK ) totally = tmp_ret;
@@ -668,7 +755,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( c
 	/* Call user callback with buffer */
 	if ( lastone_callback( sactive->buf + sactive->offsets[ sactive->itm_count - 1 ] , sactive->sizes[ sactive->itm_count - 1 ] ) )
 	{
-		filled_queue_push( mgr , sactive );
+		priv_filled_queue_push( mgr , sactive );
 		bret = true; // change it as filled
 
 		/* Try to find next empty or create */
@@ -690,7 +777,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( c
 		{
 			next_empty = segmgr_new_segment_locked( mgr );
 		}
-		segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
+		priv_segmgr_set_active_locked( mgr , next_empty ); /* may set to NULL if none */
 	}
 
 	pthread_mutex_unlock( &mgr->lock );
@@ -760,8 +847,8 @@ bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 
 		if ( removable && total - removed > 1 )
 		{
-			ci_sgm_remove_from_ring( mgr , it );
-			ci_sgm_free( it );
+			priv_ci_sgm_remove_from_ring( mgr , it );
+			priv_ci_sgm_free( it );
 			removed++;
 			bAnyDeletion = true;
 		}
@@ -798,10 +885,10 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 		while ( it != mgr->ring )
 		{
 			ci_sgm_t * next = it->next;
-			ci_sgm_free( it );
+			priv_ci_sgm_free( it );
 			it = next;
 		}
-		ci_sgm_free( mgr->ring );
+		priv_ci_sgm_free( mgr->ring );
 	}
 	#ifdef ENABLE_USE_DBG_TAG
 		DBG_PT();

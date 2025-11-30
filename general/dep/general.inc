@@ -157,8 +157,8 @@
 	#include <PagedStack.h>
 #endif
 
-#ifdef __INC_circular_sliding_rate_window
-	#include <cir_rate_wnd.h>
+#ifdef __INC_circular_sliding_input_window
+	#include <cr_in_wnd.h>
 #endif
 
 #ifdef __INC_instantaneousBps

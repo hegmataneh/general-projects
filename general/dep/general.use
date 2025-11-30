@@ -1,23 +1,37 @@
+#ifdef Uses__MK_MSG
+	#define Uses_ERROR_SECTION
+#endif
+
+#ifdef Uses_is_double_zero
+	#define Uses_bool
+#endif
+
 #ifdef Uses_instBps_t
 	#define Uses_instantaneousBps
 #endif
 
-#ifdef Uses_cir_rate_wnd_t
-	#define Uses_circular_sliding_rate_window
+#ifdef Uses_cr_in_wnd
+	#define Uses_circular_sliding_input_window
+#endif
+
+#ifdef Uses_cr_in_wnd_t
+	#define Uses_circular_sliding_input_window
 #endif
 
 #ifdef Uses_instantaneousBps
+	#define Uses_pthread_mutex_t
 	#define Uses_uint64_t
 	#define Uses_bool
 	#define Uses_time_t
 	#define __INC_instantaneousBps
 #endif
 
-#ifdef Uses_circular_sliding_rate_window
+#ifdef Uses_circular_sliding_input_window
+	#define Uses_pthread_mutex_t
 	#define Uses_time_t
 	#define Uses_bool
 	#define Uses_uint64_t
-	#define __INC_circular_sliding_rate_window
+	#define __INC_circular_sliding_input_window
 #endif
 
 #ifdef Uses_KERNEL_CALL_NORET
@@ -45,6 +59,7 @@
 #endif
 
 #define Uses_INTERNAL_ERR
+#define Uses_bool
 
 #ifdef Uses_INTERNAL_ERR
 	#define __INC_DBG

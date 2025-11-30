@@ -59,29 +59,29 @@ const unsigned char MSB_MARKERS[8] = {
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
-_EXPORT status internalErrorVal(LPCSTR errStr)
-{
-	if (-_err < (int)COUNTOF(errStrs)) errStrs[-_err]=errStr;
-	return _err--;
-}
+//_EXPORT status internalErrorVal(LPCSTR errStr)
+//{
+//	if (-__local_err_val < (int)COUNTOF(__local_err_strs)) __local_err_strs[-__local_err_val]=errStr;
+//	return __local_err_val--;
+//}
 
-_EXPORT IMMORTAL_LPCSTR internalErrorStr(status errValue)
+_EXPORT IMMORTAL_LPCSTR internalErrorStr( status errValue , bool simple_text )
 {
 	if ( errValue > errOK )
 	{
 		//WARNING( 0 );
-		return "An error occur in mfc fxn"; // mohsen ageh error > 0 mi toneh beh M_mkShowMsg bereh pas chera barayeh amadanesh beh in fxn fekri nashodeh
+		return "An error occur in os kernel fxn"; // mohsen ageh error > 0 mi toneh beh M_mkShowMsg bereh pas chera barayeh amadanesh beh in fxn fekri nashodeh
 	}
-	if ( errValue <= errOK && errValue > _err )
+	if ( errValue <= errOK && errValue > NEXT_GENERAL_ERROR_VALUE )
 	{
-		if ( -errValue < (int)COUNTOF(errStrs))
+		if ( -errValue < ( int )COUNTOF( __local_err_strs ) )
 		{
-			return errStrs[-errValue];
+			return simple_text ? __local_err_strs[ -errValue ].simple_text : __local_err_strs[ -errValue ].local_sign_text;
 		}
 		else
 		{
-			static char buf[81];
-			sprintf_s (buf, "Error #%d", -(int)errValue);
+			static char buf[ 81 ];
+			sprintf_s( buf , "Error #%d" , -( int )errValue );
 			return buf;
 		}
 	}
@@ -122,9 +122,9 @@ LPCSTR __FILE_shrtn( LPCSTR src_str ) // just shorten __FUNCTION__
 	return ( LPCSTR )( ( ( LPSTR )str ) + ( len > 10 ? len - 10 : 0 ) );
 }
 
-IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr )
+IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr , bool simple_text )
 {
-	return ( (ifnotstr && strlen(ifnotstr)) ? "" : internalErrorStr( err ) );
+	return ( ( ifnotstr && ifnotstr[0] ) ? "" : internalErrorStr( err , simple_text ) );
 }
 
 //LPCSTR __msg( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR msg , int line_number )
@@ -1031,7 +1031,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 			 */
 			if ( more_detail )
 			{
-				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 			}
 			errno = ECONNRESET;
 			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
@@ -1098,7 +1098,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "poll()\n" );
 				if ( more_detail )
 				{
-					strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+					IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 				}
 				return errSocket; /* errno set by poll */
 			}
@@ -1370,6 +1370,7 @@ int timeval_compare( const struct timeval * a , const struct timeval * b )
 		return 0;
 }
 
+/*be careful about order of input items*/
 int regression_slope_int( const uint64 * y , size_t n )
 {
 	double sum_x = 0 , sum_y = 0 , sum_xy = 0 , sum_x2 = 0;
@@ -1512,7 +1513,7 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		return errSocket;
 	}
@@ -1549,7 +1550,7 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 				{
 					if ( more_detail )
 					{
-						strerror_r( valopt , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+						IGNORE_RESULT char * p = strerror_r( valopt , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 					}
 					errno = valopt;
 					if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
@@ -1569,7 +1570,7 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
 				if ( more_detail )
 				{
-					strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+					IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 				}
 				close( sockfd );
 				return errSelect;
@@ -1580,7 +1581,7 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
 			if ( more_detail )
 			{
-				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 			}
 			close( sockfd );
 			return errConnect;
@@ -1606,7 +1607,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		return errSocket;
 	}
@@ -1616,7 +1617,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(F_GETFL) failed.\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1626,7 +1627,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(O_NONBLOCK) failed.\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1637,7 +1638,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEADDR)\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1647,7 +1648,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEPORT)\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1657,7 +1658,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(TCP_QUICKACK)\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1689,7 +1690,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "bind()\n" );
 			if ( more_detail )
 			{
-				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 			}
 		}
 		close( server_fd );
@@ -1701,7 +1702,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "listen()\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		close( server_fd );
 		return errListen;
@@ -1723,7 +1724,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
 		if ( more_detail )
 		{
-			strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 		}
 		close( server_fd );
 		return errSelect;
@@ -1747,7 +1748,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "accept()\n" );
 			if ( more_detail )
 			{
-				strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
 			}
 			close( server_fd );
 			return errAccept;
@@ -1796,4 +1797,9 @@ status wait_for_ack( int sock , size_t sent_bytes /*Forward compatibility*/ , in
 		usleep( 100 );
 	}
 	return errTimeout;  // timed out
+}
+
+bool is_double_zero( double value )
+{
+	return value < EPSILON_ZERO && value > -EPSILON_ZERO;
 }

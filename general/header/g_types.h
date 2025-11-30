@@ -138,3 +138,4 @@ typedef PASSED_CSTR ( *callback_t6 )( pass_p /*pass_data*/ );
 	typedef struct timeval timeval;
 #endif
 
+#define EPSILON_ZERO 1e-9   // common epsilon for double-near-zero check

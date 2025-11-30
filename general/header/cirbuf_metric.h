@@ -1,13 +1,15 @@
 #if defined Uses_cbuf_metric || !defined __COMPILING
 
 // non thread safe
+// this component has little trick . it most use in place where advance called one step a second at the time because it just advance one step after another
+// if you want component itself consider second level then use cr_in_wnd_t
 
 typedef struct cirbuf_metric_t /*variable length snapshot window*/
 {
-	uint64 * samples;   // per-slot counts
-	size_t capacity;     // number of time slots
-	size_t head;         // current position (circular index)
-	size_t filled;       // number of valid samples stored
+	uint64 * samples;	// per-slot counts
+	size_t capacity;    // number of time slots
+	size_t head;        // current position (circular index)
+	size_t filled;      // number of valid samples stored
 } cbuf_metr;
 
 // Initialize the buffer with `capacity` samples (e.g., per second)
@@ -21,15 +23,6 @@ void cbuf_m_reset( cbuf_metr * buf );
 
 // Advance one slot (like one second passed), optionally set count
 void cbuf_m_advance( cbuf_metr * buf , uint64 count );
-
-// Get last N samples (returns sum of last N if available)
-uint64 cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n );
-
-// Peek most recent sample
-status cbuf_m_peek_latest( const cbuf_metr * buf , uint64 * out_val );
-
-// Compute mean of last N samples (returns float)
-float cbuf_m_mean_last( const cbuf_metr * buf , size_t last_n );
 
 // Compute sum of all stored samples
 uint64 cbuf_m_sum_all( const cbuf_metr * buf );

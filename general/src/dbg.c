@@ -1,13 +1,22 @@
 #define IN_DBG_H
+#define Uses_INTERNAL_ERR
 
 #define Uses_DBG
 #include <general.dep>
 
-_GLOBAL_VAR short _err = NEXT_GENERAL_ERROR_VALUE;
-_GLOBAL_VAR LPCSTR errStrs[ _internal_err_count ] = { "errOK","errGeneral","MemoryLow","InvalidString","Canceled","syntax error","invalid argument","timed out",\
-	"peer closed","OutofRanje","MaximumExceeded","NoPeer","NotFound","errDevice","errSocket","errCreation","errOverflow","errCorrupted","errResource","errPath",\
-	"errRetry","errEmpty","errTooManyAttempt","errShutdown","errBind","errsockopt","errListen","errSelect","errAccept","errNoConnection","errConnect","errOpen",\
-	"errACK","errNoCountinue"};
+//_GLOBAL_VAR short __local_err_val = NEXT_GENERAL_ERROR_VALUE;
+_GLOBAL_VAR internal_err_text_t __local_err_strs[ _internal_err_count ] =
+{
+	DEF_LCL_ERR( "errOK" )			,DEF_LCL_ERR( "errGeneral" )		,DEF_LCL_ERR( "MemoryLow" )			,DEF_LCL_ERR( "InvalidString" ),
+	DEF_LCL_ERR( "Canceled" )		,DEF_LCL_ERR( "syntax error" )		,DEF_LCL_ERR( "invalid argument" )	,DEF_LCL_ERR( "timed out" ),
+	DEF_LCL_ERR( "peer closed" )	,DEF_LCL_ERR( "OutofRanje" )		,DEF_LCL_ERR( "MaximumExceeded" )	,DEF_LCL_ERR( "NoPeer" ),
+	DEF_LCL_ERR( "NotFound" )		,DEF_LCL_ERR( "errDevice")			,DEF_LCL_ERR( "errSocket" )			,DEF_LCL_ERR( "errCreation" ),
+	DEF_LCL_ERR( "errOverflow" )	,DEF_LCL_ERR( "errCorrupted" )		,DEF_LCL_ERR( "errResource" )		,DEF_LCL_ERR( "errPath" ),
+	DEF_LCL_ERR( "errRetry" )		,DEF_LCL_ERR( "errEmpty" )			,DEF_LCL_ERR( "errTooManyAttempt" )	,DEF_LCL_ERR( "errShutdown" ),
+	DEF_LCL_ERR( "errBind" )		,DEF_LCL_ERR( "errsockopt" )		,DEF_LCL_ERR( "errListen" )			,DEF_LCL_ERR( "errSelect" ),
+	DEF_LCL_ERR( "errAccept" )		,DEF_LCL_ERR( "errNoConnection" )	,DEF_LCL_ERR( "errConnect" )		,DEF_LCL_ERR( "errOpen" ),
+	DEF_LCL_ERR( "errACK" )			,DEF_LCL_ERR( "errNoCountinue" )
+};
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 

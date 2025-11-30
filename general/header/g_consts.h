@@ -40,7 +40,7 @@ enum
 	errTimeout = ERR_NEXT_VALUE(),
 	errPeerClosed = ERR_NEXT_VALUE(),
 	errOutofRanje = ERR_NEXT_VALUE(),
-	errMaximumExceeded = ERR_NEXT_VALUE(),
+	errMaximumExceeded = ERR_NEXT_VALUE(), /*10*/
 	errNoPeer = ERR_NEXT_VALUE(), // origin -> tcp peer disconnected
 	errNotFound = ERR_NEXT_VALUE(),
 	errDevice = ERR_NEXT_VALUE(),
@@ -50,7 +50,7 @@ enum
 	errOverflow = ERR_NEXT_VALUE(), // if cannot fit and grow not allowed
 	errCorrupted = ERR_NEXT_VALUE(),
 	errResource = ERR_NEXT_VALUE(),
-	errPath = ERR_NEXT_VALUE(),
+	errPath = ERR_NEXT_VALUE(), /*20*/
 	errRetry = ERR_NEXT_VALUE(),
 	errEmpty = ERR_NEXT_VALUE(),
 	errTooManyAttempt = ERR_NEXT_VALUE(),

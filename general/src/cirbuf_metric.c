@@ -1,3 +1,4 @@
+﻿#define Uses_floor
 #define Uses_MEMSET_ZERO
 #define Uses_cbuf_metric
 #include <general.dep>
@@ -42,48 +43,17 @@ void cbuf_m_advance( cbuf_metr * buf , uint64 count )
 	}
 }
 
-uint64 cbuf_m_sum_last( const cbuf_metr * buf , size_t last_n )
-{
-	if ( !buf || !buf->samples || buf->filled == 0 ) return 0;
-
-	size_t n = ( last_n < buf->filled ) ? last_n : buf->filled;
-	uint64 sum = 0;
-
-	for ( size_t i = 0; i < n; ++i )
-	{
-		size_t idx = ( buf->head + buf->capacity - 1 - i ) % buf->capacity;
-		sum += buf->samples[ idx ];
-	}
-
-	return sum;
-}
-
-status cbuf_m_peek_latest( const cbuf_metr * buf , uint64 * out_val )
-{
-	if ( !buf || !buf->samples || buf->filled == 0 || !out_val ) return errArg;
-	size_t latest_idx = ( buf->head + buf->capacity - 1 ) % buf->capacity;
-	*out_val = buf->samples[ latest_idx ];
-	return errOK;
-}
-
-float cbuf_m_mean_last( const cbuf_metr * buf , size_t last_n )
-{
-	if ( !buf || !buf->samples || buf->filled == 0 ) return 0.0f;
-
-	size_t n = ( last_n < buf->filled ) ? last_n : buf->filled;
-	if ( n == 0 ) return 0.0f;
-
-	uint64 sum = 0;
-
-	for ( size_t i = 0; i < n; ++i )
-	{
-		size_t idx = ( buf->head + buf->capacity - 1 - i ) % buf->capacity;
-		sum += buf->samples[ idx ];
-	}
-
-	return ( float )sum / ( float )n;
-}
-
+/*
+The most recent item is at head - 1
+The oldest item is at: head - filled
+------
+buf->head + buf->capacity - buf->filled + i
+Meaning:
+buf->head - buf->filled → index of first (oldest) valid sample (may be negative)
++ buf->capacity → converts possibly-negative index into positive range (makes wrap-around work)
++ i → move forward to the next stored sample
+Finally % capacity makes sure it wraps around inside the circular buffer.
+*/
 uint64 cbuf_m_sum_all( const cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples || buf->filled == 0 ) return 0;
@@ -91,7 +61,7 @@ uint64 cbuf_m_sum_all( const cbuf_metr * buf )
 	uint64 sum = 0;
 	for ( size_t i = 0; i < buf->filled; ++i )
 	{
-		size_t idx = ( buf->head + buf->capacity - buf->filled + i ) % buf->capacity;
+		size_t idx = ( buf->head + buf->capacity - buf->filled + i ) % buf->capacity; // The most recent item is at head - 1 . The oldest item is at : head - filled
 		sum += buf->samples[ idx ];
 	}
 	return sum;
@@ -109,5 +79,20 @@ int cbuf_m_regression_slope_all( const cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples || buf->filled < 2 ) return 0;
 
-	return regression_slope_int( buf->samples , buf->filled );
+	double sum_x = 0 , sum_y = 0 , sum_xy = 0 , sum_x2 = 0;
+	double slope;
+
+	for ( size_t i = 0; i < buf->filled; ++i )
+	{
+		size_t idx = ( buf->head + buf->capacity - buf->filled + i ) % buf->capacity;
+
+		double x = ( double )( i + 1 ); // x = 1..n
+		sum_x += ( double )( x );
+		sum_y += ( double )( buf->samples[ idx ] );
+		sum_xy += x * ( double )( buf->samples[ idx ] );
+		sum_x2 += ( double )( x * x );
+	}
+
+	slope = ( ( double )( buf->filled ) * sum_xy - sum_x * sum_y ) / ( ( double )( buf->filled ) * sum_x2 - sum_x * sum_x );
+	return ( int )floor( slope );
 }

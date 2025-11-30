@@ -5,11 +5,14 @@
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 status string_to_int( LPCSTR str , int * out );
 
+
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----formats wrapper functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string /*=NULL*/);
 long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
+
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -41,6 +44,8 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 	int timeval_compare( const struct timeval * a , const struct timeval * b );
 #endif
 
+
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----mutex functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -51,6 +56,8 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 	status pthread_mutex_timedlock_rel( pthread_mutex_t * mutex , long ms );
 #endif
 
+
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----file functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -59,6 +66,8 @@ FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ , IMMO
 #endif
 LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ , IMMORTAL_LPCSTR * notif );
 const char * get_filename( const char * path );
+
+
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----socket functions------------------------------------------------------
@@ -74,17 +83,21 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 void enable_keepalive( sockfd sock , IMMORTAL_LPCSTR * notif );
 status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms );
 
+
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----error functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
-IMMORTAL_LPCSTR internalErrorStr( status errValue );
-status internalErrorVal( LPCSTR errStr );
+IMMORTAL_LPCSTR internalErrorStr( status errValue , bool simple_text );
+//status internalErrorVal( LPCSTR errStr );
 //LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );
 IMMORTAL_LPCSTR systemErrorStr( int prcID /*just for future use*/ );
 LPCSTR __FUNCTION_shrtn( LPCSTR str );
 LPCSTR __FILE_shrtn( LPCSTR str );
-IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr );
+IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr , bool simple_text );
+
+
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----String functions------------------------------------------------------
@@ -154,6 +167,8 @@ IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*
 IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 //IN_GENERAL LPCSTR stritail( LPCSTR str , LPCSTR head );
 
+
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----buffer functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -165,3 +180,11 @@ uint64 hash64_fnv1a_avalanche( const char * s );
 ulong hash( LPCSTR str );
 
 int regression_slope_int( const uint64 * y , size_t n );
+
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//----basic type functions------------------------------------------------------
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+
+#ifdef Uses_is_double_zero
+	bool is_double_zero( double value );
+#endif

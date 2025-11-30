@@ -203,7 +203,9 @@ _PRIVATE_FXN status pg_stk_append_record( page_stack_t * mm , pg_stk_memfile_t *
 		case errOK:
 		{
 			//msync( touches[ 0 ].addr , touches[ 0 ].sz , MS_SYNC );
+		#ifdef ENABLE_MEMMAP_SYNC_FOR_EACH_WRITE
 			msync( touches[ 1 ].addr , touches[ 1 ].sz , MS_SYNC );
+		#endif
 			//fsync( mf->fd );
 			break;
 		}
@@ -451,8 +453,8 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
 			pthread_mutex_unlock( &mm->ps_lock );
-			pg_stk_store( mm , buf , len );
-			return errRetry;
+			return pg_stk_store( mm , buf , len );
+			//return errRetry; // why errRetry????
 		}
 		pthread_mutex_unlock( &mm->ps_lock );
 		return d_error;

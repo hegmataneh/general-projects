@@ -1,3 +1,7 @@
+#ifdef Uses_sqrt
+	#define __INC_math
+#endif
+
 #ifdef Uses_PATH_MAX
 	#define __INC_limits
 #endif
@@ -49,6 +53,10 @@
 	#define __INC_arpa_inet
 	#define __INC_netinet
 	#define __INC_netinet_tcp
+#endif
+
+#ifdef Uses_floor
+	#define __INC_math
 #endif
 
 #ifdef Uses_floorf
