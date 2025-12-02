@@ -6,7 +6,7 @@
 //#define MAX_COLS 16
 //#define MAX_ROWS 128
 
-// TODO . 14040629 . extend and keep backward compatibility if you want more dynamic in this code
+// 14040629 . extend and keep backward compatibility if you want more dynamic in this code
 
 #define TAB_BAR_HEIGHT 3
 #define CMD_H 3

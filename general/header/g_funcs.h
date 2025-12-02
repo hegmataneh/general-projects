@@ -10,7 +10,8 @@ status string_to_int( LPCSTR str , int * out );
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----formats wrapper functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-LPCSTR format_pps( LPSTR buf , size_t buflen , ubigint pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string /*=NULL*/);
+LPCSTR format_pps_double( LPSTR buf , size_t buflen , double pps , int number_of_float /*=2*/ , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string /*=NULL*/ );
+
 long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 
 
@@ -96,7 +97,7 @@ IMMORTAL_LPCSTR systemErrorStr( int prcID /*just for future use*/ );
 LPCSTR __FUNCTION_shrtn( LPCSTR str );
 LPCSTR __FILE_shrtn( LPCSTR str );
 IMMORTAL_LPCSTR __conditional_internalErrorStr( status err , LPCSTR ifnotstr , bool simple_text );
-
+IMMORTAL_LPCSTR signal_to_string( int sig );
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -181,6 +182,7 @@ ulong hash( LPCSTR str );
 
 int regression_slope_int( const uint64 * y , size_t n );
 
+
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----basic type functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -188,3 +190,4 @@ int regression_slope_int( const uint64 * y , size_t n );
 #ifdef Uses_is_double_zero
 	bool is_double_zero( double value );
 #endif
+int last_valid_digit_14( double x );

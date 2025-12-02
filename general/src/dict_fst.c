@@ -72,7 +72,6 @@ status dict_fst_put( kv_table_t * t , const char * key , int ival , void_p pval 
 	kv_bucket_t * b = dict_fst_get_bucket( t , h );
 
 	// allocate new entry first (optimistic): reduces time bucket is locked
-	// TODO . later if we have repelase  least used item is good idea
 	kv_entry_t * newe = MALLOC( sizeof( *newe ) );
 	if ( !newe ) return errMemoryLow;
 	newe->key = STRDUP( key );

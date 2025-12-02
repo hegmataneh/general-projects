@@ -137,7 +137,7 @@ _EXTERN const unsigned char MSB_MARKERS[8];
 
 // --------------------
 
-#define BAD_NETWORK_HANDSHAKE_TIMEOUT 10 /*sec*/
+#define DEFAULT_BAD_NETWORK_HANDSHAKE_TIMEOUT 10 /*sec*/
 
 //-------------------------------------------------------------------------
 #define G_SCHAR_MIN  ((schar)0x80)				// -128
@@ -176,3 +176,5 @@ _EXTERN const unsigned char MSB_MARKERS[8];
 
 #define MIN_SYSERR_BUF_SZ 256 /*at least this size should be prodided to store system error strings*/
 #define MIN_SYSERR_BUF_CAPACITY ( MIN_SYSERR_BUF_SZ - 1 )
+
+#define LAST_VALID_FP_NOT_NOISY_DIGIT_OF_DOUBLE 14 /*according to GPT*/

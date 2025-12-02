@@ -380,7 +380,6 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 		#pragma GCC diagnostic pop
 	}
 	
-	// TODO . get free space and fill it . and does not make arr too long
 	pg_stk_memfile_t ** ppfile = NULL;
 	if ( ( d_error = mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) ) == errOK )
 	{

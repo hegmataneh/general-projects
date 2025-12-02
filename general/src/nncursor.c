@@ -105,8 +105,6 @@ status nnc_add_table( nnc_req * nnc , PASSED_CSTR tabname , nnc_table ** ptable 
 	( *ptable )->refresh_table = true;
 	nnc->refresh_tabs = true;
 
-	// TODO . be aware of memory leak
-
 	BEGIN_RET
 	END_RET
 }

@@ -22,4 +22,9 @@ void log_write( LogLevel level , const char * fmt , ... );
 // Close the log file
 void log_close( void );
 
+#define COOLDOWN_LOGGING_EXP( exp ) do { \
+		static uint8_t delay = 0; static time_t t = 0; \
+		if ( ( time( NULL ) - t ) >= delay ) \
+		{ exp; if ( !delay ) { delay = 1; } else { if ( delay < 10 ) delay += 1; } } } while(0)
+
 #endif

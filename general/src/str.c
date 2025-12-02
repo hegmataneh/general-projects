@@ -20,13 +20,16 @@ const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
 
 
 //-------------------------------------------------------------------------
-void init_string_ar( strings_ar * list )
+status init_string_ar( strings_ar * list )
 {
 	MEMSET_ZERO_O( list );
 	list->size = 0;
 	list->capacity = AUTO_MODERATE_BUFFER_CAPACITY;
-	list->strs = MALLOC_AR( list->strs , list->capacity );
-	// TODO . err check
+	if ( !( list->strs = MALLOC_AR( list->strs , list->capacity ) ) )
+	{
+		return errMemoryLow;
+	}
+	return errOK;
 }
 
 status addTo_string_ar( strings_ar * list , LPCSTR str )

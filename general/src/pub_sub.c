@@ -665,7 +665,7 @@ status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j
 
 			if ( psubscriber->type == SUB_x3LONG )
 			{
-				// TODO . tring no implemented for this
+				// TODO . tring does not implemented for this
 				if ( !psubscriber->tring_p_t )
 				{
 					psubscriber->func.x3long_cb( DATA_ORDER_( psubscriber ) , src_i , src_j , src_k );

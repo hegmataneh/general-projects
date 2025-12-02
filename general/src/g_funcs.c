@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_floor
 #define Uses_tcp_info
 #define Uses_gettimeofday
 #define Uses_INTERNAL_ERR
@@ -214,22 +215,70 @@ LPCSTR trim_trailing_zeros(LPSTR s) {
 	return s;
 }
 
-LPCSTR format_pps( LPSTR  buf , size_t buflen , ubigint pps , int number_of_float , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string )
+// Helper: absolute value for double
+_PRIVATE_FXN double dabs( double x )
+{
+	return x < 0 ? -x : x;
+}
+
+int last_valid_digit_14( double x )
+{
+	// If x is zero, no digits exist.
+	if ( x == 0.0 ) return 0;
+
+	// 1) Normalize: ensure positive
+	x = dabs( x );
+
+	// 2) Keep only 14 digits of precision:
+	//    round(x to 14 decimal digits)
+	//    scale = 10^14
+	const double scale = 1e14;
+	double rounded = floor( x * scale + 0.5 ) / scale;
+
+	// 3) Extract fractional part after rounding
+	double frac = rounded - floor( rounded );
+
+	// 4) Convert the fractional part into integer digits
+	long long digits = ( long long )( frac * scale + 0.0000000001 );
+
+	// 5) Find the last non-zero digit
+	while ( digits > 0 && ( digits % 10 ) == 0 )
+	{
+		digits /= 10;
+	}
+
+	if ( digits == 0 )
+		return 0;   // no non-zero digits inside 14-digit precision
+
+	return ( int )( digits % 10 );
+}
+
+LPCSTR format_pps_double( LPSTR  buf , size_t buflen , double pps , int number_of_float , LPCSTR unit_name /*= "pps"*/ , LPCSTR prefix_string )
 {
 	LPCSTR units[] = { "", "K", "M", "G", "T", "P" };
-	double value = ( double )pps;
+	double fvalue = pps;
 	int unit = 0;
 
-	while ( value >= 1000.0 && unit < 5 )
+	while ( fvalue >= 1000.0 && unit < 5 )
 	{
-		value /= 1000.0;
+		fvalue /= 1000.0;
 		unit++;
 	}
 
-	char buf2[DEFAULT_MFS_BUF_SZ];
-	snprintf( buf2 , sizeof(buf2) , "%%.%df" , number_of_float ); // make format
-	snprintf( buf , buflen , buf2 , value );
-	snprintf( buf2 , sizeof(buf2) , "%s%s%s%s%s" , prefix_string ? prefix_string : "" , trim_trailing_zeros(buf) , ( STRLEN(units[unit]) > 0 || STRLEN(unit_name) > 0 ? " " : "" ) , units[unit] , unit_name);
+	int last14 = last_valid_digit_14( fvalue );
+	char buf14[14];
+	snprintf( buf14 , sizeof(buf14) , " %d" , last14 );
+
+	char buf2[ DEFAULT_MFS_BUF_SZ ];
+	snprintf( buf2 , sizeof( buf2 ) , "%%.%df" , number_of_float ); // make format
+	snprintf( buf , buflen , buf2 , fvalue );
+	snprintf( buf2 , sizeof( buf2 ) , "%s%s%s%s%s%s" , 
+		prefix_string ? prefix_string : "" ,
+		trim_trailing_zeros( buf ) ,
+		""/*( STRLEN(units[unit]) > 0 || STRLEN(unit_name) > 0 ? " " : "" )*/ ,
+		units[unit] ,
+		unit_name ,
+		( unit >= 1 && last14 != 0 ) ? buf14 : "" );
 	strncpy( buf , buf2 , buflen );
 
 	return buf;
@@ -1802,4 +1851,12 @@ status wait_for_ack( int sock , size_t sent_bytes /*Forward compatibility*/ , in
 bool is_double_zero( double value )
 {
 	return value < EPSILON_ZERO && value > -EPSILON_ZERO;
+}
+
+IMMORTAL_LPCSTR signal_to_string( int sig )
+{
+	const char * s = strsignal( sig );
+	static char buf[10];
+	sprintf( buf , "Unknown signal %d" , sig );
+	return ( s != NULL ) ? s : "Unknown signal";
 }

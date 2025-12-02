@@ -15,7 +15,7 @@ typedef struct
 	size_t capacity;
 } strings_ar;
 
-void init_string_ar( strings_ar * list );
+status init_string_ar( strings_ar * list );
 status addTo_string_ar( strings_ar * list , LPCSTR str );
 void free_string_ar( strings_ar * list );
 

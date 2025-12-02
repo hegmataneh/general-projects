@@ -2,8 +2,6 @@
 
 #if defined Uses_cbuf_unpk || !defined __COMPILING
 
-// TODO . implement fast push with False sharing and lignment
-
 // variable circular buffer not block on push and pop . but used as one to one
 // unpacked with fixed room
 // non blockable

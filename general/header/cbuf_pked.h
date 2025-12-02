@@ -2,7 +2,7 @@
 
 #if defined Uses_cbuf_pked || !defined __COMPILING
 
-// TODO . implement fast push with False sharing and lignment
+// implement fast push with False sharing and alignment
 
 // variable circular buffer not block on push and pop . but used as one to one
 // packer and serialize data

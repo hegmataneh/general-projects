@@ -877,7 +877,7 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 	#ifdef ENABLE_USE_DBG_TAG
 		DBG_PT();
 	#endif
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) ); // at the end is that necessary clean every thing . TODO
+	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	/* free segments in ring */
 	if ( mgr->ring )
 	{
@@ -906,7 +906,7 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 	#ifdef ENABLE_USE_DBG_TAG
 		DBG_PT();
 	#endif
-	pthread_mutex_unlock( &mgr->lock ); // at the end is that necessary clean every thing . TODO
+	pthread_mutex_unlock( &mgr->lock );
 	pthread_mutex_destroy( &mgr->lock );
 	pthread_cond_destroy( &mgr->filled_cond );
 }
