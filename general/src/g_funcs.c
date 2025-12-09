@@ -1256,6 +1256,47 @@ void dump_buffer( const buffer buff , size_t size )
 	}
 }
 
+/*
+ * Dump binary buffer into a readable ASCII string.
+ * Printable ASCII chars => copy directly.
+ * Non-printable chars   => write as \xHH.
+ *
+ * out_size must include space for the terminating '\0'.
+ * Returns number of bytes written (not including '\0').
+ */
+size_t dump_buffer_ascii( buffer in, size_t in_len, char *out, size_t out_size )
+{
+    size_t oi = 0;  // output index
+
+    for (size_t i = 0; i < in_len; i++) {
+        unsigned char c = in[i];
+
+        if (isprint(c)) {
+            // Writes 1 byte if space available
+            if (oi + 1 >= out_size)
+                break;
+            out[oi++] = c;
+        } else {
+            // Non-printable → "\xHH" (4 chars)
+            // Check space for 4 chars
+            if (oi + 4 >= out_size)
+                break;
+
+            // Write hex escape
+            out[oi++] = '\\';
+            out[oi++] = 'x';
+            out[oi++] = "0123456789ABCDEF"[c >> 4];
+            out[oi++] = "0123456789ABCDEF"[c & 0x0F];
+        }
+    }
+
+    // Null terminate
+    if (out_size > 0)
+        out[oi < out_size ? oi : out_size - 1] = '\0';
+
+    return oi;
+}
+
 int peerTcpClosed( sockfd socketfd )
 {
 	char c;

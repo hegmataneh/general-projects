@@ -25,12 +25,13 @@ mohsen 14040618
 		__snprintf( ttmmppbuf , sizeof(ttmmppbuf) , "{~%%s:%%d} %%s%%s%s" , ( ( lp_sys_err && strlen(lp_sys_err) ) ? "<%%s>" : "" ) );  \
 		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , ttmmppbuf ,\
 			__FUNCTION_shrtn( __FUNCTION__ ) , __LINE__ , ( ( msg && strlen( msg ) ) ? msg : "" ) ,\
-			__conditional_internalErrorStr(d_error,msg,false) , systemErrorStr(NP) ); } while ( 0 )
+			__conditional_internalErrorStr(d_error,msg,false) , lp_sys_err ); } while ( 0 )
 
-#define M_MK_ERR_FMT_MSG(fmt,...) do { IMMORTAL_LPCSTR lp_sys_err = systemErrorStr(NP); char ttmmppbuf[50]; \
-		__snprintf( ttmmppbuf , sizeof(ttmmppbuf) , "{~%%s:%%d} " fmt "%%s%s" , ( ( lp_sys_err && lp_sys_err[0] ) ? "<%%s>" : "" ) );  \
-		__snprintf( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , ttmmppbuf,\
-			__FUNCTION_shrtn(__FUNCTION__) , __LINE__ , __VA_ARGS__ , __conditional_internalErrorStr(d_error,fmt,false) , systemErrorStr(NP) ); } while ( 0 )
+// if there is %s in fmt then this macro do wrong
+#define M_MK_ERR_FMT_MSG(fmt,...) do { IMMORTAL_LPCSTR lp_sys_err = systemErrorStr(NP); \
+		__snprintf ( EACH_FXN_MSG_HOLDER , sizeof( EACH_FXN_MSG_HOLDER ) , "{~%s:%d} " ""fmt"" "%s<%s>" , __FUNCTION_shrtn(__FUNCTION__) , __LINE__ , __VA_ARGS__ , \
+			__conditional_internalErrorStr(d_error,""fmt"",false) , ( ( lp_sys_err && lp_sys_err[0] ) ? lp_sys_err : "" ) );  \
+		} while ( 0 )
 
 	
 //#ifdef __ENGINE // app must provide def for M_MSG

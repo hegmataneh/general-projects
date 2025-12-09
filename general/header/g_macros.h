@@ -39,6 +39,8 @@
 #define LO_WORD(dw)							((WORD)(((DWORD_PTR)(dw)) & 0xffff))
 #define MAKE_DWORD(hiWord,loWord)			((DWORD)(((WORD)(((DWORD_PTR)(loWord)) & 0xffff)) | ((DWORD)((WORD)(((DWORD_PTR)(hiWord)) & 0xffff))) << 16))
 
+#define EMPTY_BUF(T) ((char[sizeof(T)]){0}) /*make empty buffer that usable in memcmp*/
+
 //----- scope and access privilage --------------------------------------------------------------------
 #if defined Uses_access_qualifier || !defined __COMPILING
 	#if defined __GNUC__

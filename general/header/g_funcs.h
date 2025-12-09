@@ -175,6 +175,7 @@ IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 void buff_fill_seq( buffer buf , size_t size );
 void dump_buffer( const buffer buf , size_t size );
+size_t dump_buffer_ascii( buffer in, size_t in_len, char *out, size_t out_size );
 uint8 hash8_fnv1a_avalanche( const char * s );
 uint8 hash8_fnv1a_avalanche_l( long l );
 uint64 hash64_fnv1a_avalanche( const char * s );
