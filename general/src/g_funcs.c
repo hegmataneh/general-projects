@@ -1275,7 +1275,7 @@ size_t dump_buffer_ascii( buffer in, size_t in_len, char *out, size_t out_size )
             // Writes 1 byte if space available
             if (oi + 1 >= out_size)
                 break;
-            out[oi++] = c;
+            out[oi++] = (char)c;
         } else {
             // Non-printable → "\xHH" (4 chars)
             // Check space for 4 chars

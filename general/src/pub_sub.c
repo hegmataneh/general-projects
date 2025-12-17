@@ -861,6 +861,58 @@ status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , s
 	return any_call_happend ? aggr_ret : errNoPeer;
 }
 
+status distributor_publish_buffer_size_data( distributor_t * dis , buffer src_buf , size_t src_sz , long ex_data , pass_p data /*=NULL if subscriber precede*/ )
+{
+	INIT_BREAKABLE_FXN();
+
+	if ( dis->pmtx )
+	{
+		pthread_mutex_lock( dis->pmtx );
+	}
+
+	status aggr_ret = errOK;
+	int any_call_happend = 0;
+	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
+	{
+		//int one_token_ring_called = 0;
+		int start , end , step;
+
+		subscribers_t * psubscribers = NULL;
+		BREAK_STAT( mms_array_get_s( &dis->grps , igrp , ( void ** )&psubscribers ) , 0 );
+
+		if ( dis->iteration_dir == head_2_tail )
+		{
+			start = 0;
+			end = ( int )psubscribers->subs.count;
+			step = 1;
+		}
+		else
+		{
+			start = ( int )psubscribers->subs.count - 1;
+			end = -1;  // because we'll stop when isub < 0
+			step = -1;
+		}
+		for ( int isub = start ; isub != end ; isub += step )
+		{
+			subscriber_t * psubscriber = NULL;
+			BREAK_STAT( mms_array_get_s( &psubscribers->subs , ( size_t )isub , ( void ** )&psubscriber ) , 0 );
+
+			if ( psubscriber->type == SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE_LONG )
+			{
+				any_call_happend = 1;
+				aggr_ret |= psubscriber->func.multicast_call_buffer_size_long_cb( DATA_ORDER_( psubscriber ) , src_buf , src_sz , ex_data );
+			}
+		}
+	}
+	BEGIN_SMPL
+		N_V_END_RET
+		if ( dis->pmtx )
+		{
+			pthread_mutex_unlock( dis->pmtx );
+		}
+	return any_call_happend ? aggr_ret : errNoPeer;
+}
+
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL if subscriber precede*/ )
 {

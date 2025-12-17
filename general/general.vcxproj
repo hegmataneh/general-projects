@@ -111,6 +111,7 @@
     <ClCompile Include="src\StackTrace.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_p.c" />
+    <ClCompile Include="src\Vqueue.c" />
     <ClCompile Include="src\vstack.c" />
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +152,7 @@
     <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\instantaneousBps.h" />
     <ClInclude Include="header\log.h" />
+    <ClInclude Include="header\Vqueue.h" />
     <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />
     <ClInclude Include="header\cirbuf_metric.h" />

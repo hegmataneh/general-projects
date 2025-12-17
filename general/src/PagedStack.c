@@ -19,9 +19,12 @@
 #define MEMFILE_SIZE ((size_t)128 * 1024 * 1024) /* 64 MiB */
 #define MEMFILE_HEADER_MAGIC 0x4D4D4654 /* "MMFT" */
 
-#define METADATA_FILENAME "pg_stk_chain.meta"
-#define HOTSPARE_NAME "pg_stk_hotspare"
 #define TMPMETA_NAME "tmpmeta.XXXXXX"
+#define METADATA_FILENAME "pg_stk_chain.meta" /*file names*/
+#define HOTSPARE_NAME "pg_stk_hotspare"
+
+#define PG_STK_STACK_PREFIX "pg_stk_"
+#define PG_STK_QUEUE_PREFIX "pg_que_"
 
 #define MEMFILE_PAGEHEADER_SZ (sizeof(pg_stk_page_hdr_t))
 
@@ -45,7 +48,10 @@ _PRIVATE_FXN ssize_t pg_stk_write_all( int fd , const void_p buf , size_t sz )
 	return ( ssize_t )off;
 }
 
-/* atomic write+fsync+rename for metadata */
+/*
+first make tmpname file and write every lines of names into file then when succeded change name to TOC file
+atomic write+fsync+rename for metadata
+*/
 _PRIVATE_FXN int pg_stk_atomic_write_and_rename( const char * dir , const char * tmpname , const char * targetname , const void_p content , size_t len )
 {
 	char tmp[ MAX_PATH ];
@@ -93,7 +99,7 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 	BREAK_IF( !mf , errMemoryLow , 0 );
 	strncpy( mf->path , path , sizeof( mf->path ) - 1 );
 	mf->memmap_size = mem_size;
-	mf->decrease_time = 10 * 60; // 10 min
+	mf->decrease_time = 10; // 10 secs
 	//BREAK_IF( !pthread_mutex_init( &mf->lock , NULL ) , errResource , 1 );
 
 	int flags = O_RDWR;
@@ -125,22 +131,41 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 	mf->hdr = ( pg_stk_page_hdr_t * )map; // also due time set in this part
 
 	/* initialize header if empty */
-	if ( mf->hdr->magic != MEMFILE_HEADER_MAGIC )
+	if ( mf->hdr->magic != MEMFILE_HEADER_MAGIC ) // new mode
 	{
+		LPCSTR s_file_name = get_filename( path );
+		bool bstack = strihead( s_file_name , PG_STK_STACK_PREFIX ) != NULL;
+
 		/* consider this file fresh: zero then write header */
 		memset( mf->map , 0 , mf->memmap_size );
 		mf->hdr->magic = MEMFILE_HEADER_MAGIC;
 		//mf->hdr->LIFO_due = time(NULL); // add when be applicable and in minHeap . it is come from minHeap
 
-		vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , true ); // create stack on the buf
+		if ( bstack )
+		{
+			mf->hdr->isstack = true;
+			vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , true ); // create stack on the buf
+		}
+		else
+		{
+			mf->hdr->isnotstack_soisque = false;
+			vqueue_init( &mf->hdr->que , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , true ); // create que on the buf
+		}
 
 		/* persist header */
 		msync( mf->map , MEMFILE_PAGEHEADER_SZ , MS_SYNC );
 		fsync( mf->fd );
 	}
-	else
+	else // just use buffer but first init mutex . pointer and position came from file content
 	{
-		vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , false ); // create stack on the buf
+		if ( mf->hdr->isstack )
+		{
+			vstack_init( &mf->hdr->stack , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , false ); // create stack on the buf
+		}
+		else
+		{
+			vqueue_init( &mf->hdr->que , ( ( uint8 * )mf->map ) + MEMFILE_PAGEHEADER_SZ , mem_size - MEMFILE_PAGEHEADER_SZ , false ); // create que on the buf
+		}
 	}
 	if ( out_mf ) *out_mf = mf;
 	
@@ -164,7 +189,14 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 {
 	if ( !mf ) return;
-	vstack_destroy( &mf->hdr->stack );
+	if ( mf->hdr->isstack )
+	{
+		vstack_destroy( &mf->hdr->stack );
+	}
+	else
+	{
+		vqueue_destroy( &mf->hdr->que );
+	}
 	msync( mf->map , mf->memmap_size , MS_SYNC );
 	fsync( mf->fd );
 	munmap( mf->map , mf->memmap_size );
@@ -236,9 +268,10 @@ _PRIVATE_FXN status pg_stk_create( page_stack_t * mm , const char * base_dir )
 	//pthread_mutexattr_init( &attr );
 	//pthread_mutexattr_settype( &attr , PTHREAD_MUTEX_RECURSIVE ); // make it double locked
 	BREAK_IF( pthread_mutex_init( &mm->ps_lock , NULL ) , errCreation , 0 );
+	BREAK_STAT( dict_s_o_init( &mm->que_access ) , 0 );
 
-	mm->current = NULL;
-	mm->hot_spare = NULL;
+	mm->active_stack = NULL;
+	mm->hot_stack_spare = NULL;
 	/* ensure metadata file exists or create empty */
 	
 	BEGIN_SMPL
@@ -318,7 +351,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * not
 	{
 		qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
 	}
-	mms_array_get_s( &mm->files , mm->files.count - 1 , ( void ** )&mm->current );
+	mms_array_get_s( &mm->files , mm->files.count - 1 , ( void ** )&mm->active_stack );
 	
 	BEGIN_RET
 	case 1:
@@ -332,7 +365,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * not
 _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 {
 	//pthread_mutex_lock( &mm->lock );
-	if ( mm->hot_spare )
+	if ( mm->hot_stack_spare )
 	{
 		//pthread_mutex_unlock( &mm->lock );
 		return errOK;
@@ -351,7 +384,7 @@ _PRIVATE_FXN status pg_stk_ensure_hot_spare( page_stack_t * mm )
 		//pthread_mutex_unlock( &mm->lock );
 		return d_error;
 	}
-	mm->hot_spare = mf;
+	mm->hot_stack_spare = mf;
 	//pthread_mutex_unlock( &mm->lock );
 	return d_error;
 }
@@ -361,29 +394,29 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 {
 	INIT_BREAKABLE_FXN();
 	//pthread_mutex_lock( &mm->lock );
-	if ( !mm->hot_spare )
+	if ( !mm->hot_stack_spare )
 	{
 		//pthread_mutex_unlock( &mm->lock );
 		return errNotFound;
 	}
-	/* rename hot_spare file to canonical memfile_N name */
+	/* rename hot_stack_spare file to canonical memfile_N name */
 	char newpath[ MAX_PATH ];
 	char newname[ 128 ];
 	time_t tnow = time( NULL );
-	snprintf( newname , sizeof( newname ) , "pg_stk_%zu_%zu.dat" , ( unsigned )tnow , mm->file_name_counter++ ); // add time to name
+	snprintf( newname , sizeof( newname ) , "%s%zu_%zu.dat" , PG_STK_STACK_PREFIX , ( unsigned )tnow , mm->file_name_counter++ ); // add time to name
 	pg_stk_fill_path( newpath , sizeof( newpath ) , mm->base_dir , newname );
 	/* atomic rename */
-	if ( !rename( mm->hot_spare->path , newpath ) )
+	if ( !rename( mm->hot_stack_spare->path , newpath ) )
 	{
-		#pragma GCC diagnostic ignored "-Wstringop-truncation"
-		strncpy( mm->hot_spare->path , newpath , MAX_PATH - 1 );
-		#pragma GCC diagnostic pop
+	#pragma GCC diagnostic ignored "-Wstringop-truncation"
+		strncpy( mm->hot_stack_spare->path , newpath , MAX_PATH - 1 );
+	#pragma GCC diagnostic pop
 	}
 	
 	pg_stk_memfile_t ** ppfile = NULL;
 	if ( ( d_error = mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) ) == errOK )
 	{
-		*ppfile = mm->hot_spare;
+		*ppfile = mm->hot_stack_spare;
 
 		( *ppfile )->hdr->due_time = /*tnow*/0; // first it initialized to zero then when one item add to it it set to now because when hot spare placed at index 0 then it means the end of heap arrived and no more delete is valid
 
@@ -399,8 +432,8 @@ _PRIVATE_FXN status pg_stk_activate_hot_spare( page_stack_t * mm )
 	{
 		qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
 	}
-	mm->current = mm->hot_spare;
-	mm->hot_spare = NULL;
+	mm->active_stack = mm->hot_stack_spare;
+	mm->hot_stack_spare = NULL;
 	/* persist chain metadata */
 	pg_stk_persist_chain( mm );
 	/* create new hot spare in background (pessimistically) */
@@ -431,7 +464,7 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 	if ( d_error != errNotFound ) BREAK_STAT( d_error , 0 );
 	BREAK_STAT( pg_stk_ensure_hot_spare( mm ) , 0 );
 	/* If no current active file, activate the hot spare */
-	if ( !mm->current )
+	if ( !mm->active_stack )
 	{
 		pg_stk_activate_hot_spare( mm );
 	}
@@ -441,18 +474,18 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 }
 
 /* store buffer into manager: returns seq (non-zero) on success, 0 on failure */
-_PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len )
+_PUB_FXN status pg_stk_store_at_stack( page_stack_t * mm , const void_p buf , size_t len )
 {
 	if ( !mm || !buf || !len ) return errArg;
 	LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
-	pg_stk_memfile_t * cur = mm->current;
+	pg_stk_memfile_t * cur = mm->active_stack;
 	status d_error = errOK;
 	if ( !cur || cur->to_be_absolete )
 	{
 		if ( ( d_error = pg_stk_activate_hot_spare( mm ) ) == errOK ) // i added this line to make retry possible
 		{
 			pthread_mutex_unlock( &mm->ps_lock );
-			return pg_stk_store( mm , buf , len );
+			return pg_stk_store_at_stack( mm , buf , len );
 			//return errRetry; // why errRetry????
 		}
 		pthread_mutex_unlock( &mm->ps_lock );
@@ -470,19 +503,150 @@ _PUB_FXN status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len 
 	/* not enough space: seal current, activate hot spare, then append to new current */
 	//pg_stk_seal( cur );
 	pg_stk_activate_hot_spare( mm );
-	if ( !mm->current )
+	if ( !mm->active_stack )
 	{
 		pthread_mutex_unlock( &mm->ps_lock );
 		return errMemoryLow;
 	}
 	/* retry append again */
-	if ( ( d_error = pg_stk_append_record( mm , mm->current , buf , len ) ) == errOK )
+	if ( ( d_error = pg_stk_append_record( mm , mm->active_stack , buf , len ) ) == errOK )
 	{
 		mm->item_stored++;
 		mm->item_stored_byte += len;
 	}
 	pthread_mutex_unlock( &mm->ps_lock );
 	return d_error;
+}
+
+/*
+* mm->ps_lock is already locked because of call from discharge_persistant_cache_proc->pg_stk_try_to_pop_latest->persistant_cache_mngr_relay_packet->
+* ->discharge_persistent_storage_data->remap_storage_data->persistant_cache_mngr_store_data_into_queue->pg_stk_store_at_queue
+*/
+_PUB_FXN status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , size_t len , LPCSTR queue_name )
+{
+	if ( !mm || !buf || !len || !queue_name || !strlen( queue_name ) ) return errArg;
+	// do not use lock
+
+	status d_error = errOK;
+	pg_stk_memfile_t * que_file = ( pg_stk_memfile_t * )dict_s_o_get( &mm->que_access , queue_name );
+	if ( !que_file )
+	{
+		char path[ MAX_PATH ];
+		char name[ 128 ];
+		snprintf( name , sizeof( name ) , "%s_%s_%zu" , PG_STK_QUEUE_PREFIX , queue_name , ( unsigned )time( NULL ) );
+		/* choose deterministic path */
+		pg_stk_fill_path( path , sizeof( path ) , mm->base_dir , name );
+		/* create hot spare file path = base_dir/HOTSPARE_NAME */
+		pg_stk_memfile_t * mf = NULL;
+		
+		if ( ( d_error = pg_stk_open_create( path , MEMFILE_SIZE , 1 , &mf ) ) )
+		{
+			return d_error;
+		}
+
+		if ( ( d_error = dict_s_o_put( &mm->que_access , queue_name , mf ) ) )
+		{
+			pg_stk_close( mf );
+			DAC( mf );
+			return d_error;
+		}
+
+		//if ( !mf->hdr->due_time ) mf->hdr->due_time = time( NULL );
+		pg_stk_memfile_t ** ppfile = NULL;
+		if ( mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) == errOK )
+		{
+			*ppfile = mf;
+		}
+
+		pg_stk_persist_chain( mm );
+
+		que_file = mf;
+	}
+	
+	vqtchs touches;
+	switch ( ( d_error = vqueue_enque( &que_file->hdr->que , buf , len , &touches ) ) )
+	{
+		case errOK:
+		{
+			if ( !que_file->nocked_up ) // if memfile not touched by any record then sort again based on due time
+			{
+				que_file->nocked_up = true;
+				que_file->hdr->due_time = time( NULL );
+				if ( mm->files.count > 1 )
+				{
+					qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+				}
+			}
+
+			//msync( touches[ 0 ].addr , touches[ 0 ].sz , MS_SYNC );
+#ifdef ENABLE_MEMMAP_SYNC_FOR_EACH_WRITE
+			msync( touches[ 1 ].addr , touches[ 1 ].sz , MS_SYNC );
+#endif
+			//fsync( mf->fd );
+			return d_error;
+		}
+		case errOverflow:
+		{
+			if ( !que_file->to_be_absolete )
+			{
+				msync( que_file->map , que_file->memmap_size , MS_SYNC );
+				fsync( que_file->fd );
+			}
+			
+			char path[ MAX_PATH ];
+			char name[ 128 ];
+			snprintf( name , sizeof( name ) , "%s_%s_%zu" , PG_STK_QUEUE_PREFIX , queue_name , ( unsigned )time( NULL ) );
+			/* choose deterministic path */
+			pg_stk_fill_path( path , sizeof( path ) , mm->base_dir , name );
+			/* create hot spare file path = base_dir/HOTSPARE_NAME */
+			pg_stk_memfile_t * mf = NULL;
+
+			if ( ( d_error = pg_stk_open_create( path , MEMFILE_SIZE , 1 , &mf ) ) )
+			{
+				return d_error;
+			}
+
+			if ( ( d_error = dict_s_o_put( &mm->que_access , queue_name , mf ) ) )
+			{
+				pg_stk_close( mf );
+				DAC( mf );
+				return d_error;
+			}
+
+			pg_stk_memfile_t ** ppfile = NULL;
+			if ( mms_array_get_one_available_unoccopied_item_holder( &mm->files , ( void *** )&ppfile ) == errOK )
+			{
+				*ppfile = mf;
+			}
+
+			pg_stk_persist_chain( mm );
+
+			if ( ( d_error = vqueue_enque( &mf->hdr->que , buf , len , &touches ) ) )
+			{
+				return d_error;
+			}
+
+			if ( !mf->nocked_up ) // if memfile not touched by any record then sort again based on due time
+			{
+				mf->nocked_up = true;
+				mf->hdr->due_time = time( NULL );
+				if ( mm->files.count > 1 )
+				{
+					qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+				}
+			}
+
+			//msync( touches[ 0 ].addr , touches[ 0 ].sz , MS_SYNC );
+#ifdef ENABLE_MEMMAP_SYNC_FOR_EACH_WRITE
+			msync( touches[ 1 ].addr , touches[ 1 ].sz , MS_SYNC );
+#endif
+			//fsync( mf->fd );
+
+			return errOK;
+		}
+	}
+
+	return errGeneral;
 }
 
 /* pop latest record from manager chain (LIFO across files) - copies into user buffer */
@@ -518,9 +682,9 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 			if ( !remove( pmemfile->path ) ) // remove file
 			{
 				pg_stk_close( pmemfile ); // close memmap
-				if ( pmemfile == mm->current ) // if current is absolete then null
+				if ( pmemfile == mm->active_stack ) // if current is absolete then null
 				{
-					mm->current = NULL;
+					mm->active_stack = NULL;
 				}
 				ret_heap = mms_array_delete( &mm->files , 0 );
 			}
@@ -540,7 +704,14 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 
 		do
 		{
-			ret_stack = vstack_peek( &pmemfile->hdr->stack , &out_item , &out_sz );
+			if ( pmemfile->hdr->isstack )
+			{
+				ret_stack = vstack_peek( &pmemfile->hdr->stack , &out_item , &out_sz );
+			}
+			else
+			{
+				ret_stack = vqueue_peek( &pmemfile->hdr->que , &out_item , &out_sz );
+			}
 			switch ( ret_stack )
 			{
 				case errOK: // if there is packet in stack
@@ -550,6 +721,26 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 					{
 						case pgstk_not_send__stop_sending:
 						{
+							bcontinue_stack = bcontinue_heap = false;
+							break;
+						}
+						case pgstk_not_send__stop_sending_delayedMemmap:
+						{
+							// try prev memmap and continue but not close current
+							if ( pmemfile->hdr->due_time > pmemfile->decrease_time ) // if any time left decrease
+							{
+								pmemfile->hdr->due_time -= pmemfile->decrease_time; // it means it gain lower priority later
+								if ( mm->files.count > 1 )
+								{
+									qsort( mm->files.data , mm->files.count , sizeof( void * ) , compare_pg_stk_memfile );
+								}
+							}
+							pmemfile->decrease_time *= 2;
+							if ( pmemfile->decrease_time > 3600 /*1 h*/ /*TODO*/ )
+							{
+								pmemfile->decrease_time = 3600;
+							}
+
 							bcontinue_stack = bcontinue_heap = false;
 							break;
 						}
@@ -565,12 +756,16 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 								}
 							}
 							pmemfile->decrease_time *= 2;
+							if ( pmemfile->decrease_time > 3600 /*1 h*/ /*TODO*/ )
+							{
+								pmemfile->decrease_time = 3600;
+							}
 
 							bcontinue_stack = false;
 							bcontinue_heap = true;
 							break;
 						}
-						case pgstk_not_send__continue_sending_with_delay: // this segment has Head-of-line blocking
+						case pgstk_not_send__continue_sending_onTooManyAttempt: // this segment has Head-of-line blocking
 						{
 							BREAK( errTooManyAttempt , 0 );
 						}
@@ -578,6 +773,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						{
 							BREAK( errTooManyAttempt , 0 ); // wait for another time then retry sending
 						}
+						case pgstk_remapped__continue_sending:
 						case pgstk_sended__continue_sending:
 						{
 							if ( mm->item_stored > 0 )
@@ -595,7 +791,14 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 							}
 
 							bool emptied = false;
-							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop packet from stack
+							if ( pmemfile->hdr->isstack )
+							{
+								vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop packet from stack
+							}
+							else
+							{
+								vqueue_deque( &pmemfile->hdr->que , NULL , NULL , &emptied ); // pop packet from que
+							}
 							bcontinue_stack = bcontinue_heap = true;
 							if ( emptied )
 							{
@@ -604,6 +807,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 							}
 							break;
 						}
+						case pgstk_remapped__stop_sending:
 						case pgstk_sended__stop_sending:
 						{
 							if ( mm->item_stored > 0 )
@@ -620,7 +824,14 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 							}
 
 							bool emptied = false;
-							vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop stack
+							if ( pmemfile->hdr->isstack )
+							{
+								vstack_pop( &pmemfile->hdr->stack , NULL , NULL , &emptied ); // pop stack
+							}
+							else
+							{
+								vqueue_deque( &pmemfile->hdr->que , NULL , NULL , &emptied ); // pop packet from que
+							}
 							bcontinue_stack = false;
 							bcontinue_heap = false;
 							if ( emptied )
@@ -663,6 +874,11 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 						}
 					}
 					pmemfile->decrease_time *= 2;
+					if ( pmemfile->decrease_time > 3600 /*1 h*/ /*TODO*/ )
+					{
+						pmemfile->decrease_time = 3600;
+					}
+
 					bcontinue_stack = false; // this memmap should proc later
 					bcontinue_heap = true;  // but other memmap could be resumable
 					break;
@@ -694,13 +910,13 @@ void pg_stk_shutdown( page_stack_t * mm )
 		if ( mms_array_get_s( &mm->files , i , ( void ** )&pfile ) == errOK )
 		{
 			pg_stk_close( pfile );
-			if ( pfile == mm->current )
+			if ( pfile == mm->active_stack )
 			{
-				mm->current = NULL;
+				mm->active_stack = NULL;
 			}
 		}
 	}
-	if ( mm->hot_spare ) pg_stk_close( mm->hot_spare );
+	if ( mm->hot_stack_spare ) pg_stk_close( mm->hot_stack_spare );
 	mms_array_free( &mm->files );
 	( pthread_mutex_unlock( &mm->ps_lock ) );
 	pthread_mutex_destroy( &mm->ps_lock );

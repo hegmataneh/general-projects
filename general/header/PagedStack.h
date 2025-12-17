@@ -34,9 +34,20 @@ typedef struct /*__attribute__(( packed ))*/
 {
 	uint32_t magic;
 	time_t due_time;	// used to store time in file
-	VStack stack;
+	union
+	{
+		struct
+		{
+			bool isstack;
+			VStack stack;
+		};
+		struct
+		{
+			bool isnotstack_soisque;
+			Vqueue_t que;
+		};
+	};
 } pg_stk_page_hdr_t; // wriable in file
-
 
 /* ----------------- Memfile structure ----------------- */
 typedef struct
@@ -44,7 +55,9 @@ typedef struct
 	char path[ MAX_PATH ];
 	void_p map;					/* mmap pointer */
 	size_t memmap_size;			/*mem size*/
+	
 	pg_stk_page_hdr_t * hdr;	/* pointer into void_p map */
+	
 	union
 	{
 		int fd;
@@ -52,31 +65,31 @@ typedef struct
 	};
 	union
 	{
-		int decrease_time;			// sec
+		int decrease_time;		// sec
 		size_t pad2;
 	};
 	union
 	{
-		bool to_be_absolete;
+		bool to_be_absolete;	// about to absolete
 		size_t pad3;
 	};
 	//bool absoleted;
 	union
 	{
-		bool nocked_up; // some insertion happened
+		bool nocked_up;			// some insertion happened
 		size_t pad4;
 	};
 	
-} pg_stk_memfile_t; // just in memory
+} pg_stk_memfile_t;				// just in memory
 
 /* ----------------- Manager ----------------- */
 typedef struct
 {
 	char base_dir[ MAX_PATH ];
-	dyn_mms_arr files;				/* array of pointers to memfiles (chain) . pg_stk_memfile_t*/
-	pg_stk_memfile_t * current;		/* active file for writes */
-	pg_stk_memfile_t * hot_spare;	/* preallocated unused memfile */
-	void_p custom_data;				/*like g*/
+	dyn_mms_arr files;					/* array of pointers to memfiles (chain) . pg_stk_memfile_t*/
+	pg_stk_memfile_t * active_stack;	/* active file for writes */
+	pg_stk_memfile_t * hot_stack_spare; /* pre allocated unused memfile */
+	void_p custom_data;				/* like g */
 	pthread_mutex_t ps_lock;		/* protects manager's top-level state */
 
 	/* lifetime statistics */
@@ -84,22 +97,30 @@ typedef struct
 	STAT_FLD size_t item_stored_byte;
 	size_t file_name_counter;
 
+	dict_s_o_t que_access;
+
 } page_stack_t;
 
 typedef enum
 {
 	pgstk_not_send__stop_sending ,
+	pgstk_not_send__stop_sending_delayedMemmap ,
 	pgstk_not_send__continue_sending ,
-	pgstk_not_send__continue_sending_with_delay ,
+	pgstk_not_send__continue_sending_onTooManyAttempt ,
 	pgstk_not_send__not_any_peer , /*not any tcp out so donot fetch memmap files items*/
+	
 	pgstk_sended__continue_sending ,
-	pgstk_sended__stop_sending
+	pgstk_sended__stop_sending ,
+
+	pgstk_remapped__continue_sending ,
+	pgstk_remapped__stop_sending ,
 } pgstk_cmd;
 
 typedef pgstk_cmd ( *ps_callback_data )( void_p , void_p , size_t );
 
 status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom_data );
-status pg_stk_store( page_stack_t * mm , const void_p buf , size_t len );
+status pg_stk_store_at_stack( page_stack_t * mm , const void_p buf , size_t len );
+status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , size_t len , LPCSTR queue_name );
 status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_getter );
 void pg_stk_shutdown( page_stack_t * mm );
 _THREAD_FXN void_p cleanup_unused_memfile_proc( pass_p src_g );

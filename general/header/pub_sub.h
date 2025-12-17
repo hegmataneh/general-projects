@@ -20,6 +20,7 @@ typedef enum
 	SUB_STRING_DOUBLE ,
 	SUB_DIRECT_ONE_CALL_BUFFER_SIZE ,
 	SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE ,
+	SUB_DIRECT_MULTICAST_CALL_BUFFER_SIZE_LONG ,
 	SUB_DIRECT_ONE_CALL_VOIDP ,
 	SUB_DIRECT_ONE_CALL_3VOIDP
 } sub_type_e;
@@ -35,6 +36,9 @@ typedef void ( *sub_x3long_t )( pass_p data , long i , long j , long k );
 typedef void ( *sub_string_double_t )( pass_p data , LPCSTR i , double d );
 typedef status ( *sub_direct_one_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
 typedef status ( *sub_multicast_call_buffer_size_t )( pass_p data , buffer buf , size_t sz );
+
+typedef status ( *sub_multicast_call_buffer_size_long_t )( pass_p user_data , buffer buf , size_t sz , long ex_data );
+
 typedef status ( *sub_direct_one_call_voidp_t )( pass_p data , void_p ptr );
 typedef status ( *sub_direct_one_call_3voidp_t )( void_p ptr1 , void_p ptr2 , void_p ptr3 );
 
@@ -51,6 +55,9 @@ typedef union
 	sub_string_double_t						str_dbl_cb;
 	sub_direct_one_call_buffer_size_t		direct_one_call_bfr_size_cb;
 	sub_multicast_call_buffer_size_t		multicast_call_buffer_size_cb;
+
+	sub_multicast_call_buffer_size_long_t	multicast_call_buffer_size_long_cb;
+
 	sub_direct_one_call_voidp_t				direct_one_call_voidp_cb;
 	sub_direct_one_call_3voidp_t			direct_one_call_3voidp_cb;
 } sub_func_t;
@@ -133,6 +140,8 @@ status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j
 
 status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , double src_d , pass_p data /*=NULL if subscriber precede*/ );
 status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , size_t src_sz , pass_p data /*=NULL if subscriber precede*/ );
+
+status distributor_publish_buffer_size_data( distributor_t * dis , buffer src_buf , size_t src_sz , long ex_data  , pass_p user_data /*=NULL if subscriber precede*/ );
 
 status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr /*caller pointer*/ ,
 	void_p token /*token that spec calle*/ , pass_p data /*=NULL custom per call data or per subscriber_t*/ );

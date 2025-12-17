@@ -153,6 +153,10 @@
 	#include <vstack.h>
 #endif
 
+#ifdef __INC_Vqueue
+	#include <Vqueue.h>
+#endif
+
 #ifdef __INC_PagedStack
 	#include <PagedStack.h>
 #endif

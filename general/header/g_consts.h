@@ -38,10 +38,10 @@ enum
 	errSyntax = ERR_NEXT_VALUE(),
 	errArg = ERR_NEXT_VALUE(), // origin -> bad argument
 	errTimeout = ERR_NEXT_VALUE(),
-	errPeerClosed = ERR_NEXT_VALUE(),
+	errPeerClosed = ERR_NEXT_VALUE(), // closed state is bold
 	errOutofRanje = ERR_NEXT_VALUE(),
 	errMaximumExceeded = ERR_NEXT_VALUE(), /*10*/
-	errNoPeer = ERR_NEXT_VALUE(), // origin -> tcp peer disconnected
+	errNoPeer = ERR_NEXT_VALUE(), // origin -> tcp peer state unknown or callback peer no respond
 	errNotFound = ERR_NEXT_VALUE(),
 	errDevice = ERR_NEXT_VALUE(),
 	errSocket = ERR_NEXT_VALUE(),
@@ -65,6 +65,9 @@ enum
 	errOpen = ERR_NEXT_VALUE(),
 	errACK = ERR_NEXT_VALUE(), /*no ack in time window*/
 	errNoCountinue = ERR_NEXT_VALUE(), /*just use for its name purpose*/
+	errMapped = ERR_NEXT_VALUE(), /*just use for its name purpose*/
+	errDoneAlready = ERR_NEXT_VALUE(),
+	errButContinue = ERR_NEXT_VALUE(),
 
 	// ADD extra error here
 
@@ -134,6 +137,9 @@ maximally separated and rare bytes
 */
 
 _EXTERN const unsigned char MSB_MARKERS[8];
+
+#define GUARD_HEAD 0xABCDEF0123456789ULL
+#define GUARD_TAIL 0x9876543210FEDCBAULL
 
 // --------------------
 

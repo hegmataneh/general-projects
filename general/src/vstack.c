@@ -21,7 +21,11 @@ void vstack_destroy( HDLR VStack * stack )
 	pthread_mutex_destroy( &stack->lock );
 }
 
-// Each item layout: [data bytes][size_t size]
+/*
+Each item layout : [data bytes] [size_t size]
+touches[0] -> first is stored buffer place
+touches[1] -> second is place where stack flag stored
+*/ 
 status vstack_push( HDLR VStack * stack , const void_p data , size_t size , tchs * touches )
 {
 	WARNING( size );
@@ -35,16 +39,15 @@ status vstack_push( HDLR VStack * stack , const void_p data , size_t size , tchs
 	}
 
 	memcpy( stack->buf + stack->top , data , size );
-	size_t * szptr = ( size_t * )( stack->buf + stack->top + size );
-	*szptr = size;
-	stack->top += size + sizeof( size_t );
+	*( size_t * )( stack->buf + stack->top + size ) = size;
 	if ( touches )
 	{
 		( *touches )[ 0 ].addr = stack->buf + stack->top;
 		( *touches )[ 0 ].sz = size;
-		( *touches )[ 1 ].addr = &stack->top;
+		( *touches )[ 1 ].addr = &stack->top; // 
 		( *touches )[ 1 ].sz = sizeof( stack->top );
 	}
+	stack->top += size + sizeof( size_t ); // it must be after above assignment
 
 	pthread_mutex_unlock( &stack->lock );
 	return errOK;
@@ -91,7 +94,7 @@ status vstack_pop( HDLR VStack * stack , OUTx void_p * item , OUTx size_t * size
 	}
 	if ( size ) *size = tmp_sz;
 	stack->top -= tmp_sz + sizeof( size_t );
-	if ( item ) *item = ( void_p )( stack->buf + stack->top );
+	if ( item ) *item = ( void_p )( stack->buf + stack->top ); // top value is correct here
 	if ( pemptied ) *pemptied = ( stack->top == 0 );
 
 	pthread_mutex_unlock( &stack->lock );

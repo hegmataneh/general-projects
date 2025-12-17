@@ -79,6 +79,9 @@
     <ClCompile Include="src\instantaneousBps.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\Vqueue.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -239,6 +242,9 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\instantaneousBps.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\Vqueue.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,3 +1,12 @@
+#ifdef Uses_Vqueue_t
+	#define Uses_Vqueue
+#endif
+
+#ifdef Uses_Vqueue
+	#define Uses_pthread_mutex_t
+	#define __INC_Vqueue
+#endif
+
 #ifdef Uses__MK_MSG
 	#define Uses_ERROR_SECTION
 #endif
@@ -611,12 +620,18 @@
 #endif
 
 #ifdef Uses_PagedStack
+	#define Uses_dict_s_o_t
+	#define Uses_Vqueue_t
 	//#define Uses_bool
 	#define Uses_VStack
 	#define Uses_dyn_mms_arr
 	#define Uses_pthread_mutex_t
 	#define Uses_uint32_t
 	#define __INC_PagedStack
+#endif
+
+#ifdef Uses_dict_s_o_t
+	#define Uses_dict_s_o
 #endif
 
 #ifdef Uses_minHeap

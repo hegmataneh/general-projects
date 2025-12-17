@@ -165,7 +165,7 @@ IN_GENERAL LPCSTR strrchrs( LPCSTR str , LPCSTR chrs , int * const pCI /*= NULL*
 // nir
 //IN_GENERAL LPCSTR strrinchrs( LPCSTR str , int n , LPCSTR chrs , int * const pCI /*= NULL*/ ); // Written By Mohsen
 
-IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head );
+IN_GENERAL LPCSTR strihead( LPCSTR str , LPCSTR head ); // head of string has substring
 //IN_GENERAL LPCSTR stritail( LPCSTR str , LPCSTR head );
 
 
