@@ -1,3 +1,12 @@
+#define Uses_snprintf
+#define Uses_mmap
+#define Uses_memset
+#define Uses_open
+#define Uses_errno
+#define Uses_write
+#define Uses_memmap
+
+#define Uses_sprintf
 #define Uses_CALLOC_AR
 #define Uses_sem_wait_with_timeout
 #define Uses_ETIMEDOUT
@@ -23,6 +32,9 @@ _PRIVATE_FXN size_t free_space( cbuf_pked_t * vc , bool actual_space )
 		return ( vc->tail - vc->head ) - ( actual_space ? 0 : 1 );
 }
 
+//void * __file_map = NULL;
+//int last_pos = 0;
+
 status cbuf_pked_init( cbuf_pked_t * vc , size_t buf_sz , volatile bool * app_closed_signal )
 {
 	if ( !vc ) return errArg;
@@ -39,6 +51,23 @@ status cbuf_pked_init( cbuf_pked_t * vc , size_t buf_sz , volatile bool * app_cl
 	vc->head = 0;
 	vc->tail = 0;
 	sem_init( &vc->gateway , 0 , 0 );
+
+	//int flags = O_RDWR;
+	//flags |= O_CREAT;
+	//int fd = open( "./out_push.txt" , flags , 0644 );
+	//if ( fd >= 0 )
+	//{
+	//	__file_map = mmap( NULL , ( ( size_t )128 * 1024 * 1024 ) , PROT_READ | PROT_WRITE , MAP_SHARED , fd , 0 );
+
+	//	off_t cur = lseek( fd , 0 , SEEK_END );
+	//	if ( ( size_t )cur < ( ( size_t )128 * 1024 * 1024 ) )
+	//	{
+	//		ftruncate( fd , ( __off_t )( ( size_t )128 * 1024 * 1024 ) );
+	//	}
+
+	//	memset( __file_map , 0 , ( ( size_t )128 * 1024 * 1024 ) );
+	//}
+
 
 	return errOK;
 }
@@ -63,6 +92,7 @@ void cbuf_pked_destroy( cbuf_pked_t * vc )
 //_GLOBAL_VAR static int _pop_count = 0;
 //_GLOBAL_VAR static int _pop_size = 0;
 #endif
+
 
 status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , size_t alloc_len , _RET_VAL_P size_t * ring_addr , bool auto_opengate )
 {
@@ -94,6 +124,9 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 	if ( tmp_head + BUF_SIZE_LEN <= vc->buf_sz )
 	{
 		memcpy( &vc->buf[ tmp_head ] , &alloc_len , BUF_SIZE_LEN );
+
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "(%zu,%d)" , tmp_head , ( int )BUF_SIZE_LEN );
+
 	}
 	else
 	{
@@ -101,6 +134,10 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 		size_t first = vc->buf_sz - tmp_head; // first part
 		memcpy( &vc->buf[ tmp_head ] , &alloc_len , first );
 		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )&alloc_len ) + first , BUF_SIZE_LEN - first );
+
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%zu,%d)" , tmp_head , ( int )first );
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%d,%d)" , ( int )0 , ( int )( BUF_SIZE_LEN - first ) );
+
 	}
 	if ( ring_addr ) *ring_addr = tmp_head;
 	tmp_head = advance_index( vc , tmp_head , BUF_SIZE_LEN );
@@ -109,12 +146,18 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 	if ( tmp_head + buf_len <= vc->buf_sz )
 	{
 		memcpy( &vc->buf[ tmp_head ] , buf , buf_len );
+
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "(%zu,%d)" , tmp_head , ( int )buf_len );
 	}
 	else
 	{
 		size_t first = vc->buf_sz - tmp_head;
 		memcpy( &vc->buf[ tmp_head ] , buf , first );
 		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )buf ) + first , buf_len - first );
+
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%zu,%d)" , tmp_head , ( int )first );
+		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%d,%d)" , ( int )0 , ( int )( buf_len - first ) );
+
 	}
 	tmp_head = advance_index( vc , tmp_head , alloc_len );
 	vc->head = tmp_head;
@@ -247,7 +290,7 @@ status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_
 		memcpy( out_buf , &vc->buf[ block_sz_pos ] , first );
 		memcpy( ( ( uint8 * )out_buf ) + first , &vc->buf[ 0 ] , size16 - first );
 	}
-	block_sz_pos = advance_index( vc , block_sz_pos , size16 );
+	//block_sz_pos = advance_index( vc , block_sz_pos , size16 );
 	return errOK;
 }
 

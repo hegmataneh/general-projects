@@ -22,12 +22,12 @@ _FALSE_SHARE_SAFE typedef struct packed_cbuf_NB // conveys synchronized one prod
 	};
 	union
 	{
-		volatile size_t head;		// write address
+		/*volatile */size_t head;		// write address
 		char pad3[ CACHE_LINE_SIZE ];
 	};
 	union
 	{
-		volatile size_t tail;		// read address
+		/*volatile */size_t tail;		// read address
 		char pad4[ CACHE_LINE_SIZE ];
 	};
 	STAT_FLD size_t err_full;
