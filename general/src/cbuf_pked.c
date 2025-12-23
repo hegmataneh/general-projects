@@ -279,6 +279,11 @@ status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_
 		return errOverflow; // corrupted
 	}
 
+	/*
+	* WARNING
+	* when arrival udp is too hi it is possible to has same packet id in narrow window time
+	*/
+
 	// read data
 	if ( block_sz_pos + size16 <= vc->buf_sz )
 	{

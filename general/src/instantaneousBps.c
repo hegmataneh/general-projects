@@ -1,4 +1,5 @@
-﻿#define Uses_instantaneousBps
+﻿#define Uses_LOCK_LINE
+#define Uses_instantaneousBps
 #include <general.dep>
 
 void inst_rate_init( instBps_t * rm )
@@ -16,7 +17,7 @@ void inst_rate_destroy( instBps_t * rm )
 
 void inst_rate_add_packet( instBps_t * rm , size_t packet_size )
 {
-	pthread_mutex_lock( &rm->lock );
+	INSTANTANEOUSBPS_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
 	time_t now = time( NULL );  // current second
 
 	if ( rm->current_sec == 0 )
@@ -49,7 +50,7 @@ void inst_rate_add_packet( instBps_t * rm , size_t packet_size )
 // get rate and check wheater store time not too many old
 size_t inst_rate_get_last( instBps_t * rm , size_t last_time_timeout )
 {
-	pthread_mutex_lock( &rm->lock );
+	INSTANTANEOUSBPS_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
 	if ( last_time_timeout )
 	{
 		time_t now = time( NULL );

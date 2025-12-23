@@ -24,7 +24,7 @@ status token_ring_p_add( token_ring_p_t * ring , void_p turn_key )
 	item->next = NULL;
 	item->data = turn_key;
 
-	( pthread_mutex_lock( &ring->lock ) );
+	TOKEN_RING_P_LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
 
 	if ( !ring->head )
 	{
@@ -53,7 +53,7 @@ void token_ring_p_curr( token_ring_p_t * ring , void_p * turn )
 {
 	*turn = NULL;
 
-	LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
+	TOKEN_RING_P_LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
 
 	if ( !ring->current )
 	{
@@ -72,7 +72,7 @@ void token_ring_p_next( token_ring_p_t * ring , void_p * turn )
 {
 	*turn = NULL;
 
-	LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
+	TOKEN_RING_P_LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
 
 	if ( !ring->current )
 	{
@@ -94,7 +94,7 @@ void token_ring_destroy( token_ring_p_t * ring )
 		return;
 	}
 
-	LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
+	TOKEN_RING_P_LOCK_LINE( pthread_mutex_lock( &ring->lock ) );
 
 	struct token_item_p * cur = ring->head;
 	struct token_item_p * next;

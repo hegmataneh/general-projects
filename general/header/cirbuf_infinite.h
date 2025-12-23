@@ -83,15 +83,12 @@ typedef struct cirbuf_inf_sgmgr
 	/* Limits and policies */
 	size_t default_seg_capacity;
 	size_t default_offsets_capacity;
-	union
+	
+	struct
 	{
-		struct
-		{
-			Boolean allow_grow;      /* whether manager may allocate new segments */
-			bool release_lock; /*when some important job want to lock on mgr then set it true then after lock release it*/
-			int release_lock_countdown; /*there is cound down because release segment is also important*/
-		};
-		size_t pad1;
+		Boolean allow_grow;      /* whether manager may allocate new segments */
+		bool release_lock; /*when some important job want to lock on mgr then set it true then after lock release it*/
+		int release_lock_countdown; /*there is cound down because release segment is also important*/
 	};
 
 	/* Optional stats */

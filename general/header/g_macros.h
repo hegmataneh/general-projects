@@ -405,6 +405,27 @@
 
 #ifndef LOCK_LINE
 	#define LOCK_LINE( exp ) exp /*just do what exp say instead of ddlock*/
+
+
+	#define NO_LOCK_LINE( exp ) exp
+
+	#define THREAD_LOCK_LINE( exp )		exp
+	#define DICT_FST_LOCK_LINE( exp )	exp
+	#define CIRBUF_INF_LOCK_LINE( exp ) exp
+	#define CR_WND_LOCK_LINE( exp )		exp
+	#define INSTANTANEOUSBPS_LOCK_LINE( exp )	exp
+	#define NNC_LOCK_LINE( exp )				exp
+	#define PUB_SUB_LOCK_LINE( exp )			exp
+	#define TOKEN_RING_P_LOCK_LINE( exp )		exp
+	#define CFG_LOCK_LINE( exp )				exp
+
+	#define PG_STCK_LOCK_LINE( exp )	exp
+	#define VQUEUE_LOCK_LINE( exp )		exp
+	#define VSTACK_LOCK_LINE( exp )		exp
+	#define BP_LOCK_LINE( exp )			exp
+	#define PKT_MGR_LOCK_LINE( exp )	exp
+
+
 #endif
 
 #if defined Uses_tag_qulifier || !defined Uses_tag_qulifier /*some class or variable has qualification that if we tagged them these tagged help and guid future people who read code*/

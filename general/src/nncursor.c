@@ -1,5 +1,6 @@
 ﻿#define _XOPEN_SOURCE 700
 
+#define Uses_LOCK_LINE
 #define Uses_MARK_LINE
 //#define Uses_STRDUP
 #define Uses_sleep
@@ -80,7 +81,7 @@ MARK_LINE();
 
 void nnc_lock_for_changes( nnc_req * nnc )
 {
-	pthread_mutex_lock( &nnc->nn_lock );
+	NNC_LOCK_LINE( pthread_mutex_lock( &nnc->nn_lock ) );
 }
 
 void nnc_release_lock( nnc_req * nnc )

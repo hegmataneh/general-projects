@@ -9,7 +9,7 @@ typedef struct
 	IMMORTAL_LPCSTR local_sign_text;
 } internal_err_text_t;
 
-#define DEF_LCL_ERR(exp) { ""exp"" , "[" ""exp"" "]" }
+#define DEF_LCL_ERR( exp ) { ""exp"" , "[" ""exp"" "]" }
 
 #ifndef IN_DBG_H
 		

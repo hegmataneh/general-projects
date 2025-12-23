@@ -290,7 +290,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 
 	//gettimeofday( &mgr->last_access , NULL );
 	mgr->release_lock = true;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	mgr->release_lock = false;
 
 	ci_sgm_t * psgm_active = NULL; // s
@@ -476,7 +476,7 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 	if ( trv != seg_trv_FIFO_nolock )
 	{
 		//mgr->release_lock = true;
-		LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+		CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 		//mgr->release_lock = false;
 		while ( !mgr->filled_head )
 		{
@@ -537,7 +537,7 @@ _PRIVATE_FXN _CALLBACK_FXN status process_itm( buffer data , size_t len , pass_p
 	//}
 	if ( ( ( seg_item_cb )nested_callback )( data , len , mgr->nested_user_data , NULL ) == errOK )
 	{
-		if ( mgr->release_lock )
+		if ( mgr->release_lock ) // someone else in packet_mgr need to lock
 		{
 			if ( ( --mgr->release_lock_countdown ) < 1 )
 			{
@@ -560,7 +560,7 @@ void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb main_cb ,
 	if ( !mgr || trv != seg_trv_FIFO_nolock ) return;
 	mgr->nested_user_data = ud;
 	mgr->release_lock_countdown = release_lock_countdown;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	if ( !mgr->filled_head || mgr->filled_head == mgr->active || mgr->filled_head == mgr->filled_tail )
 	{
 		pthread_mutex_unlock( &mgr->lock );
@@ -640,7 +640,7 @@ void segmgr_try_process_filled_segment( ci_sgmgr_t * mgr , seg_item_cb main_cb ,
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 {
 	if ( !mgr || !s ) return errArg;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	/* Reset */
 	mgr->current_items -= s->itm_count;
@@ -742,7 +742,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( c
 {
 	bool bret = false;
 	//mgr->release_lock = true;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	//mgr->release_lock = false;
 
 	ci_sgm_t * sactive = mgr->active;
@@ -787,7 +787,7 @@ bool ci_sgm_peek_decide_active( ci_sgmgr_t * mgr , bool ( *lastone_callback )( c
 bool ci_sgm_is_empty( ci_sgmgr_t * mgr )
 {
 	bool bempty = true;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 
 	/* Check if there are any filled segments waiting */
 	if ( mgr->filled_head != NULL )
@@ -807,7 +807,7 @@ bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 {
 	bool bAnyDeletion = false;
 	//mgr->release_lock = true;
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	//mgr->release_lock = false;
 
 	ci_sgm_t * head = mgr->ring;
@@ -877,7 +877,7 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 	#ifdef ENABLE_USE_DBG_TAG
 		DBG_PT();
 	#endif
-	LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	/* free segments in ring */
 	if ( mgr->ring )
 	{

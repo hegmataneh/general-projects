@@ -477,7 +477,7 @@ _PUB_FXN status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom
 _PUB_FXN status pg_stk_store_at_stack( page_stack_t * mm , const void_p buf , size_t len )
 {
 	if ( !mm || !buf || !len ) return errArg;
-	LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
+	PG_STCK_LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
 	pg_stk_memfile_t * cur = mm->active_stack;
 	status d_error = errOK;
 	if ( !cur || cur->to_be_absolete )
@@ -656,7 +656,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 {
 	INIT_BREAKABLE_FXN();
 
-	LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
+	PG_STCK_LOCK_LINE( pthread_mutex_lock( &mm->ps_lock ) );
 	
 	void_p out_item;
 	size_t out_sz;

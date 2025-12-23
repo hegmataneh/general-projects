@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_DBG_PT
 #define Uses_token_ring_p_t
 #define Uses_INIT_BREAKABLE_FXN
@@ -108,7 +109,7 @@ _PRIVATE_FXN status distributor_subscribe_t( distributor_t * dis , size_t iGrp /
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	subscribers_t * psubscribers = NULL;
@@ -222,7 +223,7 @@ status distributor_publish_void( distributor_t * dis , pass_p data /*=NULL if su
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap ) // 
@@ -285,7 +286,7 @@ status distributor_publish_str( distributor_t * dis , LPCSTR src_msg , pass_p da
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -369,7 +370,7 @@ status distributor_publish_long( distributor_t * dis , long src_v , pass_p data 
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -454,7 +455,7 @@ status distributor_publish_double( distributor_t * dis , double src_v , pass_p d
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -538,7 +539,7 @@ status distributor_publish_long_double( distributor_t * dis , long src_i , doubl
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -621,7 +622,7 @@ status distributor_publish_x3long( distributor_t * dis , long src_i , long src_j
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -690,7 +691,7 @@ status distributor_publish_str_double( distributor_t * dis , LPCSTR src_str , do
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	if ( dis->pheap )
@@ -774,7 +775,7 @@ status distributor_publish_buffer_size( distributor_t * dis , buffer src_buf , s
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	status aggr_ret = errOK;
@@ -867,7 +868,7 @@ status distributor_publish_buffer_size_data( distributor_t * dis , buffer src_bu
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	status aggr_ret = errOK;
@@ -920,7 +921,7 @@ status distributor_publish_onedirectcall_voidp( distributor_t * dis , void_p ptr
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
@@ -959,7 +960,7 @@ status distributor_publish_voidp( distributor_t * dis , void_p ptr /*caller poin
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )
@@ -997,7 +998,7 @@ status distributor_publish_onedirectcall_3voidp( distributor_t * dis , void_p pt
 
 	if ( dis->pmtx )
 	{
-		pthread_mutex_lock( dis->pmtx );
+		PUB_SUB_LOCK_LINE( pthread_mutex_lock( dis->pmtx ) );
 	}
 
 	for ( size_t igrp = 0; igrp < dis->grps.count ; igrp++ )

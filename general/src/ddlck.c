@@ -7,9 +7,13 @@
 
 #ifdef ENABLE_USE_DBG_TAG
 
-_GLOBAL_VAR int __tu_global_counter = 0;
+_GLOBAL_VAR int __ddl_global_counter = 0;
+
+_GLOBAL_VAR ulong __ddl_call_seq_counter = 0;
 
 _GLOBAL_VAR _tmp_arr_type_ __lck_hit = {0};
+
+_GLOBAL_VAR ulong __lck_lines_hit[SEQ_TRACE_COUNTE] = {0};
 
 #endif
 

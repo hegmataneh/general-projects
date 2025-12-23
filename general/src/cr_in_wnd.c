@@ -1,3 +1,4 @@
+#define Uses_LOCK_LINE
 #define Uses_is_double_zero
 #define Uses_sqrt
 #define Uses_CALLOC_AR
@@ -47,7 +48,7 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 {
 	if ( !rm ) return;
 
-	pthread_mutex_lock( &rm->lock );
+	CR_WND_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
 
 	time_t tnow = time( NULL );
 
@@ -161,7 +162,7 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 double cr_in_wnd_get_bps( cr_in_wnd_t * rm )
 {
 	if ( !rm ) return 0.0;
-	pthread_mutex_lock( &rm->lock );
+	CR_WND_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
 	time_t tnow = time( NULL );
 	time_t gap = tnow - rm->last_time;
 	if ( gap >= rm->window_size )
@@ -177,7 +178,7 @@ double cr_in_wnd_get_bps( cr_in_wnd_t * rm )
 
 size_t cr_in_wnd_get_ordered_items( cr_in_wnd_t * rm , cr_wnd_slide * buffer_bytes )
 {
-	pthread_mutex_lock( &rm->lock );
+	CR_WND_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
 	if ( rm->last_idx == -1 || rm->filled_count < 1 )
 	{
 		pthread_mutex_unlock( &rm->lock );

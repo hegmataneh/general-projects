@@ -31,7 +31,7 @@ status vqueue_enque( HDLR Vqueue_t * pque , const void_p data , size_t size , vq
 {
 	WARNING( size );
 
-	LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
+	VQUEUE_LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
 
 	if ( pque->pos_writer + size + sizeof( size_t ) > pque->capacity )
 	{
@@ -57,7 +57,7 @@ status vqueue_enque( HDLR Vqueue_t * pque , const void_p data , size_t size , vq
 
 status vqueue_peek( HDLR Vqueue_t * pque , OUTx void_p * item , OUTx size_t * size )
 {
-	LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
+	VQUEUE_LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
 
 	if ( pque->pos_reader >= pque->pos_writer )
 	{
@@ -80,7 +80,7 @@ status vqueue_peek( HDLR Vqueue_t * pque , OUTx void_p * item , OUTx size_t * si
 
 status vqueue_deque( HDLR Vqueue_t * pque , OUTx void_p * item , OUTx size_t * size , bool * pemptied )
 {
-	LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
+	VQUEUE_LOCK_LINE( pthread_mutex_lock( &pque->lock ) );
 
 	if ( pque->pos_reader >= pque->pos_writer )
 	{
