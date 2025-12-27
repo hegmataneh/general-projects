@@ -258,7 +258,7 @@ status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_siz
 }
 
 // does not advance pointer. just copy
-status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_pos )
+status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t out_buf_sz , size_t block_sz_pos )
 {
 	// read size
 	uint16 size16;
@@ -274,7 +274,7 @@ status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_
 	}
 	block_sz_pos = advance_index( vc , block_sz_pos , BUF_SIZE_LEN );
 
-	if ( size16 > vc->buf_sz )
+	if ( size16 > vc->buf_sz || size16 > out_buf_sz )
 	{
 		return errOverflow; // corrupted
 	}

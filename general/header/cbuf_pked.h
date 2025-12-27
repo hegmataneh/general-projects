@@ -52,7 +52,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 // Blocking pop: waits if empty
 status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_size /*zero to no exp*/ , size_t * out_len , long timeout_sec /*=-1*/ , bool auto_checkgate );
 
-status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t block_sz_pos );
+status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t out_buf_sz , size_t block_sz_pos );
 
 int cbuf_pked_unreliable_sem_count( cbuf_pked_t * vc ); // donot rely on this number
 

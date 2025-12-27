@@ -403,9 +403,8 @@
 
 #define GROW_STEP 1
 
-#ifndef LOCK_LINE
+#ifndef ENABLE_LOCK_TRACING
 	#define LOCK_LINE( exp ) exp /*just do what exp say instead of ddlock*/
-
 
 	#define NO_LOCK_LINE( exp ) exp
 
@@ -424,7 +423,6 @@
 	#define VSTACK_LOCK_LINE( exp )		exp
 	#define BP_LOCK_LINE( exp )			exp
 	#define PKT_MGR_LOCK_LINE( exp )	exp
-
 
 #endif
 
