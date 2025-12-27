@@ -40,11 +40,13 @@ typedef struct /*__attribute__(( packed ))*/
 		{
 			bool isstack;
 			VStack stack;
+			char nonuse[ DEFAULT_SFS_BUF_SZ ];
 		};
 		struct
 		{
 			bool isnotstack_soisque;
 			Vqueue_t que;
+			char que_name[ DEFAULT_SFS_BUF_SZ ];
 		};
 	};
 } pg_stk_page_hdr_t; // wriable in file

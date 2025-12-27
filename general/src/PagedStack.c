@@ -186,7 +186,7 @@ _PRIVATE_FXN status pg_stk_open_create( const char * path , size_t mem_size , in
 }
 
 /* close memfile */
-_PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
+_PRIVATE_FXN void pg_stk_close( page_stack_t * mm , pg_stk_memfile_t * mf )
 {
 	if ( !mf ) return;
 	if ( mf->hdr->isstack )
@@ -196,6 +196,7 @@ _PRIVATE_FXN void pg_stk_close( pg_stk_memfile_t * mf )
 	else
 	{
 		vqueue_destroy( &mf->hdr->que );
+		dict_s_o_put( &mm->que_access , mf->hdr->que_name , NULL );
 	}
 	msync( mf->map , mf->memmap_size , MS_SYNC );
 	fsync( mf->fd );
@@ -544,9 +545,11 @@ _PUB_FXN status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , si
 			return d_error;
 		}
 
+		strncpy( mf->hdr->que_name , queue_name , sizeof( mf->hdr->que_name ) ); // keep name for closure manner
+
 		if ( ( d_error = dict_s_o_put( &mm->que_access , queue_name , mf ) ) )
 		{
-			pg_stk_close( mf );
+			pg_stk_close( mm , mf );
 			DAC( mf );
 			return d_error;
 		}
@@ -606,9 +609,11 @@ _PUB_FXN status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , si
 				return d_error;
 			}
 
+			strncpy( mf->hdr->que_name , queue_name , sizeof( mf->hdr->que_name ) ); // keep name for closure manner
+
 			if ( ( d_error = dict_s_o_put( &mm->que_access , queue_name , mf ) ) )
 			{
-				pg_stk_close( mf );
+				pg_stk_close( mm , mf );
 				DAC( mf );
 				return d_error;
 			}
@@ -681,7 +686,7 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 			pg_stk_persist_chain( mm );
 			if ( !remove( pmemfile->path ) ) // remove file
 			{
-				pg_stk_close( pmemfile ); // close memmap
+				pg_stk_close( mm , pmemfile ); // close memmap
 				if ( pmemfile == mm->active_stack ) // if current is absolete then null
 				{
 					mm->active_stack = NULL;
@@ -909,14 +914,14 @@ void pg_stk_shutdown( page_stack_t * mm )
 		pg_stk_memfile_t * pfile = NULL;
 		if ( mms_array_get_s( &mm->files , i , ( void ** )&pfile ) == errOK )
 		{
-			pg_stk_close( pfile );
+			pg_stk_close( mm , pfile );
 			if ( pfile == mm->active_stack )
 			{
 				mm->active_stack = NULL;
 			}
 		}
 	}
-	if ( mm->hot_stack_spare ) pg_stk_close( mm->hot_stack_spare );
+	if ( mm->hot_stack_spare ) pg_stk_close( mm , mm->hot_stack_spare );
 	mms_array_free( &mm->files );
 	( pthread_mutex_unlock( &mm->ps_lock ) );
 	pthread_mutex_destroy( &mm->ps_lock );
