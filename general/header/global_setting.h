@@ -7,8 +7,10 @@
 //#define Uses_StackTrace
 //#define __INC_StackTrace
 
-//#define ENABLE_LOCK_TRACING
-//#define Uses_LOCK_LINE
+//#define ENABLE_LOCK_TRACING /*always undef*/
+//#define Uses_LOCK_LINE /*always undef*/
+
+//#define ENABLE_LOCK_LOGGING /*always undef*/
 
 
 #define ENABLE_USE_DBG_TAG /*in some c file there is diagnostic var*/

@@ -13,7 +13,7 @@ _GLOBAL_VAR ulong __ddl_call_seq_counter = 0;
 
 _GLOBAL_VAR _tmp_arr_type_ __lck_hit = {0};
 
-_GLOBAL_VAR ulong __lck_lines_hit[SEQ_TRACE_COUNTE] = {0};
+_GLOBAL_VAR ulong __lck_lines_hit[SEQ_TRACE_COUNTE][3] = {0};
 
 #endif
 

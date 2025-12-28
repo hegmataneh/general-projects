@@ -60,6 +60,13 @@
 #endif
 
 #ifdef Uses_LOG
+	#define Uses_snprintf
+	#define Uses_mmap
+	#define Uses_memset
+	#define Uses_open
+	#define Uses_errno
+	#define Uses_write
+	#define Uses_memmap
 	#define Uses_bool
 #endif
 

@@ -423,6 +423,7 @@
 	#define VSTACK_LOCK_LINE( exp )		exp
 	#define BP_LOCK_LINE( exp )			exp
 	#define PKT_MGR_LOCK_LINE( exp )	exp
+	#define DEFRG_LOCK_LINE( exp )		exp
 
 #endif
 

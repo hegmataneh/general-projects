@@ -1,7 +1,6 @@
 ﻿#define _XOPEN_SOURCE 700
 
 #define Uses_LOCK_LINE
-#define Uses_MARK_LINE
 //#define Uses_STRDUP
 #define Uses_sleep
 #define Uses_pthread_kill
@@ -33,17 +32,10 @@ status nnc_begin_init_mode( nnc_req * nnc )
 	opts.flags = NCOPTION_SUPPRESS_BANNERS;
 	//opts.flags |= NCOPTION_SUPPRESS_BANNERS | NCOPTION_DRAIN_INPUT;
 
-#ifdef ENABLE_USE_DBG_TAG
-	MARK_LINE();
-#endif
 
 	//nnc->nc = notcurses_init( &opts , stdout );
 
 	nnc->nc = notcurses_core_init( &opts , stdout );
-
-#ifdef ENABLE_USE_DBG_TAG
-MARK_LINE();
-#endif
 
 	N_BREAK_IF( !nnc->nc , errCreation , 0 );
 	

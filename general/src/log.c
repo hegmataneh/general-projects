@@ -13,6 +13,26 @@ static const char * level_str[] = { "DEBUG", "INFO", "WARN", "ERROR" };
 // Initialize the logger (creates file or appends if exists)
 status log_init( const char * filename , bool bnew )
 {
+	
+#ifdef ENABLE_LOCK_LOGGING
+	int flags = O_RDWR;
+	flags |= O_CREAT;
+	int fd = open( "./log_lock.txt" , flags , 0644 );
+	if ( fd >= 0 )
+	{
+		__log_lock = mmap( NULL , ( ( size_t )128 * 1024 * 1024 ) , PROT_READ | PROT_WRITE , MAP_SHARED , fd , 0 );
+
+		off_t cur = lseek( fd , 0 , SEEK_END );
+		if ( ( size_t )cur < ( ( size_t )128 * 1024 * 1024 ) )
+		{
+			ftruncate( fd , ( __off_t )( ( size_t )128 * 1024 * 1024 ) );
+		}
+
+		memset( __log_lock , 0 , ( ( size_t )128 * 1024 * 1024 ) );
+	}
+#endif
+
+
 	log_file = fopen( filename , bnew ? "w" : "a" );
 	if ( !log_file )
 	{
@@ -59,5 +79,12 @@ void log_close( void )
 		log_file = NULL;
 	}
 }
+
+
+#ifdef ENABLE_LOCK_LOGGING
+void * __log_lock = NULL;
+int __log_lock_pos = 0;
+#endif
+
 
 #endif
