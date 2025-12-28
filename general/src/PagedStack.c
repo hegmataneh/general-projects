@@ -609,7 +609,7 @@ _PUB_FXN status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , si
 				return d_error;
 			}
 
-			strncpy( mf->hdr->que_name , queue_name , sizeof( mf->hdr->que_name ) ); // keep name for closure manner
+			strncpy( mf->hdr->que_name , queue_name , sizeof( mf->hdr->que_name ) - 1 ); // keep name for closure manner
 
 			if ( ( d_error = dict_s_o_put( &mm->que_access , queue_name , mf ) ) )
 			{
