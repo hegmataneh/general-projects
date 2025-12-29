@@ -1,3 +1,17 @@
+#ifdef Uses_pub_evt_cord_t
+	#define Uses_publish_event
+#endif
+
+#ifdef Uses_pub_evt_t
+	#define Uses_publish_event
+#endif
+
+#ifdef Uses_publish_event
+	#define Uses_sem_t
+	#define Uses_dyn_mms_arr
+	#define __INC_publish_event
+#endif
+
 #ifdef Uses_Vqueue_t
 	#define Uses_Vqueue
 #endif

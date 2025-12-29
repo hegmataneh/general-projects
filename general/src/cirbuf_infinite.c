@@ -874,9 +874,7 @@ bool segmgr_cleanup_idle( ci_sgmgr_t * mgr , time_t idle_seconds )
 void segmgr_destroy( ci_sgmgr_t * mgr )
 {
 	if ( !mgr ) return;
-	#ifdef ENABLE_USE_DBG_TAG
-		DBG_PT();
-	#endif
+	
 	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
 	/* free segments in ring */
 	if ( mgr->ring )
@@ -890,9 +888,7 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 		}
 		priv_ci_sgm_free( mgr->ring );
 	}
-	#ifdef ENABLE_USE_DBG_TAG
-		DBG_PT();
-	#endif
+	
 	mgr->ring = mgr->active = NULL;
 	/* free filled queue if any left (shouldn't be) */
 	//ci_sgm_t * q = mgr->filled_head;
@@ -903,9 +899,7 @@ void segmgr_destroy( ci_sgmgr_t * mgr )
 	//	/* But if ring was same segment, avoid double-free. */
 	//	q = n;
 	//}
-	#ifdef ENABLE_USE_DBG_TAG
-		DBG_PT();
-	#endif
+	
 	pthread_mutex_unlock( &mgr->lock );
 	pthread_mutex_destroy( &mgr->lock );
 	pthread_cond_destroy( &mgr->filled_cond );

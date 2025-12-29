@@ -168,3 +168,7 @@
 #ifdef __INC_instantaneousBps
 	#include <instantaneousBps.h>
 #endif
+
+#ifdef __INC_publish_event
+	#include <pub_evnt.h>
+#endif
