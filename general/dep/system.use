@@ -1,3 +1,7 @@
+#ifdef Uses_ceil
+	#define __INC_math
+#endif
+
 #ifdef Uses_sqrt
 	#define __INC_math
 #endif

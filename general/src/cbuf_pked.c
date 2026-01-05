@@ -105,6 +105,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 
 	if ( !buf_len )
 	{
+		//vc->err_in_cbuf_pked++;
 		return errGeneral;
 	}
 	if ( alloc_len > vc->buf_sz || buf_len > vc->buf_sz || buf_len > alloc_len ) return errGeneral; // too big
@@ -114,7 +115,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 
 	if ( space < need )
 	{
-		vc->err_full++;
+		vc->loss_in_cbuf_pked++;
 		return errGeneral; // buffer full
 	}
 
@@ -124,9 +125,7 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 	if ( tmp_head + BUF_SIZE_LEN <= vc->buf_sz )
 	{
 		memcpy( &vc->buf[ tmp_head ] , &alloc_len , BUF_SIZE_LEN );
-
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "(%zu,%d)" , tmp_head , ( int )BUF_SIZE_LEN );
-
 	}
 	else
 	{
@@ -134,10 +133,8 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 		size_t first = vc->buf_sz - tmp_head; // first part
 		memcpy( &vc->buf[ tmp_head ] , &alloc_len , first );
 		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )&alloc_len ) + first , BUF_SIZE_LEN - first );
-
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%zu,%d)" , tmp_head , ( int )first );
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%d,%d)" , ( int )0 , ( int )( BUF_SIZE_LEN - first ) );
-
 	}
 	if ( ring_addr ) *ring_addr = tmp_head;
 	tmp_head = advance_index( vc , tmp_head , BUF_SIZE_LEN );
@@ -146,7 +143,6 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 	if ( tmp_head + buf_len <= vc->buf_sz )
 	{
 		memcpy( &vc->buf[ tmp_head ] , buf , buf_len );
-
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "(%zu,%d)" , tmp_head , ( int )buf_len );
 	}
 	else
@@ -154,10 +150,8 @@ status cbuf_pked_push( cbuf_pked_t * vc , const buffer buf , size_t buf_len , si
 		size_t first = vc->buf_sz - tmp_head;
 		memcpy( &vc->buf[ tmp_head ] , buf , first );
 		memcpy( &vc->buf[ 0 ] , ( ( uint8 * )buf ) + first , buf_len - first );
-
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%zu,%d)" , tmp_head , ( int )first );
 		//last_pos += sprintf( ( char * )__file_map + last_pos , "((%d,%d)" , ( int )0 , ( int )( buf_len - first ) );
-
 	}
 	tmp_head = advance_index( vc , tmp_head , alloc_len );
 	vc->head = tmp_head;
@@ -229,6 +223,7 @@ status cbuf_pked_pop( cbuf_pked_t * vc , void * out_buf , size_t expectation_siz
 
 	if ( expectation_size && size16 != expectation_size )
 	{
+		//vc->err_in_cbuf_pked++;
 		vc->tail = advance_index( vc , vc->tail , size16 );
 		return errCorrupted;
 	}
@@ -276,6 +271,7 @@ status cbuf_pked_blindcopy( cbuf_pked_t * vc , void * out_buf , size_t out_buf_s
 
 	if ( size16 > vc->buf_sz || size16 > out_buf_sz )
 	{
+		//vc->err_in_cbuf_pked++;
 		return errOverflow; // corrupted
 	}
 

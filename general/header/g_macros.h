@@ -446,5 +446,6 @@
 
 	#define IGNORE_RESULT __attribute__((unused))
 
+	#define STACK_ALIGNED_CHKPT(persian_date) /*stack aligned to this point*/
 
 #endif
