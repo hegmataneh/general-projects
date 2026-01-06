@@ -930,3 +930,14 @@ void pg_stk_shutdown( page_stack_t * mm )
 	pthread_mutex_destroy( &mm->ps_lock );
 	MEMSET_ZERO_O( mm );
 }
+
+size_t pg_stk_get_page_occupied_MB( page_stack_t * mm )
+{
+	size_t sz = mm->files.count * MEMFILE_SIZE;
+	if ( mm->hot_stack_spare )
+	{
+		sz += MEMFILE_SIZE;
+	}
+	sz /= 1024 * 1024;
+	return sz;
+}

@@ -124,6 +124,7 @@ status pg_stk_init( page_stack_t * mm , LPCSTR base_dir , void_p custom_data );
 status pg_stk_store_at_stack( page_stack_t * mm , const void_p buf , size_t len );
 status pg_stk_store_at_queue( page_stack_t * mm , const void_p buf , size_t len , LPCSTR queue_name );
 status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data data_getter );
+size_t pg_stk_get_page_occupied_MB( page_stack_t * mm );
 void pg_stk_shutdown( page_stack_t * mm );
 _THREAD_FXN void_p cleanup_unused_memfile_proc( pass_p src_g );
 
