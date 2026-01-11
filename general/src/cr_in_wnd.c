@@ -10,16 +10,16 @@ status cr_in_wnd_init( cr_in_wnd_t * rm , size_t src_windows_size )
 	if ( !rm || !src_windows_size ) return errArg;
 
 	rm->window_size = src_windows_size;
-	rm->bytes = CALLOC_AR( rm->bytes , src_windows_size );
-	if ( !rm->bytes )
+	rm->Bytes = CALLOC_AR( rm->Bytes , src_windows_size );
+	if ( !rm->Bytes )
 	{
-		DAC( rm->bytes );
+		DAC( rm->Bytes );
 		return errMemoryLow;
 	}
 
 	rm->last_time = 0;        // no packets yet
 	rm->last_idx = -1; IMPORTANT
-	rm->total_pkt_sz = 0;
+	rm->total_pkt_sz_B = 0;
 	rm->filled_count = 0;
 	pthread_mutex_init( &rm->lock , NULL );
 	return errOK;
@@ -27,8 +27,8 @@ status cr_in_wnd_init( cr_in_wnd_t * rm , size_t src_windows_size )
 
 _PRIVATE_FXN void cr_in_wnd_clear_all( cr_in_wnd_t * rm )
 {
-	MEMSET_ZERO( rm->bytes , rm->window_size );
-	rm->total_pkt_sz = 0;
+	MEMSET_ZERO( rm->Bytes , rm->window_size );
+	rm->total_pkt_sz_B = 0;
 	rm->last_idx = -1; IMPORTANT
 	rm->last_time = 0;
 	rm->filled_count = 0;
@@ -39,12 +39,12 @@ void cr_in_wnd_free( cr_in_wnd_t * rm )
 	if ( !rm ) return;
 	cr_in_wnd_clear_all( rm );
 	pthread_mutex_destroy( &rm->lock );
-	DAC( rm->bytes );
+	DAC( rm->Bytes );
 }
 
 /* Add packet of given size (bytes). This updates internal slots,
    clears intermediate seconds when time advanced, keeps running total. */
-void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
+void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size_B )
 {
 	if ( !rm ) return;
 
@@ -57,9 +57,9 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 		/* first packet ever */
 		int idx = ( int )( tnow % ( long )rm->window_size );
 		cr_in_wnd_clear_all( rm ); /* ensure clean */
-		rm->bytes[ idx ].byte = packet_size;
-		rm->bytes[ idx ].sec = tnow;
-		rm->total_pkt_sz = packet_size;
+		rm->Bytes[ idx ].Byte = packet_size_B;
+		rm->Bytes[ idx ].sec = tnow;
+		rm->total_pkt_sz_B = packet_size_B;
 		rm->last_idx = idx;
 		rm->last_time = tnow;
 		rm->filled_count = 1;
@@ -71,8 +71,8 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 	{
 		/* still same second: just accumulate */
 		int idx = rm->last_idx;
-		rm->bytes[ idx ].byte += packet_size;
-		rm->total_pkt_sz += packet_size;
+		rm->Bytes[ idx ].Byte += packet_size_B;
+		rm->total_pkt_sz_B += packet_size_B;
 		pthread_mutex_unlock( &rm->lock );
 		return;
 	}
@@ -85,9 +85,9 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 		/* all previous data expired; whole window becomes zeros */
 		cr_in_wnd_clear_all( rm );
 		int idx = ( int )( tnow % (long)rm->window_size );
-		rm->bytes[ idx ].byte = packet_size;
-		rm->bytes[ idx ].sec = tnow;
-		rm->total_pkt_sz = packet_size;
+		rm->Bytes[ idx ].Byte = packet_size_B;
+		rm->Bytes[ idx ].sec = tnow;
+		rm->total_pkt_sz_B = packet_size_B;
 		rm->last_idx = idx;
 		rm->last_time = tnow;
 		rm->filled_count = 1;
@@ -100,18 +100,18 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 	{
 		int idx = ( int )( ( rm->last_idx + 1 ) % (long)rm->window_size );
 		/* subtract old bytes from total (they may still hold old data) */
-		rm->total_pkt_sz -= rm->bytes[ idx ].byte;
+		rm->total_pkt_sz_B -= rm->Bytes[ idx ].Byte;
 		
 		/* If slot was active, decrease filled */
-		if ( rm->bytes[ idx ].sec != 0 &&
-			( rm->last_time - rm->bytes[ idx ].sec < rm->window_size ) )
+		if ( rm->Bytes[ idx ].sec != 0 &&
+			( rm->last_time - rm->Bytes[ idx ].sec < rm->window_size ) )
 		{
 			rm->filled_count--;
 		}
 		
 		/* reset slot */
-		rm->bytes[ idx ].byte = 0;
-		rm->bytes[ idx ].sec = rm->last_time + k; /* assign exact timestamp for that slot */
+		rm->Bytes[ idx ].Byte = 0;
+		rm->Bytes[ idx ].sec = rm->last_time + k; /* assign exact timestamp for that slot */
 		
 		/* this newly created second is active */
 		rm->filled_count++;
@@ -121,8 +121,8 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 	}
 
 	/* now last_idx corresponds to 'now' */
-	rm->bytes[ rm->last_idx ].byte += packet_size;
-	rm->total_pkt_sz += packet_size;
+	rm->Bytes[ rm->last_idx ].Byte += packet_size_B;
+	rm->total_pkt_sz_B += packet_size_B;
 	rm->last_time = tnow;
 	pthread_mutex_unlock( &rm->lock );
 }
@@ -159,7 +159,7 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size )
 
 /* Returns bytes per second averaged over the full configured window.
    If you prefer to average only over non-empty seconds, modify accordingly. */
-double cr_in_wnd_get_bps( cr_in_wnd_t * rm )
+double cr_in_wnd_get_Bps( cr_in_wnd_t * rm )
 {
 	if ( !rm ) return 0.0;
 	CR_WND_LOCK_LINE( pthread_mutex_lock( &rm->lock ) );
@@ -171,7 +171,7 @@ double cr_in_wnd_get_bps( cr_in_wnd_t * rm )
 		cr_in_wnd_clear_all( rm );
 	}
 
-	double d = ( double )rm->total_pkt_sz / ( double )rm->window_size;
+	double d = ( double )rm->total_pkt_sz_B / ( double )rm->window_size;
 	pthread_mutex_unlock( &rm->lock );
 	return d;
 }
@@ -186,8 +186,8 @@ size_t cr_in_wnd_get_ordered_items( cr_in_wnd_t * rm , cr_wnd_slide * buffer_byt
 	}
 
 	size_t idx = ( ( size_t )rm->last_idx - rm->filled_count + rm->window_size ) % rm->window_size;
-	memcpy( buffer_bytes , &rm->bytes[ idx ] , sizeof( cr_wnd_slide ) * ( rm->window_size - idx ) );
-	memcpy( buffer_bytes + ( rm->window_size - idx ) , rm->bytes , sizeof( cr_wnd_slide ) * ( idx ) );
+	memcpy( buffer_bytes , &rm->Bytes[ idx ] , sizeof( cr_wnd_slide ) * ( rm->window_size - idx ) );
+	memcpy( buffer_bytes + ( rm->window_size - idx ) , rm->Bytes , sizeof( cr_wnd_slide ) * ( idx ) );
 	size_t ret = rm->filled_count;
 	pthread_mutex_unlock( &rm->lock );
 	return ret;
@@ -214,8 +214,8 @@ double cr_in_wnd_calc_pearson_correlation( cr_in_wnd_t * rw1 , cr_in_wnd_t * rw2
 	// 1) mean
 	for ( size_t i = 0 ; i < rw1->window_size ; i++ )
 	{
-		mean_1 += ( double )buf1[ i ].byte;
-		mean_2 += ( double )buf2[ i ].byte;
+		mean_1 += ( double )buf1[ i ].Byte;
+		mean_2 += ( double )buf2[ i ].Byte;
 	}
 	mean_1 /= ( double )rw1->window_size;
 	mean_2 /= ( double )rw2->window_size;
@@ -227,8 +227,8 @@ double cr_in_wnd_calc_pearson_correlation( cr_in_wnd_t * rw1 , cr_in_wnd_t * rw2
 
 	for ( size_t i = 0 ; i < rw1->window_size ; i++ )
 	{
-		double dx = ( double )buf1[ i ].byte - mean_1;
-		double dy = ( double )buf2[ i ].byte - mean_2;
+		double dx = ( double )buf1[ i ].Byte - mean_1;
+		double dy = ( double )buf2[ i ].Byte - mean_2;
 
 		num += dx * dy;
 		den1 += dx * dx;
@@ -244,3 +244,78 @@ double cr_in_wnd_calc_pearson_correlation( cr_in_wnd_t * rw1 , cr_in_wnd_t * rw2
 
 	return num / sqrt( den1 * den2 );
 }
+
+/*
+ * Compute ranks for an array.
+ * Ties are handled by assigning the average rank.
+ */
+//static void compute_ranks(const double *x, double *rank, int n)
+//{
+//    int i, j;
+//    int *used = calloc(n, sizeof(int));
+//
+//    for (i = 0; i < n; i++) {
+//        if (used[i])
+//            continue;
+//
+//        int count = 1;
+//        double sum_rank = i + 1;  // ranks are 1-based
+//        used[i] = 1;
+//
+//        for (j = i + 1; j < n; j++) {
+//            if (x[j] == x[i]) {
+//                used[j] = 1;
+//                count++;
+//                sum_rank += j + 1;
+//            }
+//        }
+//
+//        double avg_rank = sum_rank / count;
+//
+//        rank[i] = avg_rank;
+//        for (j = i + 1; j < n; j++) {
+//            if (x[j] == x[i]) {
+//                rank[j] = avg_rank;
+//            }
+//        }
+//    }
+//
+//    free(used);
+//}
+
+/*
+ * Spearman rank correlation coefficient
+ */
+//double spearman_correlation(const double *x, const double *y, int n)
+//{
+//    double *rx = malloc(n * sizeof(double));
+//    double *ry = malloc(n * sizeof(double));
+//
+//    if (!rx || !ry)
+//        return NAN;
+//
+//    compute_ranks(x, rx, n);
+//    compute_ranks(y, ry, n);
+//
+//    double mean_rx = 0.0, mean_ry = 0.0;
+//    for (int i = 0; i < n; i++) {
+//        mean_rx += rx[i];
+//        mean_ry += ry[i];
+//    }
+//    mean_rx /= n;
+//    mean_ry /= n;
+//
+//    double num = 0.0, den_x = 0.0, den_y = 0.0;
+//    for (int i = 0; i < n; i++) {
+//        double dx = rx[i] - mean_rx;
+//        double dy = ry[i] - mean_ry;
+//        num   += dx * dy;
+//        den_x += dx * dx;
+//        den_y += dy * dy;
+//    }
+//
+//    free(rx);
+//    free(ry);
+//
+//    return num / sqrt(den_x * den_y);
+//}

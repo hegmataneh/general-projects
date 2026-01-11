@@ -773,6 +773,10 @@ _PUB_FXN status pg_stk_try_to_pop_latest( page_stack_t * mm , ps_callback_data d
 							bcontinue_heap = true;
 							break;
 						}
+						case pgstk_not_send__continue_sending_delayed2UncongestPort:
+						{
+							BREAK( errPortOccupied , 0 );
+						}
 						case pgstk_not_send__continue_sending_onTooManyAttempt: // this segment has Head-of-line blocking
 						{
 							BREAK( errTooManyAttempt , 0 );

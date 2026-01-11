@@ -30,7 +30,7 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 	void format_elapsed_time_with_millis( struct timeval start , struct timeval end , LPSTR buffer , size_t buf_size , int type /*0 dd:hh:mm:ss:ms , 1 ss.ms*/ );
 #endif
 #if defined Uses_timespec || !defined __COMPILING
-	//long long timespec_diff_nsec( struct timespec * start , struct timespec * end ); // difference in nanoseconds
+	long long timespec_diff_nsec( struct timespec * start , struct timespec * end ); // difference in nanoseconds
 	double timespec_diff_ms( struct timespec * start , struct timespec * end ); // difference in milliseconds
 	//double timespec_diff_sec( struct timespec * start , struct timespec * end ); // difference in seconds
 	//struct timespec timespec_sub( struct timespec start , struct timespec end );

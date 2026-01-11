@@ -68,6 +68,7 @@ enum
 	errMapped = ERR_NEXT_VALUE(), /*just use for its name purpose*/
 	errDoneAlready = ERR_NEXT_VALUE(),
 	errButContinue = ERR_NEXT_VALUE(),
+	errPortOccupied = ERR_NEXT_VALUE(),
 
 	// ADD extra error here
 

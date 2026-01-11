@@ -421,11 +421,11 @@ void format_elapsed_time( time_t start , time_t end , LPSTR  buffer , size_t buf
 }
 
 //// difference in nanoseconds
-//long long timespec_diff_nsec( struct timespec * start , struct timespec * end )
-//{
-//	return ( long long )( end->tv_sec - start->tv_sec ) * 1000000000LL
-//		+ ( end->tv_nsec - start->tv_nsec );
-//}
+long long timespec_diff_nsec( struct timespec * start , struct timespec * end )
+{
+	return ( long long )( end->tv_sec - start->tv_sec ) * 1000000000LL
+		+ ( end->tv_nsec - start->tv_nsec );
+}
 
 // difference in milliseconds
 double timespec_diff_ms( struct timespec * start , struct timespec * end )

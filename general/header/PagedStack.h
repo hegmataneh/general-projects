@@ -109,6 +109,7 @@ typedef enum
 	pgstk_not_send__stop_sending_delayedMemmap ,
 	pgstk_not_send__continue_sending ,
 	pgstk_not_send__continue_sending_onTooManyAttempt ,
+	pgstk_not_send__continue_sending_delayed2UncongestPort ,
 	pgstk_not_send__not_any_peer , /*not any tcp out so donot fetch memmap files items*/
 	
 	pgstk_sended__continue_sending ,
