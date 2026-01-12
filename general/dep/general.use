@@ -1,3 +1,11 @@
+#ifdef Uses_alive_t
+	#define Uses_alive
+#endif
+
+#ifdef Uses_alive
+	#define __INC_alive
+#endif
+
 #ifdef Uses_pub_evt_cord_t
 	#define Uses_publish_event
 #endif

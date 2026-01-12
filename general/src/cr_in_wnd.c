@@ -99,8 +99,16 @@ void cr_in_wnd_add_packet( cr_in_wnd_t * rm , size_t packet_size_B )
 	for ( time_t k = 1; k <= gap; ++k )
 	{
 		int idx = ( int )( ( rm->last_idx + 1 ) % (long)rm->window_size );
-		/* subtract old bytes from total (they may still hold old data) */
-		rm->total_pkt_sz_B -= rm->Bytes[ idx ].Byte;
+		
+		if ( rm->total_pkt_sz_B >= rm->Bytes[ idx ].Byte )
+		{
+			/* subtract old bytes from total (they may still hold old data) */
+			rm->total_pkt_sz_B -= rm->Bytes[ idx ].Byte;
+		}
+		else
+		{
+			rm->total_pkt_sz_B = 0;
+		}
 		
 		/* If slot was active, decrease filled */
 		if ( rm->Bytes[ idx ].sec != 0 &&

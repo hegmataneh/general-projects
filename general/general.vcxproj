@@ -86,6 +86,7 @@
     <ExtensionsToDeleteOnClean>*.h;*.c;*.dep;*.inc;*.use;$(ExtensionsToDeleteOnClean)</ExtensionsToDeleteOnClean>
   </PropertyGroup>
   <ItemGroup>
+    <ClCompile Include="src\alive.c" />
     <ClCompile Include="src\cbuf_pked.c" />
     <ClCompile Include="src\cirbuf_infinite.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
@@ -145,6 +146,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dep\general.h" />
+    <ClInclude Include="header\alive.h" />
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
     <ClInclude Include="header\cr_in_wnd.h" />

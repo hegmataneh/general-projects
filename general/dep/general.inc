@@ -172,3 +172,7 @@
 #ifdef __INC_publish_event
 	#include <pub_evnt.h>
 #endif
+
+#ifdef __INC_alive
+	#include <alive.h>
+#endif
