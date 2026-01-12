@@ -75,6 +75,22 @@ float cbuf_m_mean_all( const cbuf_metr * buf )
 	return ( float )sum / ( float )buf->filled;
 }
 
+uint64 cbuf_m_max( const cbuf_metr * buf )
+{
+	if ( !buf || !buf->samples || buf->filled == 0 ) return 0;
+
+	uint64 maxx = 0;
+	for ( size_t i = 0; i < buf->filled; ++i )
+	{
+		size_t idx = ( buf->head + buf->capacity - buf->filled + i ) % buf->capacity; // The most recent item is at head - 1 . The oldest item is at : head - filled
+		if ( buf->samples[ idx ] > maxx )
+		{
+			maxx = buf->samples[ idx ];
+		}
+	}
+	return maxx;
+}
+
 int cbuf_m_regression_slope_all( const cbuf_metr * buf )
 {
 	if ( !buf || !buf->samples || buf->filled < 2 ) return 0;

@@ -30,6 +30,8 @@ uint64 cbuf_m_sum_all( const cbuf_metr * buf );
 // Compute mean of all stored samples
 float cbuf_m_mean_all( const cbuf_metr * buf );
 
+uint64 cbuf_m_max( const cbuf_metr * buf );
+
 int cbuf_m_regression_slope_all( const cbuf_metr * buf );
 
 #endif
