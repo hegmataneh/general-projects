@@ -69,6 +69,8 @@ enum
 	errDoneAlready = ERR_NEXT_VALUE(),
 	errButContinue = ERR_NEXT_VALUE(),
 	errPortOccupied = ERR_NEXT_VALUE(),
+	errInvalidData = ERR_NEXT_VALUE(),
+	errSkip = ERR_NEXT_VALUE(),
 
 	// ADD extra error here
 

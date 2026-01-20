@@ -59,10 +59,11 @@ typedef struct cirbuf_inf_segment
 	//Boolean filled;         /* segment is filled and ready for consumers */
 	Boolean in_filled_queue;/* whether pushed to filled queue */
 
+	time_t first_used;
 	time_t last_used;
 } ci_sgm_t;
 
-typedef status (*seg_item_cb)(buffer data, size_t len, pass_p ud, void * nested_callback /*sometime wrapper intervened at the middle*/ );
+typedef status (*seg_item_cb)(buffer data, size_t len, pass_p ud, void * nested_callback /*or any type pointer*/ /*sometime wrapper intervened at the middle*/ );
 
 /* Manager struct */
 typedef struct cirbuf_inf_sgmgr
@@ -127,8 +128,11 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 void segmgr_destroy( ci_sgmgr_t * mgr );
 
 ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv trv ); // pop filled segment
-status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ , size_t strides , e_direction dir , seg_item_cb main_cb ); // iterate through items
+status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bool try_all /*false -> until first erro , true->try them all*/ , size_t strides ,
+	e_direction dir , void * main_cb ); // iterate through items
 status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s ); // finally back filled segment to available segment
+
+status ci_sgm_get_oldest_maintained_segment( ci_sgmgr_t * mgr , time_t * ptime );
 
 /// <summary>
 /// return errNoCountinue if you want break loop

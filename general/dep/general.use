@@ -50,10 +50,11 @@
 #endif
 
 #ifdef Uses_instantaneousBps
-	#define Uses_pthread_mutex_t
+	#define Uses_timespec
+	//#define Uses_pthread_mutex_t
 	#define Uses_uint64_t
 	#define Uses_bool
-	#define Uses_time_t
+	//#define Uses_time_t
 	#define __INC_instantaneousBps
 #endif
 

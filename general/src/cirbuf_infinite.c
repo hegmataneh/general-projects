@@ -41,6 +41,7 @@ _PRIVATE_FXN status priv_ci_sgm_create( ci_sgm_t ** psgm , size_t buf_capacity ,
 	( *psgm )->active_lock = False;
 	//( *psgm )->filled = False;
 	( *psgm )->in_filled_queue = False;
+	//( *psgm )->first_used = time( NULL );
 
 	return errOK;
 }
@@ -418,6 +419,7 @@ status segmgr_append( ci_sgmgr_t * mgr , const pass_p data , size_t len , bool *
 	psgm_active->sizes[ psgm_active->itm_count ] = len;
 	psgm_active->itm_count++;
 	psgm_active->buf_used += len;
+	if ( !psgm_active->first_used ) psgm_active->first_used = time( NULL );
 	psgm_active->last_used = time( NULL );
 
 	/* Update manager stats */
@@ -515,6 +517,21 @@ ci_sgm_t * segmgr_pop_filled_segment( ci_sgmgr_t * mgr , Boolean block , seg_trv
 		pthread_mutex_unlock( &mgr->lock );
 	}
 	return s;
+}
+
+status ci_sgm_get_oldest_maintained_segment( ci_sgmgr_t * mgr , time_t * ptime )
+{
+	CIRBUF_INF_LOCK_LINE( pthread_mutex_lock( &mgr->lock ) );
+	if ( !mgr->filled_head )
+	{
+		pthread_mutex_unlock( &mgr->lock );
+		return errEmpty;
+	}
+
+	if ( ptime ) *ptime = mgr->filled_head->first_used;
+
+	pthread_mutex_unlock( &mgr->lock );
+	return errOK;
 }
 
 #ifdef ENABLE_USE_DBG_TAG
@@ -682,7 +699,7 @@ status ci_sgm_mark_empty( ci_sgmgr_t * mgr , ci_sgm_t * s )
 
 /* Optional utility: iterate items sequentially in a segment with a callback */
 status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bool try_all/*false -> until first erro , true->try them all*/ ,
-	size_t strides , e_direction dir , seg_item_cb main_cb )
+	size_t strides , e_direction dir , void * main_cb )
 {
 	if ( !s || !wrapper_cb || strides < 1 ) return errArg;
 	if ( !s->itm_count ) return errOK;
@@ -690,6 +707,8 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bo
 	buffer ptr;
 	size_t len;
 	status tmp_ret;
+	size_t skip_n;
+	size_t prev_stride = strides;
 
 	if ( dir == head_2_tail )
 	{
@@ -698,6 +717,28 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bo
 			ptr = s->buf + s->offsets[ i ];
 			len = s->sizes[ i ];
 			tmp_ret = wrapper_cb( ptr , len , ud , main_cb );
+			switch ( tmp_ret )
+			{
+				case errSkip:
+				{
+					skip_n = ( *( size_t * )main_cb );
+					i += skip_n; // skip n item
+					if ( strides >= skip_n ) // if skiped then no stride anymore
+					{
+						strides -= skip_n;
+					}
+					else
+					{
+						strides = 0;
+					}
+					break;
+				}
+				default: // if not skiped then reset stride
+				{
+					strides = prev_stride;
+					break;
+				}
+			}
 			if ( try_all )
 			{
 				if ( tmp_ret != errOK ) totally = tmp_ret;
@@ -715,6 +756,28 @@ status ci_sgm_iter_items( ci_sgm_t * s , seg_item_cb wrapper_cb , pass_p ud , bo
 			ptr = s->buf + s->offsets[ i ];
 			len = s->sizes[ i ];
 			tmp_ret = wrapper_cb( ptr , len , ud , main_cb );
+			switch ( tmp_ret )
+			{
+				case errSkip:
+				{
+					skip_n = ( *( size_t * )main_cb );
+					i -= ( int64 )skip_n; // skip n item
+					if ( strides >= skip_n ) // if skiped then no stride anymore
+					{
+						strides -= skip_n;
+					}
+					else
+					{
+						strides = 0;
+					}
+					break;
+				}
+				default: // if not skiped then reset stride
+				{
+					strides = prev_stride;
+					break;
+				}
+			}
 			if ( try_all )
 			{
 				if ( tmp_ret != errOK ) totally = tmp_ret;
