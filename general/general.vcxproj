@@ -105,11 +105,16 @@
     <ClCompile Include="src\json.c" />
     <ClCompile Include="src\log.c" />
     <ClCompile Include="src\minHeap.c" />
-    <ClCompile Include="src\nncursor.c" />
+    <ClCompile Include="src\nncursor.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="src\PagedStack.c" />
     <ClCompile Include="src\pub_evnt.c" />
     <ClCompile Include="src\pub_sub.c" />
     <ClCompile Include="src\dyn_mem_mv_sf_arr.c" />
+    <ClCompile Include="src\socket.c" />
+    <ClCompile Include="src\SSL.c" />
     <ClCompile Include="src\StackTrace.c" />
     <ClCompile Include="src\str.c" />
     <ClCompile Include="src\TokenRing_p.c" />
@@ -156,6 +161,8 @@
     <ClInclude Include="header\instantaneousBps.h" />
     <ClInclude Include="header\log.h" />
     <ClInclude Include="header\pub_evnt.h" />
+    <ClInclude Include="header\socket.h" />
+    <ClInclude Include="header\SSL.h" />
     <ClInclude Include="header\Vqueue.h" />
     <ClInclude Include="header\StackTrace.h" />
     <ClInclude Include="header\z___cirbuf_lockfree.h" />

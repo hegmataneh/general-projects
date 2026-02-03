@@ -1,3 +1,25 @@
+#ifdef Uses_DETAILED_IMMORTAL_ERR_STR
+	#define Uses_ERROR_SECTION
+#endif
+
+#ifdef Uses_tcp_h_t
+	#define Uses_socket_handle
+#endif
+
+#ifdef Uses_socket_handle
+	#define Uses_SSL_h_t
+	#define __INC_socket
+#endif
+
+#ifdef Uses_SSL_h_t
+	#define Uses_SSL_handle
+#endif
+
+#ifdef Uses_SSL_handle
+	#define Uses_SSL
+	#define __INC_SSL
+#endif
+
 #ifdef Uses_alive_t
 	#define Uses_alive
 #endif

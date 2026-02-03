@@ -1,3 +1,4 @@
+
 #ifdef __INC_stddef
 	#include <stddef.h>
 #endif
@@ -173,4 +174,13 @@
 
 #ifdef __INC_err
 	 #include <err.h>
+#endif
+
+#ifdef _INC_openssl
+	#include <openssl/ssl.h>
+	#include <openssl/err.h>
+#endif
+
+#ifdef __INC_sys_file
+	 #include <sys/file.h>
 #endif

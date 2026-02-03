@@ -1,3 +1,28 @@
+#ifdef Uses_flock
+	#define __INC_fcntl
+	#define __INC_errno
+	#define __INC_unistd
+	#define __INC_sys_file
+#endif
+
+#ifdef Uses_IPPROTO_TCP
+	#define __INC_sys_socket
+	#define __INC_netinet
+	#define __INC_netinet_ip
+#endif
+
+#ifdef Uses_poll
+	#define __INC_poll
+#endif
+
+#ifdef Uses_recv
+	#define __INC_sys_socket
+#endif
+
+#ifdef Uses_SSL
+	#define _INC_openssl
+#endif
+
 #ifdef Uses_ceil
 	#define __INC_math
 #endif

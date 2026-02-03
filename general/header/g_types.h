@@ -40,13 +40,26 @@ typedef char * LPSTR;			/*in ubuntu gcc -> 8 bytes*/
 typedef const char * LPCSTR;	/*in ubuntu gcc -> 8 bytes*/ // keep this style
 
 
-typedef LPSTR  INNER_STR; /*used inside local function and it must be freed at the end*/
-typedef LPSTR  PASSED_STR; /*string that passed inside function and just could be read not freed atall*/
+typedef LPSTR  INNER_STR;		/*used inside local function and it must be freed at the end*/
+typedef LPSTR  PASSED_STR;		/*string that passed inside function and just could be read not freed atall*/
 
-typedef LPCSTR  INNER_CSTR; /*used inside local function and it must be freed at the end*/
-typedef LPCSTR  PASSED_CSTR; /*string that passed inside function and just could be read not freed atall*/
+typedef LPCSTR  INNER_CSTR;		/*used inside local function and it must be freed at the end*/
+typedef LPCSTR  PASSED_CSTR;	/*string that passed inside function and just could be read not freed atall*/
 
 typedef LPCSTR  IMMORTAL_LPCSTR; /*string that passed and should not free atall*/
+
+#define NESTED_BRIEF_ERR_LVL 5
+typedef IMMORTAL_LPCSTR  Brief_Err_Ar[NESTED_BRIEF_ERR_LVL]; // determenistic error string and in compile time
+typedef Brief_Err_Ar  Brief_Err;
+
+
+typedef LPSTR  ExternalErrBuf;	/*use in kernel object when we want to use outsider buffer to store error msg*/
+
+#define DEF_SYSERR_BUF_SZ 256 /*at least this size should be prodided to store system error strings*/
+
+typedef char STANDARD_ERROR_BUFFER[DEF_SYSERR_BUF_SZ];
+typedef STANDARD_ERROR_BUFFER   Detail_ErrBuf; /*size-aware error buffer*/
+typedef Detail_ErrBuf * DtsErrBuf; /*nullable, determenistic_sz*/
 
 //typedef LPCSTR LPCTSTR;		/*in ubuntu gcc -> 8 bytes*/
 //typedef LPSTR LPTSTR;			/*in ubuntu gcc -> 8 bytes*/
@@ -91,7 +104,7 @@ typedef int sockfd;
 
 //-------------------------------------------------------------------------
 // hamidi, 850529: az anjayi keh short budane status baese beh vojud amadane padding bytes dar class-ha mishavad va in khod baese dastresie nadorost beh virtual table-haye class-ha va dar natijeh exception beh khatere seda zadeh shodane pointer-haye nadorost migardad, status ra long ta'rif mikonim.
-typedef long status;
+typedef long status; /*14041108 . I have often assumed that zero corresponds to no errors, so don't change that assumption*/
 
 // for when a char * is treated as a string, usually null terminated
 // variables of this type are not d_valid to be null

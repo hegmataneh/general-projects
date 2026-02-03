@@ -324,7 +324,7 @@ _PRIVATE_FXN int pg_stk_persist_chain( page_stack_t * mm )
 }
 
 /* load chain from metadata file (if present). For simplicity we'll ignore validation errors and treat as best-effort. */
-_PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * notif )
+_PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , Brief_Err * imortalErrStr )
 {
 	INIT_BREAKABLE_FXN();
 
@@ -349,7 +349,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * not
 			*ppfile = mf;
 		}
 	}
-	KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , notif );
+	KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , imortalErrStr , true );
 
 	if ( mm->files.count > 1 )
 	{
@@ -360,7 +360,7 @@ _PRIVATE_FXN status pg_stk_load_chain( page_stack_t * mm , IMMORTAL_LPCSTR * not
 	BEGIN_RET
 	case 1:
 	{
-		KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , notif );
+		KERNEL_CALL_NORET( fclose( f ) == EOF , "fclose()" , imortalErrStr , true );
 	}
 	N_END_RET
 }

@@ -16,7 +16,9 @@ _GLOBAL_VAR internal_err_text_t __local_err_strs[ _internal_err_count ] =
 	DEF_LCL_ERR( "errBind" )		,DEF_LCL_ERR( "errsockopt" )		,DEF_LCL_ERR( "errListen" )			,DEF_LCL_ERR( "errSelect" ),
 	DEF_LCL_ERR( "errAccept" )		,DEF_LCL_ERR( "errNoConnection" )	,DEF_LCL_ERR( "errConnect" )		,DEF_LCL_ERR( "errOpen" ),
 	DEF_LCL_ERR( "errACK" )			,DEF_LCL_ERR( "errNoCountinue" )	,DEF_LCL_ERR( "errMapped" )			,DEF_LCL_ERR( "errDoneAlready" ),
-	DEF_LCL_ERR( "errButContinue" )	,DEF_LCL_ERR( "errPortOccupied" )	,DEF_LCL_ERR( "errInvalidData" )	,DEF_LCL_ERR( "errSkip" )
+	DEF_LCL_ERR( "errButContinue" )	,DEF_LCL_ERR( "errPortOccupied" )	,DEF_LCL_ERR( "errInvalidData" )	,DEF_LCL_ERR( "errSkip" ),
+	DEF_LCL_ERR( "errState" )		,DEF_LCL_ERR( "errFault" )			,DEF_LCL_ERR( "errFailure" )		,DEF_LCL_ERR( "errUsrLvl" ),
+	DEF_LCL_ERR( "errOSLvl" )		,DEF_LCL_ERR( "errNotImplemented" )
 };
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//

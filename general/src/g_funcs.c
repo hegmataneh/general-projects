@@ -10,6 +10,7 @@
 		for number of errors anymore
 */
 
+#define Uses_flock
 #define Uses_floor
 #define Uses_tcp_info
 #define Uses_gettimeofday
@@ -158,17 +159,17 @@ LPCSTR __snprintf( LPSTR  msg_holder , size_t size_of_msg_holder , LPCSTR format
 	return msg_holder;
 }
 
-void _close_socket( sockfd * socket_id , IMMORTAL_LPCSTR * notif )
+void _close_socket( sockfd * socket_id , Brief_Err * imortalErrStr )
 {
 	if ( *socket_id > invalid_fd )
 	{
-		KERNEL_CALL_NORET( shutdown( *socket_id , SHUT_RDWR ) == -1 , "shutdown()" , notif ); // Use shutdown() before close() to send a clean FIN.
-		KERNEL_CALL_NORET( close( *socket_id ) == -1 , "close()" , notif );
+		KERNEL_CALL_NORET( shutdown( *socket_id , SHUT_RDWR ) == -1 , "shutdown()" , imortalErrStr , true ); // Use shutdown() before close() to send a clean FIN.
+		KERNEL_CALL_NORET( close( *socket_id ) == -1 , "close()" , imortalErrStr , true );
 		*socket_id = invalid_fd;
 	}
 }
 
-LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ , IMMORTAL_LPCSTR * notif )
+LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ , Brief_Err * imortalErrStr )
 {
 	FILE * file = fopen( path , "r" );
 	if ( file == NULL )
@@ -184,7 +185,7 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ , IMMORTAL_LPCSTR * 
 	if ( buf == NULL )
 	{
 		fprintf( stderr , "Unable to allocate memory for file" );
-		KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , notif );
+		KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , imortalErrStr , true );
 		return NULL;
 	}
 
@@ -193,7 +194,7 @@ LPCSTR read_file( LPCSTR path , LPSTR  pInBuffer /*= NULL*/ , IMMORTAL_LPCSTR * 
 	#pragma GCC diagnostic pop
 	buf[ len ] = EOS;
 
-	KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , notif );
+	KERNEL_CALL_NORET( fclose( file ) == EOF , "fclose()" , imortalErrStr , true );
 	file = NULL;
 
 	return ( LPCSTR )buf;
@@ -315,7 +316,7 @@ static void get_datetime_str( LPSTR  buffer , size_t size )
 	strftime( buffer , size , "%Y%m%d_%H%M%S" , t );
 }
 
-FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ , IMMORTAL_LPCSTR * notif )
+FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ , Brief_Err * imortalErrStr )
 {
 	char final_path[ MAX_PATH ] = { 0 };
 	char name_part[ 256 ] = { 0 };
@@ -329,7 +330,7 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ , I
 		ssize_t len = readlink( "/proc/self/exe" , exe_path , sizeof( exe_path ) - 1 );
 		if ( len == -1 )
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "readlink()\n" );
+			STORE_BRIEF_ERR( imortalErrStr , "readlink()\n" , true );
 			return NULL;
 		}
 		exe_path[ len ] = '\0';
@@ -385,7 +386,7 @@ FILE * create_unique_file( LPCSTR path , LPCSTR filename /*=NULL(app+date)*/ , I
 	FILE * file = fopen( final_path , "w" );
 	if ( !file )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fopen()\n" );
+		STORE_BRIEF_ERR( imortalErrStr , "fopen()\n" , true );
 		return NULL;
 	}
 
@@ -1047,7 +1048,7 @@ LPCSTR strihead( LPCSTR str , LPCSTR head )
 //}
 
 status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms ,
-	int retry_count_on_timeout/*0 no retry*/ , IMMORTAL_LPCSTR * notif , buffer * more_detail )
+	int retry_count_on_timeout/*0 no retry*/ , Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf )
 {
 	const unsigned char * p = ( const unsigned char * )buf;
 	size_t remaining = len;
@@ -1078,12 +1079,12 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 			 * send() returning 0 on a TCP socket is unusual. Treat as error:
 			 * peer likely closed or OS-level oddity. Set errno to ECONNRESET.
 			 */
-			if ( more_detail )
+			if ( detailErrBuf )
 			{
-				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 			}
 			errno = ECONNRESET;
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
+			STORE_BRIEF_ERR( imortalErrStr , "PeerClosed\n" , true );
 			return errPeerClosed;
 		}
 
@@ -1124,7 +1125,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 				{
 					/* Peer closed or error on socket. We surface as ECONNRESET. */
 					errno = ECONNRESET;
-					if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
+					STORE_BRIEF_ERR( imortalErrStr , "PeerClosed\n" , true );
 					return errPeerClosed;
 				}
 				/* Writable: loop will retry send() */
@@ -1135,19 +1136,19 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 				/* Timeout */
 				if ( retry_count_on_timeout > 0 && remaining > 0 )
 				{
-					return tcp_send_all( fd , p , remaining , flags , pool_timeout_onsend_ms , timeout_onack_ms , retry_count_on_timeout - 1 , notif , more_detail );
+					return tcp_send_all( fd , p , remaining , flags , pool_timeout_onsend_ms , timeout_onack_ms , retry_count_on_timeout - 1 , imortalErrStr , detailErrBuf );
 				}
-				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "Timeout\n" );
+				STORE_BRIEF_ERR( imortalErrStr , "Timeout\n" , true );
 				errno = ETIMEDOUT;
 				return errTimeout;
 			}
 			else
 			{
 				/* poll() itself failed */
-				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "poll()\n" );
-				if ( more_detail )
+				STORE_BRIEF_ERR( imortalErrStr , "poll()\n" , true );
+				if ( detailErrBuf )
 				{
-					IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+					IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 				}
 				return errSocket; /* errno set by poll */
 			}
@@ -1155,7 +1156,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 
 		if ( saved_errno == EPIPE || saved_errno == ECONNRESET )
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "PeerClosed\n" );
+			STORE_BRIEF_ERR( imortalErrStr , "PeerClosed\n" , true );
 			return errPeerClosed;
 		}
 
@@ -1175,7 +1176,7 @@ status tcp_send_all( int fd , const void * buf , size_t len , int flags , int po
 	#endif
 		return errOK;
 	}
-	if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "send != request\n" );
+	STORE_BRIEF_ERR( imortalErrStr , "send != request\n" , true );
 	return errGeneral; /* should equal len */
 }
 
@@ -1481,12 +1482,12 @@ int regression_slope_int( const uint64 * y , size_t n )
 	return ( int )( slope + ( slope >= 0 ? 0.5 : -0.5 ) );
 }
 
-void enable_keepalive_chaotic( int sock , IMMORTAL_LPCSTR * notif )
+void enable_keepalive_chaotic( int sock , Brief_Err * imortalErrStr )
 {
 	srand( ( unsigned )time( NULL ) ^ ( unsigned )sock );
 
 	int yes = 1;
-	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , imortalErrStr , true );
 
 	// Prime base values with random jitter ±3s
 	int idle = 29 + ( rand() % 7 - 3 );  // 26–32 s
@@ -1496,30 +1497,30 @@ void enable_keepalive_chaotic( int sock , IMMORTAL_LPCSTR * notif )
 	if ( idle < 10 ) idle = 10;
 	if ( interval < 3 ) interval = 3;
 
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , notif );
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , notif );
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , imortalErrStr , true );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , imortalErrStr , true );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , imortalErrStr , true );
 }
 
-void enable_keepalive( sockfd sock , IMMORTAL_LPCSTR * notif )
+void enable_keepalive( sockfd sock , Brief_Err * imortalErrStr )
 {
 	int yes = 1;
-	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , SOL_SOCKET , SO_KEEPALIVE , &yes , sizeof( yes ) ) == -1 , "setsockopt()" , imortalErrStr , true );
 
 	int idle = 30;  // seconds of inactivity before keepalive probes start
 	int interval = 10;  // seconds between probes
 	int count = 5;   // number of failed probes before marking dead
 
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , notif );
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , notif );
-	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , notif );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPIDLE , &idle , sizeof( idle ) ) == -1 , "setsockopt()" , imortalErrStr , true );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPINTVL , &interval , sizeof( interval ) ) == -1 , "setsockopt()" , imortalErrStr , true );
+	KERNEL_CALL_NORET( setsockopt( sock , IPPROTO_TCP , TCP_KEEPCNT , &count , sizeof( count ) ) == -1 , "setsockopt()" , imortalErrStr , true );
 }
 
 // Returns:
 //  1 = socket looks connected (no EOF detected, no immediate error)
 //  0 = socket closed by peer (recv returned 0) or error that indicates closure
 // -1 = indeterminate (poll error) but errno will be set
-int is_socket_connected_peek( int fd , int timeout_ms , IMMORTAL_LPCSTR * notif )
+int peek_socket_connection( int fd , int timeout_ms , Brief_Err * imortalErrStr )
 {
 	struct pollfd pfd;
 	pfd.fd = fd;
@@ -1529,7 +1530,7 @@ int is_socket_connected_peek( int fd , int timeout_ms , IMMORTAL_LPCSTR * notif 
 	int rv = poll( &pfd , 1 , timeout_ms );
 	if ( rv < 0 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "poll()\n" );
+		STORE_BRIEF_ERR( imortalErrStr , "poll()\n" , true );
 		return -1; // errno set
 	}
 	if ( rv == 0 )
@@ -1587,7 +1588,7 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part )
 }
 
 status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock ,
-	IMMORTAL_LPCSTR * notif , buffer * more_detail )
+	Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf )
 {
 	int sockfd;
 	struct sockaddr_in addr;
@@ -1600,15 +1601,15 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 	sockfd = socket( AF_INET , SOCK_STREAM , 0 );
 	if ( sockfd < 0 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "socket()\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		return errSocket;
 	}
 
-	// Make socket non-blocking
+	//// Make socket non-blocking
 	flags = fcntl( sockfd , F_GETFL , 0 );
 	fcntl( sockfd , F_SETFL , flags | O_NONBLOCK );
 
@@ -1616,7 +1617,8 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 	memset( &addr , 0 , sizeof( addr ) );
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons( (uint16_t)port );
-	inet_pton( AF_INET , ip , &addr.sin_addr );
+	//inet_pton( AF_INET , ip , &addr.sin_addr );
+	addr.sin_addr.s_addr = inet_addr( ip );
 
 	// Start connecting (non-blocking)
 	result = connect( sockfd , ( struct sockaddr * )&addr , sizeof( addr ) );
@@ -1638,29 +1640,29 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 				getsockopt( sockfd , SOL_SOCKET , SO_ERROR , ( void * )( &valopt ) , &lon );
 				if ( valopt )
 				{
-					if ( more_detail )
+					if ( detailErrBuf )
 					{
-						IGNORE_RESULT char * p = strerror_r( valopt , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+						IGNORE_RESULT char * p = strerror_r( valopt , *detailErrBuf , sizeof(*detailErrBuf) );
 					}
 					errno = valopt;
-					if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
+					STORE_BRIEF_ERR( imortalErrStr , "connect()\n" , true );
 					close( sockfd );
 					return errNoConnection;
 				}
 			}
 			else if ( result == 0 )
 			{
-				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "timeout\n" );
+				STORE_BRIEF_ERR( imortalErrStr , "timeout\n", true );
 				close( sockfd );
 				errno = ETIMEDOUT;
 				return errTimeout;
 			}
 			else
 			{
-				if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
-				if ( more_detail )
+				STORE_BRIEF_ERR( imortalErrStr , "select()\n" , true );
+				if ( detailErrBuf )
 				{
-					IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+					IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 				}
 				close( sockfd );
 				return errSelect;
@@ -1668,24 +1670,25 @@ status connect_with_timeout( const char * ip , int port , int timeout_sec , sock
 		}
 		else
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "connect()\n" );
-			if ( more_detail )
+			STORE_BRIEF_ERR( imortalErrStr , "connect()\n" , true );
+			if ( detailErrBuf )
 			{
-				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 			}
 			close( sockfd );
 			return errConnect;
 		}
 	}
 
-	// Restore blocking mode
+	//// Restore blocking mode
 	fcntl( sockfd , F_SETFL , flags );
 	*conn_sock = sockfd;
 	return errOK;  // Success
 }
 
 // General function to handle socket creation, binding, listening, and accepting with timeout
-status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd , IMMORTAL_LPCSTR * notif , buffer * more_detail )
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd ,
+	Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf )
 {
 	int server_fd;
 	fd_set read_fds;
@@ -1694,30 +1697,30 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	// Create socket
 	if ( ( server_fd = socket( AF_INET , SOCK_STREAM , 0 ) ) == -1 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "socket()\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "socket()\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		return errSocket;
 	}
 	int prevflags = fcntl( server_fd , F_GETFL , 0 );
 	if ( prevflags == -1 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(F_GETFL) failed.\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "fcntl(F_GETFL) failed.\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 	if ( fcntl( server_fd , F_SETFL , prevflags | O_NONBLOCK ) == -1 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "fcntl(O_NONBLOCK) failed.\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "fcntl(O_NONBLOCK) failed.\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1725,30 +1728,30 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	int opt = 1;
 	if ( setsockopt( server_fd, SOL_SOCKET , SO_REUSEADDR , &opt , sizeof( opt ) ) < 0 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEADDR)\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "setsockopt(SO_REUSEADDR)\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 	if ( setsockopt( server_fd , SOL_SOCKET , SO_REUSEPORT , &opt , sizeof( opt ) ) < 0 ) // Let server restart immediately without waiting TIME_WAIT.
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(SO_REUSEPORT)\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "setsockopt(SO_REUSEPORT)\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
 	}
 	if ( setsockopt( server_fd , IPPROTO_TCP , TCP_QUICKACK , &opt , sizeof( opt ) ) < 0 ) // Force immediate ACK. Decreases feedback latency. Disable delayed ACK at receiver
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "setsockopt(TCP_QUICKACK)\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "setsockopt(TCP_QUICKACK)\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		_close_socket( &server_fd , NULL );
 		return errsockopt;
@@ -1773,14 +1776,14 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	{
 		if ( errno == EADDRINUSE )
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "bind(ADDRINUSE)-multiple instance\n" );
+			STORE_BRIEF_ERR( imortalErrStr , "bind(ADDRINUSE)-multiple instance\n" , true );
 		}
 		else
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "bind()\n" );
-			if ( more_detail )
+			STORE_BRIEF_ERR( imortalErrStr , "bind()\n" , true );
+			if ( detailErrBuf )
 			{
-				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 			}
 		}
 		close( server_fd );
@@ -1789,10 +1792,10 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	// Prepare for listen
 	if ( listen( server_fd , 5 ) == -1 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "listen()\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "listen()\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		close( server_fd );
 		return errListen;
@@ -1811,17 +1814,17 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 
 	if ( activity == -1 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "select()\n" );
-		if ( more_detail )
+		STORE_BRIEF_ERR( imortalErrStr , "select()\n" , true );
+		if ( detailErrBuf )
 		{
-			IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+			IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 		}
 		close( server_fd );
 		return errSelect;
 	}
 	else if ( activity == 0 )
 	{
-		if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "Timeout reached.\n" );
+		STORE_BRIEF_ERR( imortalErrStr , "Timeout reached.\n" , true );
 		close( server_fd );
 		return errTimeout;
 	}
@@ -1835,10 +1838,10 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 		*client_fd = accept( server_fd , ( struct sockaddr * )&client_addr , &client_len );
 		if ( (*client_fd) < 0 )
 		{
-			if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "accept()\n" );
-			if ( more_detail )
+			STORE_BRIEF_ERR( imortalErrStr , "accept()\n" , true );
+			if ( detailErrBuf )
 			{
-				IGNORE_RESULT char * p = strerror_r( errno , *more_detail , MIN_SYSERR_BUF_CAPACITY );
+				IGNORE_RESULT char * p = strerror_r( errno , *detailErrBuf , sizeof(*detailErrBuf) );
 			}
 			close( server_fd );
 			return errAccept;
@@ -1850,7 +1853,7 @@ status create_server_socket_with_timeout( const char * ip_address , int port , i
 	}
 
 	close( server_fd );
-	if ( notif ) *notif = DETAILED_IMMORTAL_ERR_STR( "NoConnection.\n" );
+	STORE_BRIEF_ERR( imortalErrStr , "NoConnection.\n" , true );
 	return errNoConnection;  // Timeout or error occurred
 }
 
@@ -1900,4 +1903,54 @@ IMMORTAL_LPCSTR signal_to_string( int sig )
 	static char buf[10];
 	sprintf( buf , "Unknown signal %d" , sig );
 	return ( s != NULL ) ? s : "Unknown signal";
+}
+
+void prevent_duplicate_program_execution()
+{
+	char exe_path[ PATH_MAX ];
+	char dir_path[ PATH_MAX ];
+	char lock_path[ PATH_MAX ];
+
+	/* Get absolute path of executable */
+	ssize_t len = readlink( "/proc/self/exe" , exe_path , sizeof( exe_path ) - 1 );
+	if ( len < 0 )
+	{
+		perror( "readlink" );
+		return;
+	}
+	exe_path[ len ] = '\0';
+
+	/* dirname() and basename() may modify input */
+	strncpy( dir_path , exe_path , sizeof( dir_path ) );
+	char * dir = dirname( dir_path );
+	char * base = basename( exe_path );
+
+	/* Build lock file path: same dir, same name, different extension */
+	snprintf( lock_path , sizeof( lock_path ) , "%s/%s.lock" , dir , base );
+
+	int fd = open( lock_path , O_RDWR | O_CREAT , 0644 );
+	if ( fd < 0 )
+	{
+		perror( "open lock file" );
+		sleep( 2 );
+		_exit( 0 );
+		return;
+	}
+
+	if ( flock( fd , LOCK_EX | LOCK_NB ) < 0 )
+	{
+		if ( errno == EWOULDBLOCK )
+		{
+			fprintf( stderr , "\n\nAnother instance already running (%s)\n" , lock_path );
+			sleep( 2 );
+			_exit( 0 );
+		}
+		else
+		{
+			perror( "flock" );
+			sleep( 2 );
+			_exit( 0 );
+		}
+		return;
+	}
 }

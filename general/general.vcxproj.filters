@@ -88,6 +88,12 @@
     <ClCompile Include="src\alive.c">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\SSL.c">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="src\socket.c">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="dep">
@@ -257,6 +263,12 @@
       <Filter>header</Filter>
     </ClInclude>
     <ClInclude Include="header\alive.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\SSL.h">
+      <Filter>header</Filter>
+    </ClInclude>
+    <ClInclude Include="header\socket.h">
       <Filter>header</Filter>
     </ClInclude>
   </ItemGroup>

@@ -176,3 +176,11 @@
 #ifdef __INC_alive
 	#include <alive.h>
 #endif
+
+#ifdef __INC_SSL
+	#include <SSL.h>
+#endif
+
+#ifdef __INC_socket
+	#include <socket.h>
+#endif

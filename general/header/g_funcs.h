@@ -63,9 +63,9 @@ long parse_and_extract_file_name_value( LPCSTR filename , LPCSTR ignore_part );
 //----file functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 #if defined Uses_FILE || !defined __COMPILING
-FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ , IMMORTAL_LPCSTR * notif );
+FILE* create_unique_file(LPCSTR path, LPCSTR filename /*=NULL(app+date)*/ , Brief_Err * imortalErrStr );
 #endif
-LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ , IMMORTAL_LPCSTR * notif );
+LPCSTR read_file( LPCSTR path , LPSTR pInBuffer /*= if NULL alloc memory so release deligate to caller*/ , Brief_Err * imortalErrStr );
 const char * get_filename( const char * path );
 
 
@@ -73,15 +73,15 @@ const char * get_filename( const char * path );
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 //----socket functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
-void _close_socket( sockfd * socket_id , IMMORTAL_LPCSTR * notif );
+void _close_socket( sockfd * socket_id , Brief_Err * imortalErrStr );
 //status sendall( sockfd socketfd , buffer buf , size_t * len );
-status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout /*0 no retry*/ , IMMORTAL_LPCSTR * notif , buffer * more_detail );
+status tcp_send_all( int fd , const void * buf , size_t len , int flags , int pool_timeout_onsend_ms , int timeout_onack_ms , int retry_count_on_timeout /*0 no retry*/ , Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf );
 int peerTcpClosed( sockfd socketfd );
-void enable_keepalive_chaotic( int sock , IMMORTAL_LPCSTR * notif );
-int is_socket_connected_peek( int fd , int timeout_ms , IMMORTAL_LPCSTR * notif );
-status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock , IMMORTAL_LPCSTR * notif , buffer * more_detail );
-status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd , IMMORTAL_LPCSTR * notif , buffer * more_detail );
-void enable_keepalive( sockfd sock , IMMORTAL_LPCSTR * notif );
+void enable_keepalive_chaotic( int sock , Brief_Err * imortalErrStr );
+int peek_socket_connection( int fd , int timeout_ms , Brief_Err * imortalErrStr );
+status connect_with_timeout( const char * ip , int port , int timeout_sec , sockfd * conn_sock , Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf );
+status create_server_socket_with_timeout( const char * ip_address , int port , int timeout_sec , sockfd * client_fd , Brief_Err * imortalErrStr , DtsErrBuf detailErrBuf );
+void enable_keepalive( sockfd sock , Brief_Err * imortalErrStr );
 status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms );
 
 
@@ -192,3 +192,5 @@ int regression_slope_int( const uint64 * y , size_t n );
 	bool is_double_zero( double value );
 #endif
 int last_valid_digit_14( double x );
+
+void prevent_duplicate_program_execution();

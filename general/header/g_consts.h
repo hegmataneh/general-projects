@@ -28,7 +28,7 @@ _EXTERN const sockfd invalid_fd;
 enum
 {
 	errSystem = 1, // this error is not public error value
-	errOK = 0,
+	errOK = 0, /*14041108 . I have often assumed that zero corresponds to no errors, so don't change that assumption*/
 	__first_err_const__ = __COUNTER__ , /*donot use this item*/
 
 	errGeneral = ERR_NEXT_VALUE() ,
@@ -37,10 +37,12 @@ enum
 	errCanceled = ERR_NEXT_VALUE(),  // indeed this indicates a normal abort and is not an d_error condition
 	errSyntax = ERR_NEXT_VALUE(),
 	errArg = ERR_NEXT_VALUE(), // origin -> bad argument
+	
 	errTimeout = ERR_NEXT_VALUE(),
 	errPeerClosed = ERR_NEXT_VALUE(), // closed state is bold
+	
 	errOutofRanje = ERR_NEXT_VALUE(),
-	errMaximumExceeded = ERR_NEXT_VALUE(), /*10*/
+	errMaximumExceeded = ERR_NEXT_VALUE(), /*(10)*/
 	errNoPeer = ERR_NEXT_VALUE(), // origin -> tcp peer state unknown or callback peer no respond
 	errNotFound = ERR_NEXT_VALUE(),
 	errDevice = ERR_NEXT_VALUE(),
@@ -50,7 +52,7 @@ enum
 	errOverflow = ERR_NEXT_VALUE(), // if cannot fit and grow not allowed
 	errCorrupted = ERR_NEXT_VALUE(),
 	errResource = ERR_NEXT_VALUE(),
-	errPath = ERR_NEXT_VALUE(), /*20*/
+	errPath = ERR_NEXT_VALUE(), /*(20)*/
 	errRetry = ERR_NEXT_VALUE(),
 	errEmpty = ERR_NEXT_VALUE(),
 	errTooManyAttempt = ERR_NEXT_VALUE(),
@@ -60,7 +62,7 @@ enum
 	errListen = ERR_NEXT_VALUE(),
 	errSelect = ERR_NEXT_VALUE(),
 	errAccept = ERR_NEXT_VALUE(),
-	errNoConnection = ERR_NEXT_VALUE(),
+	errNoConnection = ERR_NEXT_VALUE(), /*(30)*/
 	errConnect = ERR_NEXT_VALUE(),
 	errOpen = ERR_NEXT_VALUE(),
 	errACK = ERR_NEXT_VALUE(), /*no ack in time window*/
@@ -70,7 +72,13 @@ enum
 	errButContinue = ERR_NEXT_VALUE(),
 	errPortOccupied = ERR_NEXT_VALUE(),
 	errInvalidData = ERR_NEXT_VALUE(),
-	errSkip = ERR_NEXT_VALUE(),
+	errSkip = ERR_NEXT_VALUE(), /*(40)*/
+	errState = ERR_NEXT_VALUE(), /*call happened with bad state*/
+	errFault = ERR_NEXT_VALUE(), /*fault may cause failure*/
+	errFailure = ERR_NEXT_VALUE(), /*program scenario go wrong*/
+	errUsrLvl = ERR_NEXT_VALUE(),
+	errOSLvl = ERR_NEXT_VALUE(),
+	errNotImplemented = ERR_NEXT_VALUE(),
 
 	// ADD extra error here
 
@@ -184,8 +192,5 @@ _EXTERN const unsigned char MSB_MARKERS[8];
 #define M_3_PI_2	4.71238898038468985
 
 #define PHI			1.618
-
-#define MIN_SYSERR_BUF_SZ 256 /*at least this size should be prodided to store system error strings*/
-#define MIN_SYSERR_BUF_CAPACITY ( MIN_SYSERR_BUF_SZ - 1 )
 
 #define LAST_VALID_FP_NOT_NOISY_DIGIT_OF_DOUBLE 14 /*according to GPT*/

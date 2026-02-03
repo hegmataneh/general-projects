@@ -296,11 +296,34 @@
 
 #if defined Uses_ERROR_SECTION || !defined __COMPILING
 
-	#define DETAILED_IMMORTAL_ERR_STR(msg) \
+	#define IS_TYPE( var , type ) _Generic((var), \
+		type: true, \
+		default: false)
+
+	#define DETAILED_IMMORTAL_ERR_STR( msg ) \
 		( TOSTRING( __LINE__ ) " " ""msg"" ) /*append line number heading of string msg*/
 
-	#define KERNEL_CALL_NORET( sysfxn , fxn_shrt_form , immortal_lpcstr ) do { if ( ( sysfxn ) && immortal_lpcstr ) \
-		*immortal_lpcstr = DETAILED_IMMORTAL_ERR_STR( ""fxn_shrt_form"" "\n" ); } while( 0 ) /*call system fxn then on error just fill error string*/
+	#define STATIC_ASSERT_TYPE(expr, type) \
+		_Static_assert(__builtin_types_compatible_p(__typeof__(expr), type), \
+                   "type mismatch")
+
+	#define STORE_BRIEF_ERR( Br_Err , msg , reset_BRIEF_ERR ) \
+		do { \
+		STATIC_ASSERT_TYPE( Br_Err , Brief_Err * ); \
+		if ( Br_Err ) \
+		{ \
+			if ( reset_BRIEF_ERR ) MEMSET_ZERO_O( Br_Err ); \
+			if ( !( ( *Br_Err )[ 0 ] ) ) ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+			else if ( !( ( *Br_Err )[ 1 ] ) ) ( *Br_Err )[ 1 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+			else if ( !( ( *Br_Err )[ 2 ] ) ) ( *Br_Err )[ 2 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+			else if ( !( ( *Br_Err )[ 3 ] ) ) ( *Br_Err )[ 3 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+			else if ( !( ( *Br_Err )[ 4 ] ) ) ( *Br_Err )[ 4 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+			else ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
+		} } while(0)
+
+
+	#define KERNEL_CALL_NORET( sysfxn , fxn_shrt_form , Br_Err , reset_BRIEF_ERR )  if ( ( sysfxn ) ) \
+		STORE_BRIEF_ERR( Br_Err , ""fxn_shrt_form"" "\n" , reset_BRIEF_ERR ) /*call system fxn then on error just fill error string*/
 
 	//#define SYS_ERR_STR(msg) make_msg_appnd_sys_err( __custom_message , sizeof(__custom_message) , msg )
 
@@ -447,5 +470,7 @@
 	#define IGNORE_RESULT __attribute__((unused))
 
 	#define STACK_ALIGNED_CHKPT(persian_date) /*stack aligned to this point*/
+
+	#define _EXTERNAL_VAR /*come from outside*/
 
 #endif
