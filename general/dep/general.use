@@ -1,3 +1,24 @@
+#ifdef Uses_M_SERIES_MACROS
+	#define Uses_STORE_BRIEF_ERR
+#endif
+
+#ifdef Uses_STORE_BRIEF_ERR
+	#define Uses_ERROR_SECTION
+#endif
+
+#ifdef Uses_BRIF_M_BREAK_IF
+	#define Uses_M_SERIES_MACROS
+#endif
+
+#ifdef Uses_Curl_h_t
+	#define Uses_Curl_handle
+#endif
+
+#ifdef Uses_Curl_handle
+	#define Uses_CURL
+	#define __INC_Curl
+#endif
+
 #ifdef Uses_DETAILED_IMMORTAL_ERR_STR
 	#define Uses_ERROR_SECTION
 #endif
@@ -7,6 +28,7 @@
 #endif
 
 #ifdef Uses_socket_handle
+	#define Uses_Curl_h_t
 	#define Uses_SSL_h_t
 	#define __INC_socket
 #endif

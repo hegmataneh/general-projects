@@ -181,6 +181,10 @@
 	#include <SSL.h>
 #endif
 
+#ifdef __INC_Curl
+	#include <curl.h>
+#endif
+
 #ifdef __INC_socket
 	#include <socket.h>
 #endif

@@ -20,6 +20,10 @@ mohsen 14040618
 
 #define EACH_FXN_MSG_HOLDER __custom_message
 
+#define M_BRIEF_ERR_MSG( Br_Err , indirect_imortal_msg , becho ) do { \
+				STORE_INDIR_BRIEF_ERR( Br_Err , (indirect_imortal_msg) , 0 ); \
+			} while(0)
+
 #define M_MK_ERR_MSG(msg,echo) do {\
 		IMMORTAL_LPCSTR lp_sys_err = systemErrorStr(NP); char ttmmppbuf[50];\
 		__snprintf( ttmmppbuf , sizeof(ttmmppbuf) , "{~%%s:%%d} %%s%%s%s" , ( ( lp_sys_err && strlen(lp_sys_err) ) ? "<%%s>" : "" ) );  \
@@ -51,13 +55,22 @@ mohsen 14040618
 //#endif
 
 // M: give a message, M: and add the specified msg, E: and echo it on the screen
-#define MME_BREAK(err,lvl,msg,echo,fill_msg)\
+#define MME_BREAK(err,lvl,msg,echo,bfill_msg)\
 	do {\
 		d_error=(status)err;\
-		if(fill_msg)M_MK_ERR_MSG(msg,echo);\
+		if(bfill_msg)M_MK_ERR_MSG(msg,echo);\
 		_ErrLvl=lvl;\
 		goto __ret;\
 	} while(0)
+
+#define MME_BRIF_ERR_BREAK( err , lvl , Br_Err , indirect_imortal_msg , becho , bfill_msg )\
+	do {\
+		d_error=(status)err;\
+		if ( bfill_msg ) M_BRIEF_ERR_MSG( Br_Err , indirect_imortal_msg , becho ); /*inner check that Br_Err is not null*/ \
+		_ErrLvl=lvl;\
+		goto __ret;\
+	} while(0)
+
 #define MME_FMT_BREAK(err,lvl,fmt,...)\
 	do {\
 		d_error=(status)err;\
@@ -67,11 +80,18 @@ mohsen 14040618
 	} while(0)
 
 
-#define MME_BREAK_IF(cond,err,lvl,msg,echo,fill_msg)\
+#define MME_BREAK_IF(cond,err,lvl,msg,echo,bfill_msg)\
 	do {\
 		int _cond=(int)(cond);\
 		if (_cond)\
-			MME_BREAK(err,lvl,msg,echo,fill_msg);\
+			MME_BREAK(err,lvl,msg,echo,bfill_msg);\
+	} while(0)
+
+#define MME_BRIF_ERR_BREAK_IF( cond , err , lvl , Br_Err /*check happened in MME_BRIF_ERR_BREAK*/ , indirect_imortal_msg , becho , bfill_msg )\
+	do {\
+		int _cond=(int)(cond); \
+		if (_cond)\
+			MME_BRIF_ERR_BREAK(err,lvl,Br_Err,indirect_imortal_msg,becho,bfill_msg);\
 	} while(0)
 
 #define MME_FMT_BREAK_IF(cond,err,lvl,fmt,...)\
@@ -137,6 +157,11 @@ do \
 #define NM_BREAK_IF(cond,err,lvl,msg) MME_BREAK_IF(cond,err,lvl,NULL,False,False) /*semicolon after this macro*/
 
 #endif // #if !defined( __ENGINE )
+
+
+#define BRIF_M_BREAK_IF(cond,err,lvl,indirect_imortal_msg,Br_Err) /*brief msg used when immortal msg is available*/ \
+	MME_BRIF_ERR_BREAK_IF(cond,err,lvl,Br_Err,indirect_imortal_msg,True,True)
+
 
 #ifndef BREAK_POINT_AT_APP_SPACE /*in app space we can define this macro and catch break in any function*/
 #define BREAK_POINT_AT_APP_SPACE while(0) {} /*_Breaked*/

@@ -300,27 +300,45 @@
 		type: true, \
 		default: false)
 
-	#define DETAILED_IMMORTAL_ERR_STR( msg ) \
-		( TOSTRING( __LINE__ ) " " ""msg"" ) /*append line number heading of string msg*/
+	#define DETAILED_DIR_IMMORTAL_ERR_STR( direct_imortal_msg ) \
+		( TOSTRING( __LINE__ ) " " ""direct_imortal_msg"" ) /*append line number heading of string msg*/
+
+	#define DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ) DETAILED_DIR_IMMORTAL_ERR_STR( direct_imortal_msg ) /*used when its directly double quote string*/
+
+	#define DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ) indirect_imortal_msg /*used when return are immortal but from fxn call*/
 
 	#define STATIC_ASSERT_TYPE(expr, type) \
-		_Static_assert(__builtin_types_compatible_p(__typeof__(expr), type), \
-                   "type mismatch")
+		_Static_assert(__builtin_types_compatible_p(__typeof__(expr), type), "type mismatch")
 
-	#define STORE_BRIEF_ERR( Br_Err , msg , reset_BRIEF_ERR ) \
+	#define STORE_DIR_BRIEF_ERR( Br_Err , direct_imortal_msg , reset_BRIEF_ERR ) /*brief error is error msg that store on the data segment and does not allocated or need to released*/\
 		do { \
-		STATIC_ASSERT_TYPE( Br_Err , Brief_Err * ); \
-		if ( Br_Err ) \
-		{ \
-			if ( reset_BRIEF_ERR ) MEMSET_ZERO_O( Br_Err ); \
-			if ( !( ( *Br_Err )[ 0 ] ) ) ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-			else if ( !( ( *Br_Err )[ 1 ] ) ) ( *Br_Err )[ 1 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-			else if ( !( ( *Br_Err )[ 2 ] ) ) ( *Br_Err )[ 2 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-			else if ( !( ( *Br_Err )[ 3 ] ) ) ( *Br_Err )[ 3 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-			else if ( !( ( *Br_Err )[ 4 ] ) ) ( *Br_Err )[ 4 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-			else ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( msg ); \
-		} } while(0)
+			if ( Br_Err ) \
+			{ \
+				STATIC_ASSERT_TYPE( Br_Err , Brief_Err * ); \
+				if ( reset_BRIEF_ERR ) MEMSET_ZERO_O( Br_Err ); \
+				if ( !( ( *Br_Err )[ 0 ] ) ) ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 1 ] ) ) ( *Br_Err )[ 1 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 2 ] ) ) ( *Br_Err )[ 2 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 3 ] ) ) ( *Br_Err )[ 3 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 4 ] ) ) ( *Br_Err )[ 4 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+				else ( *Br_Err )[ 0 ] = DETAILED_IMMORTAL_ERR_STR( direct_imortal_msg ); \
+			} } while(0)
 
+	#define STORE_INDIR_BRIEF_ERR( Br_Err , indirect_imortal_msg , reset_BRIEF_ERR ) /*brief error is error msg that store on the data segment and does not allocated or need to released*/\
+		do { \
+			if ( Br_Err ) \
+			{ \
+				STATIC_ASSERT_TYPE( Br_Err , Brief_Err * ); \
+				if ( reset_BRIEF_ERR ) MEMSET_ZERO_O( Br_Err ); \
+				if ( !( ( *Br_Err )[ 0 ] ) ) ( *Br_Err )[ 0 ] =			DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 1 ] ) ) ( *Br_Err )[ 1 ] =	DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 2 ] ) ) ( *Br_Err )[ 2 ] =	DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 3 ] ) ) ( *Br_Err )[ 3 ] =	DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+				else if ( !( ( *Br_Err )[ 4 ] ) ) ( *Br_Err )[ 4 ] =	DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+				else ( *Br_Err )[ 0 ] =									DETAILED_INDIR_IMMORTAL_ERR_STR( indirect_imortal_msg ); \
+			} } while(0)
+
+	#define STORE_BRIEF_ERR( Br_Err , direct_imortal_msg , reset_BRIEF_ERR ) STORE_DIR_BRIEF_ERR( Br_Err , direct_imortal_msg , reset_BRIEF_ERR )
 
 	#define KERNEL_CALL_NORET( sysfxn , fxn_shrt_form , Br_Err , reset_BRIEF_ERR )  if ( ( sysfxn ) ) \
 		STORE_BRIEF_ERR( Br_Err , ""fxn_shrt_form"" "\n" , reset_BRIEF_ERR ) /*call system fxn then on error just fill error string*/
@@ -354,7 +372,7 @@
 #define _PAD_NAME2(line) pad_##line
 #define _PAD_NAME(line)  _PAD_NAME2(line)
 // Main macro to insert padding
-#define PAD(sz) char _PAD_NAME(__LINE__)[sz]
+#define PAD(sz_byte) char _PAD_NAME(__LINE__)[sz_byte]
 
 #define CACHE_LINE_SIZE 64 /*see chatgpt for extra explnation*/
 

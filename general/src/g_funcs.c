@@ -1954,3 +1954,38 @@ void prevent_duplicate_program_execution()
 		return;
 	}
 }
+
+/*
+ * Convert a fixed-size binary buffer into a printable, null-terminated string.
+ *
+ * in        : input buffer (can contain '\0')
+ * in_len    : number of bytes to read from input
+ * out       : output buffer
+ * out_len   : size of output buffer
+ *
+ * Notes:
+ * - Output is always null-terminated (if out_len > 0)
+ * - At most out_len - 1 characters are written
+ * - Non-printable characters are replaced with '.'
+ */
+void buffer_to_printable_string( const unsigned char *in , size_t in_len , char *out , size_t out_len )
+{
+    size_t i, max;
+
+    if (!out || !out_len)
+        return;
+
+    /* Leave space for null terminator */
+    max = (in_len < out_len - 1) ? in_len : out_len - 1;
+
+    for (i = 0; i < max; i++) {
+        /* isprint() excludes control chars and '\0' */
+        if (isprint(in[i])) {
+            out[i] = (char)in[i];
+        } else {
+            out[i] = '.';   /* replacement for non-printable */
+        }
+    }
+
+    out[i] = '\0';
+}

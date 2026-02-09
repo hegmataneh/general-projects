@@ -1,3 +1,7 @@
+#ifdef Uses_CURL
+	#define __INC_CURL
+#endif
+
 #ifdef Uses_flock
 	#define __INC_fcntl
 	#define __INC_errno

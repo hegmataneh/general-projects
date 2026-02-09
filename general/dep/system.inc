@@ -184,3 +184,8 @@
 #ifdef __INC_sys_file
 	 #include <sys/file.h>
 #endif
+
+#ifdef __INC_CURL
+	 #include <curl/curl.h>
+#endif
+

@@ -1167,11 +1167,6 @@ const char _UTF16LSign[] = "\xFF\xFE"; // little-endian . Unicode in Microsoft t
 const char _UTF16BSign[] = "\xFE\xFF"; // big-endian . Unicode in Microsoft terminology
 const char _UTF32LSign[] = "\xFF\xFE\x00\x00"; // little-endian
 const char _UTF32BSign[] = "\x00\x00\xFE\xFF"; // big-endian
-
-
-void M_showMsg();
-void M_showMsg( const char * msg );
-
 												
 
 

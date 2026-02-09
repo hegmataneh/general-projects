@@ -11,6 +11,7 @@ status tcps_init_tcp( tcp_h_t * tcp ) // first of all init every object
 {
 	MEMSET_ZERO_O( tcp );
 	tcp->tcp_fd = INVALID_FD;
+	tcp->type = tcph_tcp;
 	return errOK;
 }
 
@@ -22,6 +23,21 @@ status tcps_init_ssl_tcp( tcp_h_t * tcp , SSL_h_t * ssl )
 		if ( !( d_error = sslh_init( ssl ) ) )
 		{
 			tcp->ssl_over_tcp = ssl;
+			tcp->type = tcph_ssl;
+		}
+	}
+	return d_error;
+}
+
+status tcps_init_curl( tcp_h_t * tcp , Curl_h_t * curl )
+{
+	status d_error = tcps_init_tcp( tcp );
+	if ( !d_error )
+	{
+		if ( !( d_error = curlh_init( curl ) ) )
+		{
+			tcp->curl = curl;
+			tcp->type = tcph_curl;
 		}
 	}
 	return d_error;
@@ -98,39 +114,55 @@ status tcps_accept_ssl_tcp_connection( tcp_h_t * tcp , LPCSTR ip , int port , in
 	status d_error;
 
 	// init ssl
-	if ( tcp->ssl_over_tcp )
+	switch ( tcp->type )
 	{
-		if ( ( d_error = sslh_serverside_pre_tcp_initialize_ctx( tcp->ssl_over_tcp , server_certificate_path , server_key_path , ca_crt_path , imortalErrStr ) ) )
+		case tcph_ssl:
 		{
-			STORE_BRIEF_ERR( imortalErrStr , "sslh_serverside_pre_tcp_initialize_ctx() failed.\n" , false );
-			//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
-			//{
-			//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
-			//}
-			return d_error;
+			if ( ( d_error = sslh_serverside_pre_tcp_initialize_ctx( tcp->ssl_over_tcp , server_certificate_path , server_key_path , ca_crt_path , imortalErrStr ) ) )
+			{
+				STORE_BRIEF_ERR( imortalErrStr , "sslh_serverside_pre_tcp_initialize_ctx() failed.\n" , false );
+				//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
+				//{
+				//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
+				//}
+				return d_error;
+			}
+			break;
 		}
+		default:;
 	}
 
 	// try connect tcp
 	if ( ( d_error = tcps_accept_tcp_connection( tcp , ip , port , timeout_sec , imortalErrStr ) ) )
 	{
-		sslh_cleanup_ctx( tcp->ssl_over_tcp );
+		if ( tcp->ssl_over_tcp )
+		{
+			sslh_cleanup_ctx( tcp->ssl_over_tcp );
+		}
 		return d_error;
 	}
 
 	// try stablish ssl
-	if ( ( d_error = sslh_serverside_post_tcp_ssl_handshake( tcp->ssl_over_tcp , tcp->tcp_fd , imortalErrStr ) ) )
+	switch ( tcp->type )
 	{
-		STORE_BRIEF_ERR( imortalErrStr , "sslh_serverside_post_tcp_ssl_handshake() failed.\n" , false );
-		//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
-		//{
-		//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
-		//}
+		case tcph_ssl:
+		{
+			if ( ( d_error = sslh_serverside_post_tcp_ssl_handshake( tcp->ssl_over_tcp , tcp->tcp_fd , imortalErrStr ) ) )
+			{
+				STORE_BRIEF_ERR( imortalErrStr , "sslh_serverside_post_tcp_ssl_handshake() failed.\n" , false );
+				//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
+				//{
+				//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
+				//}
 
-		_close_socket( &tcp->tcp_fd , imortalErrStr );
-		tcp->tcp_conn_established = 0;
-		sslh_cleanup_ctx( tcp->ssl_over_tcp );
-		return d_error;
+				_close_socket( &tcp->tcp_fd , imortalErrStr );
+				tcp->tcp_conn_established = 0;
+				sslh_cleanup_ctx( tcp->ssl_over_tcp );
+				return d_error;
+			}
+			break;
+		}
+		default:;
 	}
 
 	return d_error;
@@ -140,7 +172,7 @@ status tcps_accept_ssl_tcp_connection( tcp_h_t * tcp , LPCSTR ip , int port , in
 
 #ifndef client_side
 status tcps_connect_2_server( tcp_h_t * tcp , LPCSTR ip , int port , int timeout_sec , Brief_Err * imortalErrStr )
-{
+{	
 	Detail_ErrBuf detailErrBuf = { 0 };
 	status d_error = connect_with_timeout( ip , port , timeout_sec , &tcp->tcp_fd , imortalErrStr , &detailErrBuf );
 	if ( d_error )
@@ -163,39 +195,64 @@ status tcps_connect_2_ssl_server( tcp_h_t * tcp , LPCSTR ip , int port , int tim
 	status d_error;
 
 	// init ssl
-	if ( tcp->ssl_over_tcp )
+	switch ( tcp->type )
 	{
-		if ( ( d_error = sslh_clientside_pre_tcp_initialize_ctx( tcp->ssl_over_tcp , server_certificate_path , server_key_path , ca_crt_path , imortalErrStr ) ) )
+		case tcph_ssl:
 		{
-			STORE_BRIEF_ERR( imortalErrStr , "sslh_clientside_pre_tcp_initialize_ctx() failed.\n" , false );
-			//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
-			//{
-			//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
-			//}
-			return d_error;
+			if ( ( d_error = sslh_clientside_pre_tcp_initialize_ctx( tcp->ssl_over_tcp , server_certificate_path , server_key_path , ca_crt_path , imortalErrStr ) ) )
+			{
+				STORE_BRIEF_ERR( imortalErrStr , "sslh_clientside_pre_tcp_initialize_ctx() failed.\n" , false );
+				//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
+				//{
+				//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
+				//}
+				return d_error;
+			}
+			break;
 		}
+		default:;
 	}
 
 	// try connect tcp
-	if ( ( d_error = tcps_connect_2_server( tcp , ip , port , timeout_sec , imortalErrStr ) ) )
+	switch ( tcp->type )
 	{
-		sslh_cleanup_ctx( tcp->ssl_over_tcp );
-		return d_error;
+		case tcph_ssl:
+		case tcph_tcp:
+		{
+			if ( ( d_error = tcps_connect_2_server( tcp , ip , port , timeout_sec , imortalErrStr ) ) )
+			{
+				if ( tcp->ssl_over_tcp )
+				{
+					sslh_cleanup_ctx( tcp->ssl_over_tcp );
+				}
+				return d_error;
+			}
+			break;
+		}
+		default:;
 	}
 
 	// try stablish ssl
-	if ( ( d_error = sslh_clientside_post_tcp_ssl_handshake( tcp->ssl_over_tcp , tcp->tcp_fd , imortalErrStr ) ) )
+	switch ( tcp->type )
 	{
-		STORE_BRIEF_ERR( imortalErrStr , "sslh_clientside_post_tcp_ssl_handshake() failed.\n" , false );
-		//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
-		//{
-		//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
-		//}
+		case tcph_ssl:
+		{
+			if ( ( d_error = sslh_clientside_post_tcp_ssl_handshake( tcp->ssl_over_tcp , tcp->tcp_fd , imortalErrStr ) ) )
+			{
+				STORE_BRIEF_ERR( imortalErrStr , "sslh_clientside_post_tcp_ssl_handshake() failed.\n" , false );
+				//if ( tcp->dts_buf && tcp->ssl_over_tcp->dts_buf )
+				//{
+				//	strncpy( tcp->dts_buf , tcp->ssl_over_tcp->dts_buf );
+				//}
 
-		_close_socket( &tcp->tcp_fd , imortalErrStr );
-		tcp->tcp_conn_established = 0;
-		sslh_cleanup_ctx( tcp->ssl_over_tcp );
-		return d_error;
+				_close_socket( &tcp->tcp_fd , imortalErrStr );
+				tcp->tcp_conn_established = 0;
+				sslh_cleanup_ctx( tcp->ssl_over_tcp );
+				return d_error;
+			}
+			break;
+		}
+		default:;
 	}
 
 	return d_error;
@@ -242,6 +299,7 @@ status tcps_ssl_read( tcp_h_t * tcp , buffer buf , size_t buf_sz , int * num_rea
 			tcps_close( tcp , imortalErrStr );
 			break;
 		}
+		default:;
 	}
 	return ret_err;
 }
@@ -250,24 +308,35 @@ status tcps_write( tcp_h_t * tcp , buffer buf , size_t buf_sz , int * num_writes
 {
 	if ( !tcp ) return errArg;
 
-	if ( tcp->ssl_over_tcp )
+	
+	switch ( tcp->type )
 	{
-		status ret_err = sslh_write( tcp->ssl_over_tcp , buf , ( int )buf_sz , num_writes , imortalErrStr );
-		switch ( ret_err )
+		case tcph_curl:
 		{
-			case errPeerClosed:
-			{
-				tcps_close( tcp , imortalErrStr );
-				break;
-			}
+			status ret_err = curlh_send_http_request( tcp->curl , buf , ( long )buf_sz , imortalErrStr );
+			return ret_err;
 		}
-		return ret_err;
+		case tcph_ssl:
+		{
+			status ret_err = sslh_write( tcp->ssl_over_tcp , buf , ( int )buf_sz , num_writes , imortalErrStr );
+			switch ( ret_err )
+			{
+				case errPeerClosed:
+				{
+					tcps_close( tcp , imortalErrStr );
+					break;
+				}
+			}
+			return ret_err;
+		}
+		case tcph_tcp:
+		{
+			if ( num_writes ) *num_writes = ( int )buf_sz;
+			return tcp_send_all( tcp->tcp_fd , buf , buf_sz , 0 , SEND_TIMEOUT_ms , ACK_TIMEOUT_ms , RETRY_MECHANISM , imortalErrStr , tcp->dts_buf );
+		}
+		default:;
 	}
-	else
-	{
-		if ( num_writes ) *num_writes = ( int )buf_sz;
-		return tcp_send_all( tcp->tcp_fd , buf , buf_sz , 0 , SEND_TIMEOUT_ms , ACK_TIMEOUT_ms , RETRY_MECHANISM , imortalErrStr , tcp->dts_buf );
-	}
+
 	return errState;
 }
 
@@ -282,18 +351,51 @@ void tcps_close( tcp_h_t * tcp , Brief_Err * imortalErrStr )
 {
 	if ( !tcp ) return;
 
-	if ( tcp->ssl_over_tcp && sslh_is_handshaked( tcp->ssl_over_tcp ) )
+	if ( tcp->ssl_over_tcp )
 	{
-		sslh_cleanup_handshaked_ssl( tcp->ssl_over_tcp );
+		switch ( tcp->type )
+		{
+			case tcph_ssl:
+			{
+				if ( sslh_is_handshaked( tcp->ssl_over_tcp ) )
+				{
+					sslh_cleanup_handshaked_ssl( tcp->ssl_over_tcp );
+				}
+				break;
+			}
+			default:;
+		}
 	}
+
 	if ( tcp->tcp_conn_established )
 	{
-		_close_socket( &tcp->tcp_fd , imortalErrStr );
+		switch ( tcp->type )
+		{
+			case tcph_ssl:
+			case tcph_tcp:
+			{
+				_close_socket( &tcp->tcp_fd , imortalErrStr );
+				break;
+			}
+			default:;
+		}
 		tcp->tcp_conn_established = 0;
 	}
-	if ( tcp->ssl_over_tcp && sslh_has_context( tcp->ssl_over_tcp ) )
+
+	if ( tcp->ssl_over_tcp )
 	{
-		sslh_cleanup_ctx( tcp->ssl_over_tcp );
+		switch ( tcp->type )
+		{
+			case tcph_ssl:
+			{
+				if ( sslh_has_context( tcp->ssl_over_tcp ) )
+				{
+					sslh_cleanup_ctx( tcp->ssl_over_tcp );
+				}
+				break;
+			}
+			default:;
+		}
 	}
 }
 
@@ -311,4 +413,21 @@ bool tcps_socket_is_accessible( tcp_h_t * tcp )
 		}
 	}
 	return false;
+}
+
+status tcps_connect_curl( tcp_h_t * tcp , Brief_Err * imortalErrStr )
+{
+	if ( !tcp ) return errArg;
+	if ( !tcp->curl ) return errFailure;
+	status ret_stat = curlh_connect_curl( tcp->curl , imortalErrStr );
+	switch ( ret_stat )
+	{
+		case errOK:
+		{
+			tcp->tcp_conn_established = 1;
+			break;
+		}
+		default:;
+	}
+	return ret_stat;
 }

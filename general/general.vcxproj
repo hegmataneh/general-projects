@@ -91,6 +91,7 @@
     <ClCompile Include="src\cirbuf_infinite.c" />
     <ClCompile Include="src\cirbuf_metric.c" />
     <ClCompile Include="src\cr_in_wnd.c" />
+    <ClCompile Include="src\curl.c" />
     <ClCompile Include="src\dbg.c" />
     <ClCompile Include="src\ddlck.c" />
     <ClCompile Include="src\dict.c" />
@@ -155,6 +156,7 @@
     <ClInclude Include="header\cbuf_pked.h" />
     <ClInclude Include="header\cirbuf_infinite.h" />
     <ClInclude Include="header\cr_in_wnd.h" />
+    <ClInclude Include="header\curl.h" />
     <ClInclude Include="header\ddlck.h" />
     <ClInclude Include="header\global_setting.h" />
     <ClInclude Include="header\g_mlk.h" />
