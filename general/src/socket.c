@@ -308,12 +308,19 @@ status tcps_write( tcp_h_t * tcp , buffer buf , size_t buf_sz , int * num_writes
 {
 	if ( !tcp ) return errArg;
 
-	
 	switch ( tcp->type )
 	{
 		case tcph_curl:
 		{
-			status ret_err = curlh_send_http_request( tcp->curl , buf , ( long )buf_sz , imortalErrStr );
+			status ret_err = curlh_send_http_request( tcp->curl , buf , ( long )buf_sz , imortalErrStr , true );
+			switch ( ret_err )
+			{
+				case errPeerClosed:
+				{
+					tcps_close( tcp , imortalErrStr );
+					break;
+				}
+			}
 			return ret_err;
 		}
 		case tcph_ssl:
@@ -350,6 +357,16 @@ void tcps_enable_keepalive( tcp_h_t * tcp , Brief_Err * imortalErrStr )
 void tcps_close( tcp_h_t * tcp , Brief_Err * imortalErrStr )
 {
 	if ( !tcp ) return;
+
+	if ( tcp->type == tcph_curl )
+	{
+		if ( tcp->curl )
+		{
+			curlh_disconnect( tcp->curl , imortalErrStr );
+		}
+		tcp->tcp_conn_established = 0;
+		return;
+	}
 
 	if ( tcp->ssl_over_tcp )
 	{

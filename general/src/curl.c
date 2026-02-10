@@ -125,6 +125,78 @@ _PRIVATE_FXN IMMORTAL_LPCSTR pr_convert_curl_err_2_str( CURLcode result )
 	return "bad curl situation";
 }
 
+_PRIVATE_FXN int is_http_success( long code )
+{
+	return ( code >= 200 && code < 300 );
+}
+
+_PRIVATE_FXN int is_http_redirect( long code )
+{
+	return ( code >= 300 && code < 400 );
+}
+
+_PRIVATE_FXN int is_http_client_error( long code )
+{
+	return ( code >= 400 && code < 500 );
+}
+
+_PRIVATE_FXN int is_http_server_error( long code )
+{
+	return ( code >= 500 );
+}
+
+_PRIVATE_FXN status http_result_err( long http_code , Brief_Err * imortalErrStr )
+{
+	status d_error;
+	/* 3) Handle HTTP code */
+	if ( is_http_success( http_code ) )
+	{
+		/* 2xx */
+		/* Request succeeded */
+		d_error = errOK;
+	}
+	else if ( is_http_redirect( http_code ) )
+	{
+		/* 3xx */
+		/* Redirect response */
+		/* Usually auto-handled if FOLLOWLOCATION is set */
+		d_error = errFault;
+		STORE_INDIR_BRIEF_ERR( imortalErrStr , "" , 0 );
+	}
+	else if ( is_http_client_error( http_code ) )
+	{
+		/* 4xx */
+		/* Client mistake */
+		d_error = errFault;
+		if ( http_code == 401 || http_code == 403 )
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "auth_error" , 0 );
+		}
+		else if ( http_code == 404 )
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "no handler" , 0 );
+		}
+		else
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "client_error" , 0 );
+		}
+	}
+	else if ( is_http_server_error( http_code ) )
+	{
+		/* 5xx */
+		/* Server problem */
+		d_error = errFault;
+		STORE_INDIR_BRIEF_ERR( imortalErrStr , "server error" , 0 );
+	}
+	else
+	{
+		/* Very rare or invalid */
+		d_error = errFault;
+		STORE_INDIR_BRIEF_ERR( imortalErrStr , "Unknown HTTP error" , 0 );
+	}
+	return d_error;
+}
+
 status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 {
 	status d_error = errOK;  /*c does not have class and data member*/
@@ -141,6 +213,7 @@ status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_HTTPHEADER , curlh->curl_hdrs ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
+	// use certificate to secure connection
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_CAINFO , "http_ca.crt" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
 	/* Authentication */
@@ -155,16 +228,23 @@ status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_CONNECTTIMEOUT , 5L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_TIMEOUT , 10L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
+	// use post instead of 
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_POST , 1L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
+	// donot close connection after usage is complete and keep alive for furute usage
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_FORBID_REUSE , 0L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr ); /*make tcp conn open*/
 
 	//BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_WRITEFUNCTION , NULL ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
+	// donot echo send on screen and just let me decide result by error code
 	curlh->devnull = fopen( "/dev/null" , "w" );
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_WRITEDATA , curlh->devnull ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
+	// Verbose output goes to stderr, not stdout
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_VERBOSE , 0L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+
+	// If you want curl_easy_perform() to fail on 4xx/5xx then curl_easy_perform() returns CURLE_HTTP_RETURNED_ERROR
+	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_FAILONERROR , 1L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
 	/* Elasticsearch endpoint */
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_URL , "https://10.202.18.129:9200/binesh_sensors_fqdn_stats-app1-2026.02.08/_doc" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
@@ -173,16 +253,127 @@ status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 	N_END_RET
 }
 
-status curlh_send_http_request( Curl_h_t * curlh , buffer msg , long msg_sz , Brief_Err * imortalErrStr )
+status curlh_send_http_request( Curl_h_t * curlh , buffer msg , long msg_sz , Brief_Err * imortalErrStr , bool bretry )
 {
-	status d_error = errOK;  /*c does not have class and data member*/
-	int _ErrLvl = 0;
-	CURLcode result;
+	INIT_BREAKABLE_FXN();
+	CURLcode perform_iolvlres;
 
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_POSTFIELDS , msg ) ) != CURLE_OK , errFault , 0 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_POSTFIELDSIZE , msg_sz ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
-	BRIF_M_BREAK_IF( ( result = curl_easy_perform( curlh->curl ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+	BRIF_M_BREAK_IF( ( perform_iolvlres = curl_easy_setopt( curlh->curl , CURLOPT_POSTFIELDS , msg ) ) != CURLE_OK , errFault , 0 , pr_convert_curl_err_2_str( perform_iolvlres ) , imortalErrStr );
+	BRIF_M_BREAK_IF( ( perform_iolvlres = curl_easy_setopt( curlh->curl , CURLOPT_POSTFIELDSIZE , msg_sz ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( perform_iolvlres ) , imortalErrStr );
+	perform_iolvlres = curl_easy_perform( curlh->curl );
+	switch( perform_iolvlres )
+	{
+		case CURLE_OK:
+		{
+			long http_code = 0;
+			CURLcode getinfo_res = curl_easy_getinfo( curlh->curl , CURLINFO_RESPONSE_CODE , &http_code );
+			BRIF_M_BREAK_IF( getinfo_res != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( getinfo_res ) , imortalErrStr );
+			BREAK_STAT( http_result_err( http_code , imortalErrStr ) , 0 );
+			break;
+		}
+		case CURLE_COULDNT_RESOLVE_HOST:
+		case CURLE_COULDNT_CONNECT:
+		case CURLE_OPERATION_TIMEDOUT:
+		{
+			switch ( perform_iolvlres )
+			{
+				case CURLE_COULDNT_RESOLVE_HOST:
+				{
+					STORE_INDIR_BRIEF_ERR( imortalErrStr , "wrong hostname, DNS problem" , 0 );
+					break;
+				}
+				case CURLE_COULDNT_CONNECT:
+				{
+					STORE_INDIR_BRIEF_ERR( imortalErrStr , "server down, wrong port, firewall" , 0 );
+					break;
+				}
+				case CURLE_OPERATION_TIMEDOUT:
+				{
+					STORE_INDIR_BRIEF_ERR( imortalErrStr , "slow network or server" , 0 );
+					break;
+				}
+				default:;
+			}
+			
+			// retry
+			if ( bretry )
+			{
+				curl_easy_setopt( curlh->curl , CURLOPT_FRESH_CONNECT , 1L );
+				d_error = curlh_send_http_request( curlh , msg , msg_sz , imortalErrStr , false );
+				curl_easy_setopt( curlh->curl , CURLOPT_FRESH_CONNECT , 0L );
+				return d_error;
+			}
+			break;
+		}
+		case CURLE_SEND_ERROR:
+		case CURLE_RECV_ERROR:
+		{
+			switch ( perform_iolvlres )
+			{
+				case CURLE_SEND_ERROR:
+				{
+					STORE_INDIR_BRIEF_ERR( imortalErrStr , "connection closed, network error" , 0 );
+					break;
+				}
+				case CURLE_RECV_ERROR:
+				{
+					STORE_INDIR_BRIEF_ERR( imortalErrStr , "server closed connection" , 0 );
+					break;
+				}
+				default:;
+			}
+	
+			curlh_disconnect( curlh->curl , imortalErrStr );
+			//curlh->restart_needed = true; // Reconnect
+			BREAK( errPeerClosed , 0 ); // most cause reconnection
+			break;
+		}
+		case CURLE_SSL_CONNECT_ERROR:
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "bad certificate, TLS version mismatch" , 0 );
+			break;
+		}
+		case CURLE_PEER_FAILED_VERIFICATION:
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "self-signed or invalid cert" , 0 );
+			break;
+		}
+		case CURLE_HTTP_RETURNED_ERROR:
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "HTTP error code (>= 400)" , 0 );
+			break;
+		}
+		case CURLE_OUT_OF_MEMORY:
+		{
+			STORE_INDIR_BRIEF_ERR( imortalErrStr , "system out of memory" , 0 );
+			BREAK( errMemoryLow , 0 );
+			break;
+		}
+		default:;
+	}
+	BRIF_M_BREAK_IF( perform_iolvlres != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( perform_iolvlres ) , imortalErrStr );
 
 	BEGIN_RET
 	N_END_RET
+}
+
+status curlh_disconnect( Curl_h_t * curlh , Brief_Err * imortalErrStr )
+{
+	if ( !curlh ) return errArg;
+	if ( curlh->devnull )
+	{
+		if ( fclose( curlh->devnull ) ) return errFault;
+		curlh->devnull = NULL;
+	}
+	if ( curlh->curl_hdrs )
+	{
+		curl_slist_free_all( curlh->curl_hdrs );
+		curlh->curl_hdrs = NULL;
+	}
+	if ( curlh->curl )
+	{
+		curl_easy_cleanup( curlh->curl );
+		curlh->curl = NULL;
+	}
+	return errOK;
 }
