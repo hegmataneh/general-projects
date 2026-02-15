@@ -100,6 +100,7 @@
     <ClCompile Include="src\dict_s_i.c" />
     <ClCompile Include="src\dict_s_o.c" />
     <ClCompile Include="src\dyn_arr.c" />
+    <ClCompile Include="src\issueMaster.c" />
     <ClCompile Include="src\g_funcs.c" />
     <ClCompile Include="src\g_mlk.c" />
     <ClCompile Include="src\instantaneousBps.c" />
@@ -158,6 +159,7 @@
     <ClInclude Include="header\cr_in_wnd.h" />
     <ClInclude Include="header\curl.h" />
     <ClInclude Include="header\ddlck.h" />
+    <ClInclude Include="header\issueMaster.h" />
     <ClInclude Include="header\global_setting.h" />
     <ClInclude Include="header\g_mlk.h" />
     <ClInclude Include="header\instantaneousBps.h" />

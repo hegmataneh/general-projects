@@ -188,3 +188,8 @@
 #ifdef __INC_socket
 	#include <socket.h>
 #endif
+
+#ifdef __INC_issuesMaster_handle
+	#include <issueMaster.h>
+#endif
+

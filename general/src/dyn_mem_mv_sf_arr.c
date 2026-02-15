@@ -13,7 +13,7 @@
 status mms_array_init( dyn_mms_arr * arr , size_t item_size , size_t init_capacity , size_t growStep , size_t init_occopied_count )
 {
 	INIT_BREAKABLE_FXN();
-	if ( !arr || item_size == 0 || growStep == 0 || init_capacity < 1 || init_occopied_count > init_capacity || growStep < 1 ) return errArg;
+	if ( !arr || item_size == 0 || /*growStep == 0 ||*/ init_capacity < 1 || init_occopied_count > init_capacity /* || growStep < 1*/ ) return errArg;
 
 	MEMSET_ZERO_O( arr );
 
@@ -77,6 +77,7 @@ status mms_array_get_one_available_unoccopied_item( dyn_mms_arr * arr , _NEW_OUT
 	if ( !arr || !item ) return errArg;
 	if ( arr->count >= arr->capacity )
 	{
+		if ( !arr->growStep ) return errResource/*do not change this err typ*/;
 		if ( ( d_error = mms_array_resize( arr , arr->capacity + arr->growStep , 0 ) ) != errOK )
 			return d_error;
 	}
@@ -95,6 +96,7 @@ status mms_array_get_one_available_unoccopied_item_holder( dyn_mms_arr * arr , _
 	if ( !arr || !item ) return errArg;
 	if ( arr->count >= arr->capacity )
 	{
+		if ( !arr->growStep ) return errResource/*do not change this err typ*/;
 		if ( ( d_error = mms_array_resize( arr , arr->capacity + arr->growStep , 0 ) ) != errOK )
 			return d_error;
 	}

@@ -1,3 +1,14 @@
+#ifdef Uses_issues_h
+	#define Uses_issuesMaster_handle
+#endif
+
+#ifdef Uses_issuesMaster_handle
+	#define Uses_pthread_mutex_t
+	#define Uses_dyn_mms_arr
+	#define Uses_time_t
+	#define __INC_issuesMaster_handle
+#endif
+
 #ifdef Uses_M_SERIES_MACROS
 	#define Uses_STORE_BRIEF_ERR
 #endif
@@ -29,7 +40,7 @@
 
 #ifdef Uses_socket_handle
 	#define Uses_Curl_h_t
-	#define Uses_SSL_h_t
+	//#define Uses_SSL_h_t
 	#define __INC_socket
 #endif
 

@@ -90,6 +90,8 @@ status wait_for_ack( int sock , size_t sent_bytes , int timeout_ms );
 //----error functions------------------------------------------------------
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 _WEAK_ATTR void M_showMsg( LPCSTR msg );
+_WEAK_ATTR void M_showMsg2( LPCSTR msg , void_p v , int typ );
+
 IMMORTAL_LPCSTR internalErrorStr( status errValue , bool simple_text );
 //status internalErrorVal( LPCSTR errStr );
 //LPCSTR make_msg_appnd_sys_err( LPSTR msg_holder , size_t size_of_msg_holder , LPCSTR cst_msg );

@@ -39,9 +39,20 @@ mohsen 14040618
 
 	
 //#ifdef __ENGINE // app must provide def for M_MSG
+
+#ifndef USE_AB_ERR_DUMPER /*define this whereas you want err message go to AB error handler*/
+
 	#define MM_MSG(msg) do {\
 			M_showMsg( msg ); \
 		} while(0)
+
+#elif defined USE_AB_ERR_DUMPER /*define then undefine */
+
+	#define MM_MSG(msg) do {\
+			M_showMsg2( msg , pb/*for now */ , USE_AB_ERR_DUMPER ); \
+		} while(0)
+
+#endif
 
 	#ifdef M_MSG
 		#undef M_MSG
@@ -124,7 +135,7 @@ do \
 #define INIT_BREAKABLE_FXN() \
 	status d_error = errOK;  /*c does not have class and data member*/\
 	int _ErrLvl = 0; \
-	char EACH_FXN_MSG_HOLDER [ DEFAULT_MFS_BUF_SZ ] = "";
+	char EACH_FXN_MSG_HOLDER [ DEFAULT_MFS_BUF_SZ ] __attribute__((unused)) = "";
 
 #define BREAK_OK(lvl)\
 	do {\

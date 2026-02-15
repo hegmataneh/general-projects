@@ -197,10 +197,10 @@ _PRIVATE_FXN status http_result_err( long http_code , Brief_Err * imortalErrStr 
 	return d_error;
 }
 
-status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
+status curlh_connect_curl( Curl_h_t * curlh , LPCSTR elastic_username , LPCSTR elastic_pass , LPCSTR elastic_http_agt_CAuth_path ,
+	LPCSTR elastic_listener_ip , int elastic_listener_port , LPCSTR index_name , LPCSTR elastic_insertion_protocol , LPCSTR elastic_insertion_cmd , Brief_Err * imortalErrStr )
 {
-	status d_error = errOK;  /*c does not have class and data member*/
-	int _ErrLvl = 0;
+	INIT_BREAKABLE_FXN();
 	CURLcode result;
 
 	BRIF_M_BREAK_IF( !( curlh->curl = curl_easy_init() ) , errMemoryLow , 0 , "curl_easy_init failed\n" , imortalErrStr );
@@ -214,12 +214,12 @@ status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_HTTPHEADER , curlh->curl_hdrs ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
 	// use certificate to secure connection
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_CAINFO , "http_ca.crt" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_CAINFO , elastic_http_agt_CAuth_path ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
 	/* Authentication */
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_HTTPAUTH , CURLAUTH_BASIC ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_USERNAME , "logtoel" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_PASSWORD , "razhmanlogtoel" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_USERNAME , elastic_username ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_PASSWORD , elastic_pass ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_SSL_VERIFYPEER , 1L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_SSL_VERIFYHOST , 2L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
@@ -246,8 +246,38 @@ status curlh_connect_curl( Curl_h_t * curlh , Brief_Err * imortalErrStr )
 	// If you want curl_easy_perform() to fail on 4xx/5xx then curl_easy_perform() returns CURLE_HTTP_RETURNED_ERROR
 	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_FAILONERROR , 1L ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
 
-	/* Elasticsearch endpoint */
-	BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_URL , "https://10.202.18.129:9200/binesh_sensors_fqdn_stats-app1-2026.02.08/_doc" ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+	BREAK_STAT( curlh_set_index_name( curlh , elastic_listener_ip , elastic_listener_port , index_name , elastic_insertion_protocol , elastic_insertion_cmd , imortalErrStr ) , 0 );
+
+	BEGIN_RET
+	N_END_RET
+}
+
+status curlh_set_index_name( Curl_h_t * curlh , LPCSTR elastic_listener_ip , int elastic_listener_port , LPCSTR index_name , LPCSTR elastic_insertion_protocol
+	, LPCSTR elastic_insertion_cmd , Brief_Err * imortalErrStr )
+{
+	INIT_BREAKABLE_FXN();
+	CURLcode result;
+
+	time_t now = time( NULL );
+	struct tm * t = localtime( &now );
+	char timebuf[ 20 ];
+	strftime( timebuf , sizeof( timebuf ) , "%Y.%m.%d" , t );
+
+	char buf[DEFAULT_LFS_BUF_SZ] = { 0 };
+	snprintf( buf , sizeof( buf ) , "%s://%s:%d/%s-%s/%s" , elastic_insertion_protocol , elastic_listener_ip , elastic_listener_port , index_name , timebuf , elastic_insertion_cmd );
+	
+	if ( STR_DIFF( buf , curlh->index_name ) )
+	{
+		strncpy( curlh->index_name , buf , sizeof( curlh->index_name ) );
+		curlh->index_name_changed = true;
+	}
+
+	if ( curlh->index_name_changed )
+	{
+		/* Elasticsearch endpoint */
+		BRIF_M_BREAK_IF( ( result = curl_easy_setopt( curlh->curl , CURLOPT_URL , curlh->index_name ) ) != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( result ) , imortalErrStr );
+		curlh->index_name_changed = false;
+	}
 
 	BEGIN_RET
 	N_END_RET
@@ -341,6 +371,10 @@ status curlh_send_http_request( Curl_h_t * curlh , buffer msg , long msg_sz , Br
 		case CURLE_HTTP_RETURNED_ERROR:
 		{
 			STORE_INDIR_BRIEF_ERR( imortalErrStr , "HTTP error code (>= 400)" , 0 );
+			long http_code = 0;
+			CURLcode getinfo_res = curl_easy_getinfo( curlh->curl , CURLINFO_RESPONSE_CODE , &http_code );
+			BRIF_M_BREAK_IF( getinfo_res != CURLE_OK , errFault , 1 , pr_convert_curl_err_2_str( getinfo_res ) , imortalErrStr );
+			BREAK_STAT( http_result_err( http_code , imortalErrStr ) , 0 );
 			break;
 		}
 		case CURLE_OUT_OF_MEMORY:
